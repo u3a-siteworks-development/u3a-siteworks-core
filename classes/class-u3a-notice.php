@@ -1,0 +1,395 @@
+<?php
+
+class U3aNotice
+{
+    use ModifyQuickEdit;
+    use ChangePrompt;
+
+    /**
+     * The post_type for this class
+     *
+     * @var string 
+     */
+    public static $post_type = U3A_NOTICE_CPT;
+
+    /**
+     * The term used for the title of these custom posts
+     *
+     * @var string 
+     */
+    public static $term_for_title = "title for the Notice";
+
+    /**
+     * The short name for this class
+     *
+     * @var string 
+     */
+    public static $post_type_name = 'notice';
+
+    /* Limits on the max size of data input */
+    const MAX_DATE = 10; // YYYY-MM-DD
+    const MAX_URL = 2000; // for all browsers
+
+    /**
+     * The ID of this post
+     *
+     * @var string
+     */
+    public $ID;
+
+    /**
+     * If there is a post with this ID
+     *
+     * @var boolean
+     */
+    public $exists;
+
+    // $plugin_file is the value of __FILE__ from the main plugin file
+    private static $plugin_file;
+
+    /**
+     * Construct a new object for a u3a_group post.
+     *
+     */
+    public function __construct($ID)
+    {
+        $ID = (int) $ID;
+        $this->ID = $ID;
+        $this->exists = false;
+        if (is_int($ID) && $ID > 0) {
+            if (get_post($ID) !== null) { // so a post with this ID exists
+                $this->exists = true;
+            }
+        }
+    }
+
+    // $plugin_file is the value of __FILE__ from the main plugin file
+    public static function initialise($plugin_file)
+    {
+        self::$plugin_file = $plugin_file;
+
+        // Register Notice CPT
+        add_action('init', array(self::class, 'register_notices'));
+
+        // Routine to run on plugin activation
+        register_activation_hook($plugin_file, array(self::class, 'on_activation'));
+
+        // Set up the custom fields in a metabox (using free plugin from on metabox.io)
+        add_filter('rwmb_meta_boxes', [self::class, 'add_metabox'], 10, 1);
+
+        // Alter the columns that are displayed in the Notices list admin page
+        add_filter('manage_' . U3A_NOTICE_CPT . '_posts_columns', array(self::class, 'change_columns'));
+        add_action('manage_' . U3A_NOTICE_CPT . '_posts_custom_column', array(self::class, 'show_column_data'), 10, 2);
+        add_filter('manage_edit-' . U3A_NOTICE_CPT . '_sortable_columns', array(self::class, 'make_column_sortable'));
+        add_action('pre_get_posts', array(self::class, 'sort_column_data'));
+
+        // Customise the Quick Edit panel
+        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
+
+        // Change prompt shown for post title
+        add_filter('enter_title_here', array(self::class, 'change_prompt'));
+
+        // Register the blocks
+        add_action('init', array(self::class, 'register_blocks'));
+
+        // Add action to restrict database field lengths
+        add_action('save_post_u3a_notice', [self::class, 'validate_notice_fields'], 30, 2);
+    }
+
+    // validate the lengths of fields on save
+    public static function validate_notice_fields($post_id, $post)
+    {
+        $value = get_post_meta($post_id, 'notice_start_date', true);
+        if (strlen($value) > self::MAX_DATE) {
+            update_post_meta($post_id, 'notice_start_date', '');
+        }
+        $value = get_post_meta($post_id, 'notice_end_date', true);
+        if (strlen($value) > self::MAX_DATE) {
+            update_post_meta($post_id, 'notice_end_date', '');
+        }
+        $value = get_post_meta($post_id, 'notice_url', true);
+        if (strlen($value) > self::MAX_URL) {
+            update_post_meta($post_id, 'notice_url', '');
+        }
+    }
+    public static function register_notices()
+    {
+        $args = array(
+            'public' => true,
+            'show_in_rest' => true,
+            'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt'),
+            'rewrite' => array('slug' => sanitize_title(U3A_NOTICE_CPT . 's')),
+            'has_archive' => false,
+            'menu_icon' => U3A_NOTICE_ICON,
+            'labels' => array(
+                'name' => 'u3a Notices',
+                'singular_name' => 'Notice',
+                'add_new_item' => 'Add Notice',
+                'add_new' => 'Add New Notice',
+                'edit_item' => 'Edit Notice',
+                'all_items' => 'All Notices',
+                'view_item' => 'View Notice',
+                'update_item' => 'Update Notice',
+                'search_items' => 'Search Notices'
+            )
+        );
+        if (!(current_user_can('edit_others_pages'))) {
+            $args += array(
+                'capabilities' => array(
+                    'create_posts' => 'do_not_allow'
+                ),
+                'map_meta_cap' => true
+            );
+        }
+        register_post_type(U3A_NOTICE_CPT, $args);
+    }
+
+    /**
+     * Do tasks that should only be done on activation
+     *
+     * Register post type and flush rewrite rules.
+     * TODO Add default categories for notices
+     */
+    public static function on_activation()
+    {
+        self::register_notices();
+        delete_option('rewrite_rules');
+    }
+
+    /**
+     * Filter that adds a metabox for a post_type.
+     *
+     * @param array $metaboxes List of existing metaboxes.
+     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
+     *
+     * @return array $metaboxes With the added metabox
+     */
+    public static function add_metabox($metaboxes)
+    {
+        $metabox = [
+            'title'    => 'Notice Settings',
+            'id'       => U3A_NOTICE_CPT,
+            'post_types' => [U3A_NOTICE_CPT],
+            'context'  => 'normal',
+            'autosave' => true,
+        ];
+        $metabox['fields'] = self::field_descriptions();
+        // add metabox to all input rwmb metaboxes
+        $metaboxes[] = $metabox;
+        return $metaboxes;
+    }
+
+    /**
+     * Defines the fields for this class.
+     *
+     * @return array
+     */
+    public static function field_descriptions()
+    {
+        $fields = [];
+        // Now add all the fields to the $fields array in the order they will appear.
+        // see https://docs.metabox.io/fields/
+        // and https://docs.metabox.io/field-settings/ for details.
+
+        $fields[] =
+            [
+                'type'      => 'date',
+                'name'      => 'Notice Start Date',
+                'id'        => 'notice_start_date',
+                'desc'      => 'Date when this notice should start being displayed on the website',
+                'size'      => 15,
+                'std'       => date('Y-m-d'),
+                'required'  => true,
+                'maxlength' => self::MAX_DATE,
+            ];
+        $fields[] =
+            [
+                'type'      => 'date',
+                'name'      => 'Notice End Date',
+                'id'        => 'notice_end_date',
+                'desc'      => 'Date when this notice should stop being displayed on the website',
+                'size'      => 15,
+                'required' => true,
+                'maxlength' => self::MAX_DATE,
+            ];
+        $fields[] =
+            [
+                'type' => 'divider',
+                'after' => '<p>If you provide a Notice URL the content of this page will be ignored and the Notice List entry will link to the given URL instead.</p>
+                            <p>The Notice Start and End dates will still be used to determine if this Notice should be included in the Notice List.</p>',
+            ];
+        $fields[] =
+            [
+                'type' => 'url',
+                'name' => 'Notice URL',
+                'id'   => 'notice_url',
+                'desc' => 'The URL should start with https://, or http:// for an unsecured website link.',
+                'maxlength' => self::MAX_URL,
+            ];
+
+        return $fields;
+    }
+
+    /**
+     * Registers the block u3a/noticelist and its render callback.
+     */
+    public static function register_blocks()
+    {
+        wp_register_script(
+            'u3anoticeblocks',
+            plugins_url('js/u3a-notice-blocks.js', self::$plugin_file),
+            array('wp-blocks', 'wp-element'),
+            U3A_SITEWORKS_CORE_VERSION,
+            false,
+        );
+        wp_enqueue_script('u3anoticeblocks');
+
+        register_block_type(
+            'u3a/noticelist',
+            array(
+                'editor_script' => 'u3anoticeblocks',
+                'render_callback' => array(self::class, 'display_noticelist')
+            )
+        );
+    }
+
+    /**
+     * Alter the columns that are displayed in the Posts list admin page to remove the standard 
+     * WordPress date and author columns and add the Notice Start and End dates
+     * @param array $columns
+     * @return modified columns
+     * @usedby filter 'manage_' . U3A_NOTICE_CPT . '_posts_columns'
+     */
+    public static function change_columns($columns)
+    {
+        unset($columns['date']);
+        unset($columns['author']);
+
+        $columns['noticeStart'] = 'Start date';
+        $columns['noticeEnd'] = 'End date';
+        $columns['noticeType'] = 'Type';
+        return $columns;
+    }
+
+    /**
+     * Alter what is shown for one row in the columns that are displayed in the events posts list admin page.
+     * Notice Type is URL or Notice
+     * @param str $column
+     * @param int $post_id  the id of the post for the row 
+     * @usedby action 'manage_' . U3A_NOTICE_CPT . '_posts_custom_column'
+     */
+    public static function show_column_data($column, $post_id)
+    {
+        switch ($column) {
+            case 'noticeStart':
+                $date = get_post_meta($post_id, 'notice_start_date', true);
+                if (!empty($date)) {
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- date function is safe
+                    print date(get_option('date_format'), strtotime($date));
+                } else {
+                    print 'not set';
+                }
+                break;
+            case 'noticeEnd':
+                $date = get_post_meta($post_id, 'notice_end_date', true);
+                if (!empty($date)) {
+                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- date function is safe
+                    print date(get_option('date_format'), strtotime($date));
+                } else {
+                    print 'not set';
+                }
+                break;
+            case 'noticeType':
+                $alt_url = trim(get_post_meta($post_id, 'notice_url', true));
+                $type = (strncasecmp($alt_url, 'http', 4) === 0) ? 'URL' : 'Notice';
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                print $type;
+        }
+    }
+
+    /**
+     * Provide sorting mechanism for the Notice start and end date columns.
+     *
+     * @param array $query attributes of query
+     * @usedby action 'pre_get_posts'
+     */
+    public static function sort_column_data($query)
+    {
+        if (!is_admin() /* || !$query->is_main_query() */) {
+            return;
+        }
+        if ('noticeStart' === $query->get('orderby')) {
+            $query->set('orderby', 'meta_value');
+            $query->set('meta_key', 'notice_start_date');
+        }
+        if ('noticeEnd' === $query->get('orderby')) {
+            $query->set('orderby', 'meta_value');
+            $query->set('meta_key', 'notice_end_date');
+        }
+    }
+
+    /**
+     * Makes Notice date columns sortable.
+     * 
+     * @param array $columns
+     * @return modified array $columns
+     * @usedby filter 'manage_edit-' . U3A_NOTICE_CPT . '_sortable_columns'
+     */
+    public static function make_column_sortable($columns)
+    {
+        $columns['noticeStart'] = 'noticeStart';
+        $columns['noticeEnd'] = 'noticeEnd';
+        return $columns;
+    }
+
+    /**
+     * List Notices in publication order, most recent first.  Returns max 5 items.
+     * Show the Excerpt if one is provided for the Notice (but don't fall back to displaying extract from content)
+     * Could be extended to allow more user control
+     * @return HTML
+     */
+    public static function display_noticelist($atts, $content = '')
+    {
+
+        $posts = get_posts(array(
+            'numberposts' => -1,
+            'orderby' => 'meta_value',
+            'post_type' => U3A_NOTICE_CPT,
+            'order' => 'DESC',
+            'post_status' => 'publish',
+            'meta_key' => 'notice_start_date',
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key' => 'notice_end_date',
+                    'value' => date("Y-m-d"),
+                    'type' => 'DATE',
+                    'compare' => '>',
+                ),
+                array(
+                    'key' => 'notice_start_date',
+                    'value' => date("Y-m-d"),
+                    'type' => 'DATE',
+                    'compare' => '<=',
+                )
+            )
+        ));
+
+        if (!$posts) return '<p>There are no current notices</p>';
+
+        $html = "<div class=\"u3a-notice-list\">\n<h3>Latest Notices</h3>\n";
+        foreach ($posts as $notice) {
+            $title = $notice->post_title;
+            $alt_url = trim(get_post_meta($notice->ID, 'notice_url', true));
+            $url = (strncasecmp($alt_url, 'http', 4) === 0) ? $alt_url : get_permalink($notice->ID);
+            $html .= "<h4><a href=\"$url\">$title</a></h4>\n";
+            if (has_excerpt($notice)) {
+                $excerpt = get_the_excerpt($notice);
+                $html .= "<p>$excerpt</p>";
+            }
+        }
+        $html .= "</div>\n";
+
+        return $html;
+    }
+}
