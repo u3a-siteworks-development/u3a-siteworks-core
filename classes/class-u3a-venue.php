@@ -384,7 +384,7 @@ class U3aVenue
      */
     public function display($atts, $content)
     {
-        $html = "<div class=\"u3avenue\">\n";
+        $html = "<table class=\"u3a_venue_table\">\n";
 
         // District
         // Check Settings
@@ -392,7 +392,7 @@ class U3aVenue
         if ($field_v_district == 1) {
             $district = get_post_meta($this->ID, 'district', true);
             if (!empty($district)) {
-                $html .= "<div> District: </div> <div> $district</div>\n";
+                $html .= "<tr><td>District:</td><td>$district</td></tr>\n";
             }
         }
 
@@ -407,27 +407,27 @@ class U3aVenue
         if (!empty($town)) $address .= "<br>$town";
         if (!empty($postcode)) $address .= "<br>$postcode";
         if (!empty($address)) {
-            $html .= "<div> Address: </div> <div> $address</div>\n";
+            $html .= "<tr><td>Address:</td><td>$address</td></tr>\n";
         }
 
         // Phone
         $phone = get_post_meta($this->ID, 'phone', true);
         if (!empty($phone)) {
-            $html .= "<div> Phone: </div> <div> $phone</div>\n";
+            $html .= "<tr><td>Phone:</td><td>$phone</td></tr>\n";
         }
 
         // Website
         $website = get_post_meta($this->ID, 'url', true);
         if (!empty($website)) {
-            $html .= "<div> Website: </div> <div> <a target=\"_blank\" href=\"$website\">$website</a></div>\n";
+            $html .= "<tr><td>Website:</td><td><a target=\"_blank\" href=\"$website\">$website</a></div>\n";
         }
         // Access
         $access = get_post_meta($this->ID, 'access', true);
         if (!empty($access)) {
-            $html .= "<div> Accessibility: </div> <div> $access</div>\n";
+            $html .= "<tr><td>Accessibility:</td><td>$access</td></tr>\n";
         }
 
-        $html .= "</div>";
+        $html .= "</table>";
 
         return $html;
     }

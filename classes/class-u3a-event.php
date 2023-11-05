@@ -136,7 +136,7 @@ class U3aEvent
         $args = array(
             'public' => true,
             'show_in_rest' => true,
-            'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt'),
+            'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'color'),
             'rewrite' => array('slug' => sanitize_title(U3A_EVENT_CPT . 's')),
             'has_archive' => false,
             'menu_icon' => U3A_EVENT_ICON,
@@ -340,7 +340,10 @@ class U3aEvent
         wp_register_script(
             'u3aeventblocks',
             plugins_url('js/u3a-event-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element'),
+            array('wp-blocks',
+                    'wp-element',
+                    'wp-components',
+                    'wp-editor'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
@@ -349,7 +352,6 @@ class U3aEvent
         register_block_type(
             'u3a/eventlist',
             array(
-                'editor_script' => 'u3aeventblocks',
                 'render_callback' => array(self::class, 'display_eventlist')
             )
         );
@@ -357,7 +359,6 @@ class U3aEvent
         register_block_type(
             'u3a/eventdata',
             array(
-                'editor_script' => 'u3aeventblocks',
                 'render_callback' => array(self::class, 'display_cb')
             )
         );
@@ -633,10 +634,11 @@ class U3aEvent
      *    when = 'past'/'future' (default future)
      *    order = 'asc'/'desc' (defaults to asc for future and desc for past)
      *    cat = which event category to display (default all)
-     *    include groups = 'y'/'n which will override the value in option settings
+     *    groups = 'y'/'n which will override the value in option settings
      *    limitnum (int) = limits how many events to be displayed
      *    limitdays (int) = limits how many day in the future or past to show events
-     *    layout = has no effect as yet!
+     *    layout = 'list' or 'grid' at present. Other layouts may be added
+     *    bgcolor = colour of background in layout grid
      *
      * @return HTML
      */
@@ -653,6 +655,7 @@ class U3aEvent
             'limitdays' => 0,
             'limitnum' => 0,
             'layout' => 'list',
+            'bgcolor' => '#63c369', // this is a Third Age Trust brand guide secondary colour
         ];
         // set from page query or from call attributes, page query parameters take priority
         foreach ($display_args as $name => $default) {
@@ -707,7 +710,14 @@ class U3aEvent
         }
         $limitnum = intval($display_args['limitnum']); // result is always an int
 
-        $layout = $display_args['layout']; //not currently used!
+        $layout = $display_args['layout'];
+        if (!in_array($layout, ['list', 'grid'])) {
+            $error .= 'bad parameter: layout=' . esc_html($layout) . '<br>';
+            $layout = 'list'; //default
+        }
+        $bgcolor = $display_args['bgcolor'];
+
+        // end of validation checks
 
         $numposts = ($limitnum > 0) ? $limitnum : -1; // if unlimited display all selected events
         $query_args = [
@@ -781,7 +791,8 @@ class U3aEvent
         // Generate table from array of posts
         // no need to show the event's group if we are on the group page!
         $show_group_info = !($on_group_page);
-        if ($posts)  return self::display_event_listing($posts,  $when, $show_group_info);
+        $display_args = ['layout' => $layout,'bgcolor' => $bgcolor];
+        if ($posts)  return self::display_event_listing($posts, $when, $show_group_info, $display_args);
         else return '';
     }
 
@@ -790,22 +801,23 @@ class U3aEvent
      * @param array $posts the selected posts of type u3a_event
      * @param str $when 'past' / 'future'
      * @param boolean $show_group to display the group with which the event is associated.
+     * @param array $display_args how and what fields to display ...
      *
      * @return HTML <h3><div> with a pair of <div>s for each event </div>
      *              or empty string ''
      */
-    public static function display_event_listing($posts, $when, $show_group = true)
+    public static function display_event_listing($posts, $when, $show_group = true, $display_args)
     {
         if (!$posts) return '';
 
         $when_text = ('past' == $when) ? 'Previous' : 'Forthcoming';
-        $html = "<h3>$when_text Events</h3>\n<div class=\"u3aeventlist\">\n";
+        $html = "<h3>$when_text Events</h3>\n";
+        $html .= "<div class=\"u3aeventlist\">\n";
         foreach ($posts as $event) {
             $my_event = new self($event->ID); // an object of this class
             list($date, $time) = $my_event->event_date_and_time();
             $title = $event->post_title;
             $permalink = get_the_permalink($event);
-            //$eventpagelink = get_site_url() . '/u3a-events/' . $event->post_name;
             $event_category = '';
             $terms = get_the_terms($event, U3A_EVENT_TAXONOMY); // an array of terms or null
             if ((false !== $terms) && !is_wp_error($terms)) {
@@ -813,6 +825,7 @@ class U3aEvent
                 $term = $terms[0];
                 $event_category = $term->name;
             }
+            $event_category_line = "<br>".$event_category;
             $group_line = '';
             if ($show_group) {
                 list($groupName, $group_link) = $my_event->event_group_title_and_permalink();
@@ -825,8 +838,7 @@ class U3aEvent
             if (!empty($extract)) {
                 $extract .= '<br>';
             }
-
-            $time_text = ($time) ? '<br>' . $time : '';
+            $time_line = ($time) ? '<br>' . $time : '';
             $the_venue = new U3aVenue(get_post_meta($event->ID, 'eventVenue_ID', true));
             $venue_name_with_link = $the_venue->venue_name_with_link();
             $venue_line = '';
@@ -844,28 +856,78 @@ class U3aEvent
                 $booking_required_line = "<br><strong>Booking Required</strong>";
             }
 
-            $date_start = "<strong>$date</strong> $time_text";
-            $date_end = '';
+            $date_text = "<strong>$date</strong>";
+            $end_date_line = '';
             $days = get_post_meta($event->ID, 'eventDays', true);
             if ($days > 1) {
                 $enddate = $my_event->event_end_date();
-                $date_end = "<br>to $enddate";
+                $end_date_line = "<br>to $enddate";
+            }
+            $featured_image = get_the_post_thumbnail_url($event->ID, 'medium');
+            $caption = get_the_post_thumbnail_caption($event->ID);
+            $image_HTML = '';
+            if ($featured_image) {
+                //width of image to match containing div and margin.
+                $image_HTML = <<<END
+                    <figure>
+                      <img src="$featured_image" width=300px />
+                      <figcaption>$caption</figcaption>
+                    </figure>
+                    END;
+            } else {
+                $image_HTML = <<<END
+                    <div class = "no-figure">
+                      <br>No featured image.
+                    </div>
+                    END;
             }
 
             // Assemble the components
-            $html .= <<< END
-            <div>
-            <p>$date_start 
-            $date_end
-            <br>$event_category</p>
-            </div>
-            <div>
-            <p class="u3aeventtitle"><a href="$permalink">$title</a></p>
-            $group_line
-            <p>$extract $venue_line $cost_line $booking_required_line</p>
-            </div>
-END;
-        }
+            $layout = $display_args['layout'];
+            if ('list' == $layout) {
+                $html .= <<< END
+                <div class="u3aeventlist-item">
+                    <div class="u3aevent-list-left">
+                    <p>$date_text
+                      $time_line
+                      $end_date_line
+                      $event_category_line
+                    </p>
+                    $group_line
+                    </div>
+                    <div class="u3aevent-list-right">
+                    <p class="u3aeventtitle"><a href="$permalink">$title</a></p>
+                    <p>$extract
+                      $venue_line
+                      $cost_line
+                      $booking_required_line
+                    </p>
+                    </div>
+                </div>
+                END;
+            } else {
+                $bgcolor = $display_args['bgcolor'];
+                $html .= <<< END
+                <div class="u3aeventlist-item" style="background-color:$bgcolor; margin:10px;">
+                    <div class="u3aevent-grid-left">
+                    $image_HTML
+                    </div>
+                    <div class="u3aevent-grid-right">
+                    <p class="u3aeventtitle"><a href="$permalink">$title</a></p>
+                    <p>$date_text
+                      $time_line
+                      $end_date_line
+                    </p>
+                    <p>$extract
+                      $venue_line
+                      $cost_line
+                      $booking_required_line
+                    </p>
+                    </div>
+                </div>
+                END;
+            }
+        } // end foreach
         $html .= "</div>\n";
         return $html;
     }
@@ -894,31 +956,31 @@ END;
      */
     public function display($atts, $content)
     {
-        $html = "<div class=\"u3aeventdata\">\n";
+        $html = "<table class=\"u3a_event_table\">\n";
         // event category
         $terms = get_the_terms($this->ID, U3A_EVENT_TAXONOMY); // an array of terms or null
         if ((false !== $terms) && !is_wp_error($terms)) {
             // assumes only one category permitted for now, may allow multiple categories in future.
             $term = $terms[0];
             $event_category = $term->name;
-            $html .= "<div> Event type: </div> <div>$event_category</div>";
+            $html .= "<tr><td>Event type:</td> <td>$event_category</td></tr>";
         }
         // date, time, duration
         $date_time = $this->event_date_and_time();
         $date = $date_time[0];
         $time = $date_time[1];
         if (!empty($date)) {
-            $html .= "<div> Date: </div> <div>$date</div>";
+            $html .= "<tr><td>Date: </td> <td>$date</td></tr>";
         }
         if (!empty($time)) {
-            $html .= "<div> Time: </div> <div>$time</div>";
+            $html .= "<tr><td>Time: </td> <td>$time</td></tr>";
         }
         $duration = get_post_meta($this->ID, 'eventDays', true);
         if (!empty($duration) && $duration > 1) {
-            $html .= "<div> Duration: </div> <div>$duration days</div>";
+            $html .= "<tr><td>Duration: </td> <td>$duration days</td></tr>";
             $enddate = $this->event_end_date();
             if (!empty($enddate)) {
-                $html .= "<div> Until: </div> <div>$enddate</div>";
+                $html .= "<tr><td>Until: </td> <td>$enddate</td></tr>";
             }
         }
 
@@ -927,37 +989,36 @@ END;
         list($group_title, $group_permalink) = $this->event_group_title_and_permalink();
         if (!empty($group_title)) {
             $group_text = "<a href='$group_permalink'>$group_title</a>";
-            $html .= "<div> Group: </div> <div>$group_text</div>";
+            $html .= "<tr><td>Group: </td> <td>$group_text</td></tr>";
         }
 
         // Venue
         $the_venue = new U3aVenue(get_post_meta($this->ID, 'eventVenue_ID', true));
         $venue_name_with_link = $the_venue->venue_name_with_link();
         if (!empty($venue_name_with_link)) {
-            $html .= "<div> Venue: </div> <div>$venue_name_with_link</div>";
+            $html .= "<tr><td>Venue: </td> <td>$venue_name_with_link</td></tr>";
         }
 
         // Organiser
         $contact = new U3aContact(get_post_meta($this->ID, 'eventOrganiser_ID', true));
         $contact_info = $contact->contact_text();
         if ($contact_info) {
-            //note: $contact_info has a containing div which impacts on css ".u3aeventlist div:nth-child(odd)" 
-            $html .= "<div> Organiser: </div>$contact_info";
+            $html .= "<tr><td>Organiser: </td> <td>$contact_info</td></tr>";
         }
 
         //Cost
         $cost = get_post_meta($this->ID, 'eventCost', true);
         if (!empty($cost)) {
-            $html .= "<div> Cost: </div> <div>$cost</div>";
+            $html .= "<tr><td>Cost: </td> <td>$cost</td></tr>";
         }
 
         //Booking Required
         $booking_required = get_post_meta($this->ID, 'eventBookingRequired', true);
         if (!empty($booking_required)) {  // default value of 0 is empty!
-            $html .= "<div> Booking:</div> <div>Note that booking is required.</div>";
+            $html .= "<tr><td>Booking:</td> <td>Note that booking is required.</td></tr>";
         }
 
-        $html .= "</div>";
+        $html .= "</table>";
         return $html;
     }
 
