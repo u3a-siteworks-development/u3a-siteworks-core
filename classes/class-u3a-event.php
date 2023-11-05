@@ -340,7 +340,11 @@ class U3aEvent
         wp_register_script(
             'u3aeventblocks',
             plugins_url('js/u3a-event-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element'),
+            array('wp-blocks',
+                    'wp-element',
+                    'wp-i18n',
+                    'wp-components',
+                    'wp-editor'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
@@ -633,7 +637,7 @@ class U3aEvent
      *    when = 'past'/'future' (default future)
      *    order = 'asc'/'desc' (defaults to asc for future and desc for past)
      *    cat = which event category to display (default all)
-     *    include groups = 'y'/'n which will override the value in option settings
+     *    groups = 'y'/'n which will override the value in option settings
      *    limitnum (int) = limits how many events to be displayed
      *    limitdays (int) = limits how many day in the future or past to show events
      *    layout = has no effect as yet!
