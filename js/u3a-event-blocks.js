@@ -7,6 +7,7 @@ let SelectControl = wp.components.SelectControl;
 let TextControl = wp.components.TextControl;
 let InspectorControls = wp.editor.InspectorControls;
 let useBlockProps = wp.editor.useBlockProps;
+let useSelect = wp.data.useSelect;
 //let InnerBlock = wp.editor.InnerBlock;
 
 wp.blocks.registerBlockType("u3a/eventdata", {
@@ -24,7 +25,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
 
   wp.blocks.registerBlockType("u3a/eventlist", {
     title: "u3a events list",
-    description: "displays list of events",
+    description: "Displays list of events",
     icon: "tickets-alt",
     category: "widgets",
     attributes: {
@@ -52,6 +53,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const { when, order, cat, groups, limitnum, limitdays } = attributes;
       const onChangeWhen = val => {
         setAttributes( { when: val });
+        setAttributes( { order: (val == 'future' ? 'asc' : 'desc')});
       };
       const onChangeOrder = val => {
         setAttributes( { order: val });
@@ -68,6 +70,34 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const onChangeDays = val => {
         setAttributes( { limitdays: Number(val)})
       };
+
+      const query = {
+                per_page: -1,
+                orderby: 'name',
+                order: 'asc',
+                _fields: 'id,name,slug'
+            };
+      const terms = useSelect( ( select ) =>
+            select( 'core' ).getEntityRecords( 'taxonomy', 'u3a_event_category', query )
+        );
+      if ( ! terms ) {
+          return 'Loading...';
+      }
+      if ( terms.length === 0 ) {
+          return 'No terms found';
+      }
+      var catlist = [];
+      catlist.push( {
+         label: 'All categories',
+         value: ''
+      } );
+      for ( var i = 0; i < terms.length; i++ ) {
+          catlist.push( {
+              label: terms[i].name,
+              value: terms[i].slug
+          } );
+      };
+
       var nest = [
           wp.element.createElement(
             InspectorControls,
@@ -78,12 +108,12 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   onChange: onChangeWhen,
                   options:[
                   {
-                    label: 'Past',
-                    value: 'past',
-                  },
-                  {
                     label: 'Future',
                     value: 'future',
+                  },
+                  {
+                    label: 'Past',
+                    value: 'past',
                   }
                   ]
                 }
@@ -104,10 +134,12 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   ]
                 }
               ),
-              wp.element.createElement( TextControl,
+              wp.element.createElement( SelectControl,
                 { label:'Category', 
                   value: cat,
+                  help: 'Either all categories or chosen category',
                   onChange: onChangeCat,
+                  options: catlist
                 }
               ),
               wp.element.createElement( SelectControl,
@@ -135,6 +167,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               wp.element.createElement( NumberControl,
                 { label:'Limit Number of Days', 
                   value: limitdays,
+                  help: 'e.g. upto 90 days in future/past',
                   onChange: onChangeDays,
                 }
               ),
