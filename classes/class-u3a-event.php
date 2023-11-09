@@ -342,7 +342,6 @@ class U3aEvent
             plugins_url('js/u3a-event-blocks.js', self::$plugin_file),
             array('wp-blocks',
                     'wp-element',
-                    'wp-i18n',
                     'wp-components',
                     'wp-editor'),
             U3A_SITEWORKS_CORE_VERSION,
@@ -353,7 +352,6 @@ class U3aEvent
         register_block_type(
             'u3a/eventlist',
             array(
-                'editor_script' => 'u3aeventblocks',
                 'render_callback' => array(self::class, 'display_eventlist')
             )
         );
@@ -361,7 +359,6 @@ class U3aEvent
         register_block_type(
             'u3a/eventdata',
             array(
-                'editor_script' => 'u3aeventblocks',
                 'render_callback' => array(self::class, 'display_cb')
             )
         );
