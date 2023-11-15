@@ -6,6 +6,7 @@ let PanelBody = wp.components.PanelBody;
 let SelectControl = wp.components.SelectControl;
 let TextControl = wp.components.TextControl;
 let InspectorControls = wp.editor.InspectorControls;
+let PanelColorSettings = wp.editor.PanelColorSettings;
 let useBlockProps = wp.editor.useBlockProps;
 let useSelect = wp.data.useSelect;
 //let InnerBlock = wp.editor.InnerBlock;
@@ -46,11 +47,15 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       },
       limitdays: {
         type: "integer"
+      },
+      bgcolor: {
+        type: "string",
+        default: "#ffc700"
       }
 
     },
     edit: function( {attributes, setAttributes } ) {
-      const { when, order, cat, groups, limitnum, limitdays } = attributes;
+      const { when, order, cat, groups, limitnum, limitdays, bgcolor } = attributes;
       const onChangeWhen = val => {
         setAttributes( { when: val });
         setAttributes( { order: (val == 'future' ? 'asc' : 'desc')});
@@ -70,6 +75,17 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const onChangeDays = val => {
         setAttributes( { limitdays: Number(val)})
       };
+      const onChangeBGColor = val => {
+        setAttributes( { bgcolor: val } )
+      }
+      const colorSettingsDropDown =
+        [
+          {
+            value: bgcolor,
+            onChange: onChangeBGColor,
+            label: 'Background colour' ,
+          },
+        ];
 
       const query = {
                 per_page: -1,
@@ -101,7 +117,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       var nest = [
           wp.element.createElement(
             InspectorControls,
-            {}, wp.element.createElement( PanelBody, {}, 
+            {}, wp.element.createElement( PanelBody, {title:'Sort and Filter', initialOpen:false }, 
               wp.element.createElement( SelectControl,
                 { label:'When', 
                   value: when,
@@ -141,7 +157,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   onChange: onChangeCat,
                   options: catlist
                 }
-              ),
+              )
+            ),
+            wp.element.createElement( PanelBody, {title:'Limits', initialOpen:false },             
               wp.element.createElement( SelectControl,
                 { label:'Include Groups', 
                   value: groups,
@@ -170,11 +188,12 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   help: 'e.g. upto 90 days in future/past',
                   onChange: onChangeDays,
                 }
-              ),
-    
+              )
+            ),
+            wp.element.createElement( PanelColorSettings, {title:'Colours', initialOpen:false, colorSettings:colorSettingsDropDown }, 
             )
-         ),
-        wp.element.createElement("div", {style: {color: 'black', backgroundColor: '#ffc700', padding: '10px'}}, "This placeholder shows where a table of events will be shown.")
+          ),
+        wp.element.createElement("div", {style: {color: 'black', backgroundColor: bgcolor, padding: '10px'}}, "This placeholder shows where a table of events will be shown.")
       ];
       return  nest
     },
