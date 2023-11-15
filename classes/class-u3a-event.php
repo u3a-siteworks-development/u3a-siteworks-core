@@ -136,7 +136,7 @@ class U3aEvent
         $args = array(
             'public' => true,
             'show_in_rest' => true,
-            'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt'),
+            'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'color'),
             'rewrite' => array('slug' => sanitize_title(U3A_EVENT_CPT . 's')),
             'has_archive' => false,
             'menu_icon' => U3A_EVENT_ICON,
