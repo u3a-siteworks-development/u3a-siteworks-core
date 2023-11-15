@@ -170,7 +170,7 @@ class U3aGroup
         $args = array(
             'public' => true,
             'show_in_rest' => true,
-            'supports' => array('title', 'editor', 'author', 'thumbnail'),
+            'supports' => array('title', 'editor', 'author', 'thumbnail', 'color'),
             'rewrite' => array('slug' => sanitize_title(U3A_GROUP_CPT . 's')),
             'has_archive' => false,
             'menu_icon' => U3A_GROUP_ICON,
@@ -272,7 +272,7 @@ class U3aGroup
         wp_register_script(
             'u3agroupblocks',
             plugins_url('js/u3a-group-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element'),
+            array('wp-blocks', 'wp-element','wp-components','wp-editor'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
