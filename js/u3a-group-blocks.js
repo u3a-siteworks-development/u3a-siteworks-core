@@ -65,7 +65,7 @@ wp.blocks.registerBlockType("u3a/grouplist", {
                 },
                 {
                   label: 'By Venue',
-                  value: 'vanue',
+                  value: 'venue',
                 }
                 ]
               }
