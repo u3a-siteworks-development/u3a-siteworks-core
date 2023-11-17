@@ -1,7 +1,7 @@
 ﻿/* CSS for displaying custom post data */
 
-.u3aeventdata,
-.u3aeventlist,
+/*.u3aeventdata,
+.u3aeventlist,*/
 .u3avenue,
 .u3agroup {
     display: grid;
@@ -9,7 +9,7 @@
     grid-gap: 5px;
 }
 
-.u3aeventdata div:nth-child(odd),
+/*.u3aeventdata div:nth-child(odd),*/
 .u3avenue div:nth-child(odd),
 .u3agroup div:nth-child(odd) {
     font-weight: bold;
@@ -18,29 +18,46 @@
     padding-bottom: 5px;
 }
 
-.u3aeventlist div:nth-child(odd) {
-    /* font-weight:bold; */
-    margin-left: 5px;
-    padding-right: 10px;
-    padding-bottom: 5px;
-    min-width: 150px;
+.u3aeventlist-item { /* each event in list */
+    display:flex;
+    flex-wrap:wrap;
+}
+.u3aevent-list-left { /* date/time container */
+    flex: 0 0 180px;
+}
+.u3aevent-grid-left { /* image container */
+    flex: 0 0 320px;
+    align-self:center;
+}
+.u3aevent-list-right,
+.u3aevent-grid-right {
+    flex: 1 0 320px; /* sets a min width for the text */
 }
 
-.u3aeventlist h4 {
-    margin: 0;
+.u3aeventlist figure {
+    margin:10px;
+    text-align: center;
+}
+.u3aeventlist .no-figure {
+    width:300px;
+    height:100px;
+    margin:10px;
+    text-align: center;
+    background-color:white;
 }
 
+/* close up paras in list */
 .u3aeventlist p {
     margin-top: 5px;
     margin-bottom: 5px;
 }
 
+/* not using a heading style for event title within list*/
 .u3aeventlist .u3aeventtitle {
     font-size: 115%;
     font-weight: bold;
     margin-top: 0;
 }
-
 
 div.u3agroupselector {
     display: flex;
@@ -81,37 +98,40 @@ div.u3agroupselector {
     font-size: 115%;
 }
 
+.u3a_event_table,
 .u3a_group_table {
-    margin-left: 6px;
+    margin-left: 10px;
 }
+.u3a_event_table td,
 .u3a_group_table td {
     vertical-align: top;
 }
-
+.u3a_event_table tr td:first-child,
 .u3a_group_table tr td:first-child {
-    min-width: 162px;
+    font-weight: bold;
+    min-width: 120px;
 }
 
 
 @media only screen and (max-width:786px) {
 
-    .u3aeventdata,
-    .u3aeventlist,
+    /*.u3aeventdata,
+    .u3aeventlist,*/
     .u3avenue,
     .u3agroup {
         display: block;
         margin: 0px 5px 0px 5px;
     }
 
-    .u3aeventdata div:nth-child(odd),
-    .u3aeventlist div:nth-child(odd),
+    /*.u3aeventdata div:nth-child(odd),
+    .u3aeventlist div:nth-child(odd),*/
     .u3avenue div:nth-child(odd),
     .u3agroup div:nth-child(odd) {
         margin: 5px 0px 0px 0px;
     }
 
-    .u3aeventlist div:nth-child(even) {
-        border-bottom: 1px solid silver;
+    /*.u3aeventlist div:nth-child(even) {
+        border-bottom: 1px solid silver;*/
     }
 
     div.u3agroupselector {

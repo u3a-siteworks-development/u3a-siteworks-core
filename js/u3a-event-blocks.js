@@ -48,14 +48,16 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       limitdays: {
         type: "integer"
       },
+      layout: {
+          type: "string"
+      },
       bgcolor: {
         type: "string",
         default: "#ffc700"
-      }
-
+      },
     },
     edit: function( {attributes, setAttributes } ) {
-      const { when, order, cat, groups, limitnum, limitdays, bgcolor } = attributes;
+      const { when, order, cat, groups, limitnum, limitdays, layout, bgcolor } = attributes;
       const onChangeWhen = val => {
         setAttributes( { when: val });
         setAttributes( { order: (val == 'future' ? 'asc' : 'desc')});
@@ -75,18 +77,23 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const onChangeDays = val => {
         setAttributes( { limitdays: Number(val)})
       };
+      var colorOn = (layout=='grid'); // Only have color panel for grid layout!
+      const onChangeLayout = val => {
+        setAttributes( { layout: val } )
+        setAttributes( { bgcolor: (val == 'list' ? '#ffc700' : '#90ee90')});
+        colorOn = (val == 'grid');
+      }
       const onChangeBGColor = val => {
         setAttributes( { bgcolor: val } )
       }
       const colorSettingsDropDown =
         [
           {
+            label: 'Grid background',
             value: bgcolor,
             onChange: onChangeBGColor,
-            label: 'Background colour' ,
           },
         ];
-
       const query = {
                 per_page: -1,
                 orderby: 'name',
@@ -113,6 +120,12 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               value: terms[i].slug
           } );
       };
+      function ShowColorPanel(params){
+          const {colorOn, ...panelParams} = params;
+          if (colorOn) {
+              return wp.element.createElement(PanelColorSettings, panelParams);}
+          return '';
+      }
 
       var nest = [
           wp.element.createElement(
@@ -159,7 +172,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                 }
               )
             ),
-            wp.element.createElement( PanelBody, {title:'Limits', initialOpen:false },             
+            wp.element.createElement( PanelBody, {title:'Limits', initialOpen:false },
               wp.element.createElement( SelectControl,
                 { label:'Include Groups', 
                   value: groups,
@@ -190,8 +203,20 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                 }
               )
             ),
-            wp.element.createElement( PanelColorSettings, {title:'Colours', initialOpen:false, colorSettings:colorSettingsDropDown }, 
-            )
+            wp.element.createElement( PanelBody, {title:'Layout Choices', initialOpen:false },
+              wp.element.createElement( SelectControl,
+                { label:'Layout', 
+                  value: layout,
+                  onChange: onChangeLayout,
+                  options:[
+                    {label: 'Simple list', value: 'list',},
+                    {label: 'Grid with image', value: 'grid',}
+                  ]
+                }
+              ),
+              wp.element.createElement( ShowColorPanel, {colorOn:colorOn, title:'Colours', initialOpen:false, colorSettings:colorSettingsDropDown }, 
+              ),
+            ),
           ),
         wp.element.createElement("div", {style: {color: 'black', backgroundColor: bgcolor, padding: '10px'}}, "This placeholder shows where a table of events will be shown.")
       ];
