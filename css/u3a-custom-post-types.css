@@ -1,23 +1,8 @@
 ﻿/* CSS for displaying custom post data */
 
-/*.u3aeventdata,
-.u3aeventlist,*/
-.u3avenue,
-.u3agroup {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-gap: 5px;
-}
 
-/*.u3aeventdata div:nth-child(odd),*/
-.u3avenue div:nth-child(odd),
-.u3agroup div:nth-child(odd) {
-    font-weight: bold;
-    margin-left: 5px;
-    padding-right: 10px;
-    padding-bottom: 5px;
-}
-
+/* u3aeventlist css
+   ---------------- */
 .u3aeventlist-item { /* each event in list */
     display:flex;
     flex-wrap:wrap;
@@ -33,7 +18,6 @@
 .u3aevent-grid-right {
     flex: 1 0 320px; /* sets a min width for the text */
 }
-
 .u3aeventlist figure {
     margin:10px;
     text-align: center;
@@ -45,20 +29,21 @@
     text-align: center;
     background-color:white;
 }
-
 /* close up paras in list */
 .u3aeventlist p {
     margin-top: 5px;
     margin-bottom: 5px;
 }
-
-/* not using a heading style for event title within list*/
-.u3aeventlist .u3aeventtitle {
+/* not using a heading style for event/group titles within list*/
+.u3aeventlist .u3aeventtitle,
+.u3agrouplist .u3a_group_title
+ {
     font-size: 115%;
     font-weight: bold;
-    margin-top: 0;
 }
 
+/* various bits and pieces
+   ----------------------- */
 div.u3agroupselector {
     display: flex;
     flex-wrap: wrap;
@@ -84,20 +69,18 @@ div.u3agroupselector {
     break-inside: avoid-column;
 }
 
+/* Buttons used for u3a/grouplist block
+   ------------------------------------ */
 .u3agroupbuttons {
     text-align: center;
 }
-
 .u3agroupbuttons a {
     display: inline-block;
     width: 210px;
 }
 
-.u3a_group_title {
-    font-weight: bold;
-    font-size: 115%;
-}
-
+/* Tables for event, group, venue display()
+   ---------------------------------------- */
 .u3a_event_table,
 .u3a_group_table {
     margin-left: 10px;
@@ -112,6 +95,25 @@ div.u3agroupselector {
     min-width: 120px;
 }
 
+/* about to become unused */
+
+/*.u3aeventdata,
+.u3aeventlist,*/
+.u3avenue,
+.u3agroup {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-gap: 5px;
+}
+
+/*.u3aeventdata div:nth-child(odd),*/
+.u3avenue div:nth-child(odd),
+.u3agroup div:nth-child(odd) {
+    font-weight: bold;
+    margin-left: 5px;
+    padding-right: 10px;
+    padding-bottom: 5px;
+}
 
 @media only screen and (max-width:786px) {
 
