@@ -42,28 +42,39 @@
     font-weight: bold;
 }
 
-/* various bits and pieces
-   ----------------------- */
+/* u3agrouplist filter option
+   -------------------------- */
 div.u3agroupselector {
     display: flex;
     flex-wrap: wrap;
     margin-block-start: 0 !important;
 }
+@media only screen and (max-width:786px) {
+    div.u3agroupselector {
+        justify-content: center;
+    }
+}
 
+/* u3anoticelist css
+   ----------------------- */
 .u3a-notice-list p {
     margin: 5px 0 10px 10px;
 }
-
 .u3a-notice-list h4 {
     margin-top: 10px;
     margin-bottom: 5px;
 }
-
+/* u3agrouplist css
+   ----------------------- */
+/* Maybe change this to grid with 1/2/3/4 columns
+   which would go 'along and down' rather than 'down and along'
+   using {display: grid; grid-gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));}
+   */
 .u3agrouplist ul {
     column-width: 300px;
     margin-top: 0;
 }
-
 .u3agrouplist ul li {
     margin-bottom: 5px;
     break-inside: avoid-column;
@@ -82,62 +93,18 @@ div.u3agroupselector {
 /* Tables for event, group, venue display()
    ---------------------------------------- */
 .u3a_event_table,
-.u3a_group_table {
+.u3a_group_table,
+.u3a_venue_table {
     margin-left: 10px;
 }
 .u3a_event_table td,
-.u3a_group_table td {
+.u3a_group_table td,
+.u3a_venue_table td {
     vertical-align: top;
 }
 .u3a_event_table tr td:first-child,
-.u3a_group_table tr td:first-child {
+.u3a_group_table tr td:first-child,
+.u3a_venue_table tr td:first-child {
     font-weight: bold;
     min-width: 120px;
 }
-
-/* about to become unused */
-
-/*.u3aeventdata,
-.u3aeventlist,*/
-.u3avenue,
-.u3agroup {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-gap: 5px;
-}
-
-/*.u3aeventdata div:nth-child(odd),*/
-.u3avenue div:nth-child(odd),
-.u3agroup div:nth-child(odd) {
-    font-weight: bold;
-    margin-left: 5px;
-    padding-right: 10px;
-    padding-bottom: 5px;
-}
-
-@media only screen and (max-width:786px) {
-
-    /*.u3aeventdata,
-    .u3aeventlist,*/
-    .u3avenue,
-    .u3agroup {
-        display: block;
-        margin: 0px 5px 0px 5px;
-    }
-
-    /*.u3aeventdata div:nth-child(odd),
-    .u3aeventlist div:nth-child(odd),*/
-    .u3avenue div:nth-child(odd),
-    .u3agroup div:nth-child(odd) {
-        margin: 5px 0px 0px 0px;
-    }
-
-    /*.u3aeventlist div:nth-child(even) {
-        border-bottom: 1px solid silver;
-    }*/
-
-    div.u3agroupselector {
-        justify-content: center;
-    }
-}
-
