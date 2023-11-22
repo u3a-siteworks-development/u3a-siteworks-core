@@ -870,7 +870,7 @@ class U3aEvent
                 //width of image to match containing div and margin.
                 $image_HTML = <<<END
                     <figure>
-                      <img src="$featured_image" width=300px />" 
+                      <img src="$featured_image" width=300px />
                       <p>$caption</p>
                     </figure>
                     END;
