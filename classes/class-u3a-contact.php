@@ -322,7 +322,7 @@ class U3aContact
             }
             return do_shortcode('[u3a_contact name="' .  $to . '" email="' . $address . '"]');
         } else {
-            return "<a href=\"mailto:$address\">Email $to</a>";
+            return "<a title='Opens your email app' href='mailto:$address'>$to</a> $address";   
         }
     }
 
@@ -342,15 +342,15 @@ class U3aContact
         $phone = esc_html(get_post_meta($this->ID, 'phone', true));
         $phone2 = esc_html(get_post_meta($this->ID, 'phone2', true));
         $phonetext = empty($phone2) ? "$phone" : "$phone or $phone2";
-        $phonetext = empty($phonetext) ? '' : "&nbsp;&nbsp;<strong>Tel:</strong> $phonetext" ;
+        $phonetext = empty($phonetext) ? '' : "<strong>Tel:</strong> $phonetext" ;
         $email = self::cloak_email(get_post_meta($this->ID, 'email', true), $contact_name);
         // display email link if it exists, else display name
         $contact = ($email) ? $email : $contact_name;
         // The HTML uses a flex container around spans to prevent overflow with long name + email+ phone
         $html = <<<END
         <div style="display:flex; flex-wrap:wrap;">
-        <span style="flex: 0 1 auto; padding: 0px 0px;">$contact</span>
-        <span style="flex: 0 1 auto; ">$phonetext</span>
+        <span style="flex; padding-right: 4px;">$contact</span>
+        <span style="flex; ">$phonetext</span>
         </div>
         END;
         return $html;
