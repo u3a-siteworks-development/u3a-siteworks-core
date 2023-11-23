@@ -20,6 +20,8 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.0.1 =
+Test changes
 = 1.0.0 =
 * First production code release
 * Tested up to WordPress 6.4
