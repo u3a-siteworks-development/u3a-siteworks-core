@@ -1041,7 +1041,7 @@ class U3aGroup
         $extrahtml = '';
         if (get_option('field_coord2', '1') == '1') {
             // Second Group leader (or whatever term is set)
-            $extrahtml .= $this->contact_text('coordinator2_ID', '2nd Group ' . $coordinator_term);
+            $extrahtml .= $this->contact_text('coordinator2_ID', 'Group ' . $coordinator_term);
         }
         if (get_option('field_deputy', '1') == '1') {
             // Deputy leader (or whatever term is set)
