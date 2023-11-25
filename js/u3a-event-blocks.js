@@ -80,7 +80,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       var colorOn = (layout=='grid'); // Only have color panel for grid layout!
       const onChangeLayout = val => {
         setAttributes( { layout: val } )
-        setAttributes( { bgcolor: (val == 'list' ? '#ffc700' : '#90ee90')});
+        setAttributes( { bgcolor: (val == 'list' ? '#ffc700' : '#63c369')}); //grid default is uta-light-green
         colorOn = (val == 'grid');
       }
       const onChangeBGColor = val => {

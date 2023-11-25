@@ -655,7 +655,7 @@ class U3aEvent
             'limitdays' => 0,
             'limitnum' => 0,
             'layout' => 'list',
-            'bgcolor' => '#90ee90',
+            'bgcolor' => '#63c369', // this is a Third Age Trust brand guide secondary colour
         ];
         // set from page query or from call attributes, page query parameters take priority
         foreach ($display_args as $name => $default) {
@@ -871,7 +871,7 @@ class U3aEvent
                 $image_HTML = <<<END
                     <figure>
                       <img src="$featured_image" width=300px />
-                      <p>$caption</p>
+                      <figcaption>$caption</figcaption>
                     </figure>
                     END;
             } else {
