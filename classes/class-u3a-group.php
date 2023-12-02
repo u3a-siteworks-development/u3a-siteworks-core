@@ -1017,7 +1017,7 @@ class U3aGroup
                 if ('y' == $show_when) {
                     $when = $the_group->when_text();
                     if (!empty($when)) {
-                        $html .= "<br><span class=\"u3a_group_when\">When: $when </span>\n";
+                        $html .= "<br><span class=\"u3a_group_when\">$when </span>\n";
                     }
                 }
                 // later versions will make display depend other display_args, maybe! TBD.
