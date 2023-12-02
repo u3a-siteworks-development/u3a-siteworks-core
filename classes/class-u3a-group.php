@@ -385,6 +385,22 @@ class U3aGroup
             'maxlength' => self::MAX_TIME,
         ];
         $fields[] = [
+            'type'    => 'time',
+            'name'    => 'Start time',
+            'id'      => 'startTime',
+            'desc' => 'Optional',
+            // TODO: Maybe no pattern needed as the picker restricts the value range?
+            'pattern' => '[0-2][0-9]:[0-5][0-9]', // catches most bad input!
+        ];
+        $fields[] = [
+            'type'    => 'time',
+            'name'    => 'End time',
+            'id'      => 'endTime',
+            'desc' => 'Optional',
+            // TODO: Maybe no pattern needed as the picker restricts the value range?
+            'pattern' => '[0-2][0-9]:[0-5][0-9]', // catches most bad input!
+        ];
+        $fields[] = [
             'type'    => 'select',
             'name'    => 'Frequency',
             'id'      => 'frequency',
@@ -1122,6 +1138,13 @@ class U3aGroup
         $time = strtolower($time);
         $timetext = ($time == '' || $time == 'all day') ? $time : $time . 's';  // usually add 's'!
 
+        $start = get_post_meta($this->ID, 'startTime', true);  // in NN:NN format
+        $start = (!empty($start)) ? date('g:i',strtotime($start)) : '';// e.g. convert to 3:30 
+        $connector = '-';  // without spaces to enforce (simply) no break of line
+        $end = get_post_meta($this->ID, 'endTime', true);
+        $end = (!empty($end)) ? $connector . date('g:i',strtotime($end)) : '';// e.g. convert to -5:30
+        $fromtotext = $start . $end;
+
         $daytext .= ($weekday != '' && $time == '') ? 's' : '';  // usually add 's' if time is blank
 
         $frequency = get_post_meta($this->ID, 'frequency', true);
@@ -1129,7 +1152,8 @@ class U3aGroup
         $frequency = (!empty($frequency)) ? (self::$frequency_list[$frequency] ?? '') : '';
 
         // trim to ensure content free string is empty!
-        $when_main_text = trim("$frequency $daytext $timetext"); // e.g. Monthly on Tuesday Mornings
+        $when_main_text = trim("$frequency $daytext $timetext $fromtotext");
+        // e.g. Monthly on Tuesday Mornings 9:00-12:30
         $when_extra_text = esc_html(get_post_meta($this->ID, 'when', true));
         // return both values with <br> only if both items are not empty
         return implode('<br>', array_filter([$when_main_text, $when_extra_text]));
