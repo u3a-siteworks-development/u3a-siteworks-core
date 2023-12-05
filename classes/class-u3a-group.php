@@ -301,14 +301,7 @@ class U3aGroup
     {
         if ($post->post_type == U3A_GROUP_CPT) {
             $content = '<!-- wp:u3a/groupdata /--><!-- wp:paragraph --><p></p><!-- /wp:paragraph --> ';
-            if (post_type_exists('u3a_event')) {
-                $eventlistblock = <<< END
-                    <!-- wp:u3a/eventlist -->
-                    <p class="wp-block-u3a-eventlist"></p>
-                    <!-- /wp:u3a/eventlist -->
-                    END;
-                $content .= $eventlistblock;
-            }
+            if (post_type_exists('u3a_event')) $content .= ' <!-- wp:u3a/eventlist /-->';
             return $content;
         }
         return $content;
