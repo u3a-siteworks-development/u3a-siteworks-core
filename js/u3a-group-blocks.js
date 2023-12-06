@@ -110,8 +110,8 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       ];
     return  nest
     },
-    save: function ( { attributes } ) {
-      return wp.element.createElement('p', {}, attributes ); 
+    save: function () {
+      return null; 
     }
   })
 

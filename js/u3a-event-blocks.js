@@ -222,7 +222,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       ];
       return  nest
     },
-    save: function ( { attributes } ) {
-      return wp.element.createElement('p', {}, attributes ); 
+    save: function () {
+      return null
     }
   })
