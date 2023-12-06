@@ -223,6 +223,6 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       return  nest
     },
     save: function () {
-      return null
+      return null; 
     }
   })

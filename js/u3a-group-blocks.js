@@ -108,10 +108,10 @@ wp.blocks.registerBlockType("u3a/grouplist", {
         ),
         wp.element.createElement("div", {className: 'wp-block alignwide', style: {color: 'white', backgroundColor: bgcolor, padding: '10px'}}, "This placeholder shows where the list of groups will be shown.")
       ];
-    return  nest
+    return nest
     },
     save: function () {
-      return null; 
+      return null
     }
   })
 
