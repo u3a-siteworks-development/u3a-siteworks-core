@@ -13,14 +13,10 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       },
       when: {
         type: "string"
-      },
-      bgcolor: {
-        type: "string",
-        default: "#005ab8"
       }
     },
     edit: function( {attributes, setAttributes } ) {
-      const { sort, status, when, bgcolor } = attributes;
+      const { sort, status, when } = attributes;
       const onChangeSort = val => {
         setAttributes( { sort: val });
       };
@@ -30,18 +26,7 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       const onChangeWhen = val => {
         setAttributes( { when: val})
       };
-      const onChangeBGColor = val => {
-        setAttributes( { bgcolor: val})
-      };
-      const colorSettingsDropDown =
-        [
-          {
-            value: bgcolor,
-            onChange: onChangeBGColor,
-            label: 'Background colour' ,
-          },
-        ];
-
+    
       var nest = [
         wp.element.createElement(
           InspectorControls,
@@ -102,11 +87,9 @@ wp.blocks.registerBlockType("u3a/grouplist", {
                 ]
               }
             )
-          ),
-          wp.element.createElement( PanelColorSettings, {title:'Colours', initialOpen:false, colorSettings:colorSettingsDropDown }, 
           )
         ),
-        wp.element.createElement("div", {className: 'wp-block alignwide', style: {color: 'white', backgroundColor: bgcolor, padding: '10px'}}, "This placeholder shows where the list of groups will be shown.")
+        wp.element.createElement("div", {className: 'wp-block alignwide', style: {color: 'white', backgroundColor: '#005ab8', padding: '10px'}}, "This placeholder shows where the list of groups will be shown.")
       ];
     return nest
     },
