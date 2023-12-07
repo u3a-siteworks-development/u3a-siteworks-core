@@ -60,6 +60,7 @@ div.u3agroupselector {
 .u3agrouplist ul {
     column-width: 300px;
     margin-top: 0;
+    list-style-type:none;
 }
 
 .u3agrouplist ul li {
