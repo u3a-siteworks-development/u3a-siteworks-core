@@ -598,10 +598,10 @@ class U3aGroup
         $thispage = untrailingslashit(get_page_link());
         $html = <<<END
         <div class="u3agroupbuttons">
-            <a class="wp-element-button" href="$thispage?sort=alpha">View Alphabetically</a>
-            <a class="wp-element-button" href="$thispage?sort=cat">View by Category</a>
-            <a class="wp-element-button" href="$thispage?sort=day">View by Meeting Day</a>
-            <a class="wp-element-button" href="$thispage?sort=venue">View by Venue</a>
+            <a class="wp-element-button" href="$thispage?sort=alpha">Alphabetical</a>
+            <a class="wp-element-button" href="$thispage?sort=cat">By Category</a>
+            <a class="wp-element-button" href="$thispage?sort=day">By Meeting Day</a>
+            <a class="wp-element-button" href="$thispage?sort=venue">By Venue</a>
         </div>
 
         <div class="u3agrouplist">
