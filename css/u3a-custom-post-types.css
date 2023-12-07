@@ -73,7 +73,7 @@ div.u3agroupselector {
 
 .u3agroupbuttons a {
     display: inline-block;
-    width: 210px;
+    width: 7.5em;
 }
 
 .u3a_group_title {
@@ -90,6 +90,12 @@ div.u3agroupselector {
 
 .u3a_group_table tr td:first-child {
     min-width: 162px;
+}
+
+@media only screen and (max-width:815px) {
+    .u3agroupbuttons a {
+           width: 22rem;
+    }
 }
 
 
@@ -116,6 +122,11 @@ div.u3agroupselector {
 
     div.u3agroupselector {
         justify-content: center;
-    }
+    }    
+}
+@media only screen and (max-width:620px) {
+    .u3agroupbuttons a {
+        width: 14rem;
+      }
 }
 

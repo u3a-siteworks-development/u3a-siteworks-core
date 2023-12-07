@@ -20,6 +20,8 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.0.2 ==
+* Feature 952  Display all Group Sort By buttons on a single line if possible
 = 1.0.1 =
 * Bug 983 - Remove '2nd' prefix when a second group leader is shown in 'u3a single group data' block (Nov 2023)
 = 1.0.0 =
