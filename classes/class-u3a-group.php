@@ -388,7 +388,7 @@ class U3aGroup
             'type'    => 'time',
             'name'    => 'Start time',
             'id'      => 'startTime',
-            'desc' => 'Optional',
+            'desc' => 'Optional, input format e.g. 09:30 and 14:45',
             // TODO: Maybe no pattern needed as the picker restricts the value range?
             'pattern' => '[0-2][0-9]:[0-5][0-9]', // catches most bad input!
         ];
@@ -396,7 +396,7 @@ class U3aGroup
             'type'    => 'time',
             'name'    => 'End time',
             'id'      => 'endTime',
-            'desc' => 'Optional',
+            'desc' => 'Optional, input format e.g. 09:30 and 14:45',
             // TODO: Maybe no pattern needed as the picker restricts the value range?
             'pattern' => '[0-2][0-9]:[0-5][0-9]', // catches most bad input!
         ];
