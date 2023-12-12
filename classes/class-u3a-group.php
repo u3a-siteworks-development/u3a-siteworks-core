@@ -17,7 +17,7 @@ class U3aGroup
      *
      * @var string 
      */
-    public static $term_for_title = "group name";
+    public static $term_for_title = "name of the Group";
 
     // The names of the post metadata fields for this CPT
     // ..._ID means this field is the ID of the related post or term, or if not set the string ''
