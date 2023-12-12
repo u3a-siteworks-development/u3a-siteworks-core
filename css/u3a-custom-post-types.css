@@ -133,9 +133,4 @@ div.u3agroupselector {
         justify-content: center;
     }    
 }
-@media only screen and (max-width:620px) {
-    .u3agroupbuttons a {
-        width: 14rem;
-      }
-}
 
