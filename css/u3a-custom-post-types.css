@@ -60,20 +60,12 @@ div.u3agroupselector {
 .u3agrouplist ul {
     column-width: 300px;
     margin-top: 0;
+    list-style-type:none;
 }
 
 .u3agrouplist ul li {
     margin-bottom: 5px;
     break-inside: avoid-column;
-}
-
-.u3agroupbuttons {
-    text-align: center;
-}
-
-.u3agroupbuttons a {
-    display: inline-block;
-    width: 210px;
 }
 
 .u3a_group_title {
@@ -91,6 +83,29 @@ div.u3agroupselector {
 .u3a_group_table tr td:first-child {
     min-width: 162px;
 }
+
+/* the buttons that select how groups are displayed*/
+.u3agroupbuttons {
+    text-align: center;
+}
+
+.u3agroupbuttons a {
+    display: inline-block;
+    width: 7.5em;
+}
+
+/* group buttons to be two on each row for widths between 540 and 768px*/
+@media only screen and (max-width:768px) {
+    .u3agroupbuttons a {
+           width: 12.5rem;
+    }
+}
+@media only screen and (max-width:540px) {
+    .u3agroupbuttons a {
+        width: 7.5rem;
+      }
+}
+
 
 
 @media only screen and (max-width:786px) {
@@ -116,6 +131,6 @@ div.u3agroupselector {
 
     div.u3agroupselector {
         justify-content: center;
-    }
+    }    
 }
 
