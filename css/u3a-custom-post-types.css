@@ -68,15 +68,6 @@ div.u3agroupselector {
     break-inside: avoid-column;
 }
 
-.u3agroupbuttons {
-    text-align: center;
-}
-
-.u3agroupbuttons a {
-    display: inline-block;
-    width: 7.5em;
-}
-
 .u3a_group_title {
     font-weight: bold;
     font-size: 115%;
@@ -93,11 +84,28 @@ div.u3agroupselector {
     min-width: 162px;
 }
 
-@media only screen and (max-width:815px) {
+/* the buttons that select how groups are displayed*/
+.u3agroupbuttons {
+    text-align: center;
+}
+
+.u3agroupbuttons a {
+    display: inline-block;
+    width: 7.5em;
+}
+
+/* group buttons to be two on each row for widths between 540 and 768px*/
+@media only screen and (max-width:768px) {
     .u3agroupbuttons a {
-           width: 22rem;
+           width: 12.5rem;
     }
 }
+@media only screen and (max-width:540px) {
+    .u3agroupbuttons a {
+        width: 7.5rem;
+      }
+}
+
 
 
 @media only screen and (max-width:786px) {
