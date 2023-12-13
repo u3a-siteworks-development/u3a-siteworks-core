@@ -74,37 +74,76 @@ div.u3agroupselector {
 .u3agrouplist ul {
     column-width: 300px;
     margin-top: 0;
+    list-style-type:none;
 }
 .u3agrouplist ul li {
     margin-bottom: 5px;
     break-inside: avoid-column;
 }
 
-/* Buttons used for u3a/grouplist block
-   ------------------------------------ */
+.u3a_group_title {
+    font-weight: bold;
+    font-size: 115%;
+}
+
+.u3a_group_table {
+    margin-left: 6px;
+}
+
+.u3a_group_table td {
+    vertical-align: top;
+}
+
+.u3a_group_table tr td:first-child {
+    min-width: 162px;
+}
+
+/* the buttons that select how groups are displayed*/
 .u3agroupbuttons {
     text-align: center;
 }
+
 .u3agroupbuttons a {
     display: inline-block;
-    width: 210px;
+    width: 7.5em;
 }
 
-/* Tables for event, group, venue display()
-   ---------------------------------------- */
-.u3a_event_table,
-.u3a_group_table,
-.u3a_venue_table {
-    margin-left: 10px;
+/* group buttons to be two on each row for widths between 540 and 768px*/
+@media only screen and (max-width:768px) {
+    .u3agroupbuttons a {
+           width: 12.5rem;
+    }
 }
-.u3a_event_table td,
-.u3a_group_table td,
-.u3a_venue_table td {
-    vertical-align: top;
+@media only screen and (max-width:540px) {
+    .u3agroupbuttons a {
+        width: 7.5rem;
+      }
 }
-.u3a_event_table tr td:first-child,
-.u3a_group_table tr td:first-child,
-.u3a_venue_table tr td:first-child {
-    font-weight: bold;
-    min-width: 120px;
+
+
+
+@media only screen and (max-width:786px) {
+
+    .u3aeventdata,
+    .u3aeventlist,
+    .u3avenue,
+    .u3agroup {
+        display: block;
+        margin: 0px 5px 0px 5px;
+    }
+
+    .u3aeventdata div:nth-child(odd),
+    .u3aeventlist div:nth-child(odd),
+    .u3avenue div:nth-child(odd),
+    .u3agroup div:nth-child(odd) {
+        margin: 5px 0px 0px 0px;
+    }
+
+    .u3aeventlist div:nth-child(even) {
+        border-bottom: 1px solid silver;
+    }
+
+    div.u3agroupselector {
+        justify-content: center;
+    }    
 }
