@@ -170,7 +170,7 @@ class U3aGroup
         $args = array(
             'public' => true,
             'show_in_rest' => true,
-            'supports' => array('title', 'editor', 'author', 'thumbnail'),
+            'supports' => array('title', 'editor', 'author', 'thumbnail', 'color'),
             'rewrite' => array('slug' => sanitize_title(U3A_GROUP_CPT . 's')),
             'has_archive' => false,
             'menu_icon' => U3A_GROUP_ICON,
@@ -272,7 +272,7 @@ class U3aGroup
         wp_register_script(
             'u3agroupblocks',
             plugins_url('js/u3a-group-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element'),
+            array('wp-blocks', 'wp-element','wp-components','wp-editor'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
@@ -1071,22 +1071,22 @@ class U3aGroup
 
         // When
         $when = $this->when_text();
-        $when_row = (!empty($when)) ? "<tr><td><strong> When:</strong></td> <td>$when</td></tr>" : '';
+        $when_row = (!empty($when)) ? "<tr><td>When:</td> <td>$when</td></tr>" : '';
 
         // Where
         $venue_object = new U3aVenue(get_post_meta($this->ID, 'venue_ID', true));
         $venue_HTML = $venue_object->venue_name_with_link();
-        $venue_row = (!empty($venue_HTML)) ? "<tr><td><strong> Venue:</strong></td> <td>$venue_HTML</td></tr>" : '';
+        $venue_row = (!empty($venue_HTML)) ? "<tr><td>Venue:</td> <td>$venue_HTML</td></tr>" : '';
 
         // Cost
         $cost = esc_html(get_post_meta($this->ID, 'cost', true));
-        $cost_row = (!empty($cost)) ? "<tr><td><strong> Cost:</strong></td> <td>$cost</td></tr>" : '';
+        $cost_row = (!empty($cost)) ? "<tr><td>Cost:</td> <td>$cost</td></tr>" : '';
 
         // compose output
         $html = <<< END
         <!-- Custom Single Group View -->
         <table class="u3a_group_table">
-            <tr><td><strong>Status: </strong></td><td>$status</td></tr>
+            <tr><td>Status:</td><td>$status</td></tr>
             $contacttext
             $extrahtml
             $when_row
@@ -1173,7 +1173,7 @@ class U3aGroup
         $contact = new U3aContact(get_post_meta($this->ID, $role_field, true));
         $contact_info = $contact->contact_text();
         if ($contact_info) {
-            $html .= "<tr><td><strong>$rolename: </strong></td><td>$contact_info</td></tr>";
+            $html .= "<tr><td>$rolename:</td><td>$contact_info</td></tr>";
         }
         return $html;
     }
@@ -1206,7 +1206,7 @@ class U3aGroup
             $email2 = '';
         }
         if (!empty($email)) {
-            $html .= "<tr><td><strong>Group email: </strong></td>";
+            $html .= "<tr><td>Group email:</td>";
             $html .= empty($email2) ? "<td> $email</td>" : "<td> $email or $email2</td>";
             $html .= "</tr>";
         }
