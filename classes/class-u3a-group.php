@@ -1165,6 +1165,8 @@ class U3aGroup
      * @param str $role_field the name of the post-meta field of a contact
      * @param str $rolename the display name for this role
      *
+     * if user can edit posts then adds a link to edit this contact's details.
+     *
      * @return str HTML complete <tr> item.
      */
     public function contact_text($role_field, $rolename)
@@ -1172,8 +1174,14 @@ class U3aGroup
         $html = '';
         $contact = new U3aContact(get_post_meta($this->ID, $role_field, true));
         $contact_info = $contact->contact_text();
+        $edit_HTML = '';
+        if ($contact->exists and current_user_can('edit_posts')) {
+            $edit_link = admin_url("post.php?post=" . $contact->ID . "&action=edit");
+            $edit_text = "Edit <i>this</i> person's contact details";
+            $edit_HTML = "<span style='background-color:yellow;'><a href= '$edit_link'>$edit_text</a> (Only visible to editors)<span>";
+        };
         if ($contact_info) {
-            $html .= "<tr><td>$rolename:</td><td>$contact_info</td></tr>";
+            $html .= "<tr><td>$rolename:</td><td>$contact_info$edit_HTML</td></tr>";
         }
         return $html;
     }
