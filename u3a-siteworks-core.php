@@ -57,3 +57,6 @@ require_once "classes/class-u3a-common.php";
 U3aCommon::initialise(__FILE__);
 //require_once "classes/class-u3a-notice.php";
 U3aNotice::initialise(__FILE__);
+
+// Expose some metadata in REST API
+require_once "inc/restapi.php";
