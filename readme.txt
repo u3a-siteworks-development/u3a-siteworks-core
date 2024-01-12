@@ -20,14 +20,16 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.0.5 =
+* Bug 1000: On Production website, display of Groups is unpredictable (Jan 2024)
 = 1.0.4 = 
-* Restapi
+* Feature 491: Make group status available via REST API to support development of an Oversights facility for SiteWorks sites (Jan 2024)
 = 1.0.3 =
-* Remove bullet points from Group List. Cosmetic change requested by Mike Christie
+* Feature 491: Make group status available via REST API to support development of an Oversights facility for SiteWorks sites (Jan 2024)
 = 1.0.2 =
-* Feature 952  Display all Group Sort By buttons on a single line if possible
+* Feature 952:  Display all Group Sort By buttons on a single line if possible (Dec 2023)
 = 1.0.1 =
-* Bug 983 - Remove '2nd' prefix when a second group leader is shown in 'u3a single group data' block (Nov 2023)
+* Bug 983:  Remove '2nd' prefix when a second group leader is shown in 'u3a single group data' block (Nov 2023)
 = 1.0.0 =
 * First production code release
 * Tested up to WordPress 6.4
