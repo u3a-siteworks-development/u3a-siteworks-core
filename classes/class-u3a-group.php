@@ -594,6 +594,7 @@ class U3aGroup
      */
     public static function group_list_sorted($atts, $content = '')
     {
+        global $wp;
         // valid display_args names and default values
         $display_args = [
             'sort' => 'alpha',
@@ -611,7 +612,7 @@ class U3aGroup
             }
         }
         // set up some buttons to provide some built-in options
-        $thispage = untrailingslashit(get_page_link());
+        $thispage = untrailingslashit(home_url($wp->request));
         $html = <<<END
         <div class="u3agroupbuttons">
             <a class="wp-element-button" href="$thispage?sort=alpha">Alphabetical</a>
@@ -775,6 +776,7 @@ class U3aGroup
      */
     public static function group_list_filtered($atts, $content = '')
     {
+        global $wp;
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $list_type = (isset($_GET['type'])) ? sanitize_text_field($_GET['type']) : "";
         $get_group_listing = false;
@@ -794,7 +796,7 @@ class U3aGroup
             }
         }
         // Add back to list
-        $url = get_page_link();
+        $url = untrailingslashit(home_url($wp->request));
         $para_with_back_link = "<p><br><a class=\"wp-element-button\" href=\"$url\">Back to full group list</a></p>";
         $query_args = array(
             'post_type' => 'u3a_group',
@@ -913,6 +915,7 @@ class U3aGroup
      */
     public static function get_letter_list($posts)
     {
+        global $wp;
         $letters_used = '';
         foreach ($posts as $post) {
             $letters_used .= strtoupper(substr($post->post_title, 0, 1));
@@ -920,7 +923,7 @@ class U3aGroup
         $html = "<div class=\"u3agroupselector\">\n";
         foreach (range('A', 'Z') as $let) {
             if (strpos($letters_used, $let) === false) continue;
-            $url = get_page_link() . "?type=letter&letter=" . $let;
+            $url = untrailingslashit(home_url($wp->request)) . "?type=letter&letter=" . $let;
             $html .= "<a class='wp-element-button' href='" . $url . "' style='text-align: center; display:inline-block;'>" . $let . "</a>\n";
         }
         $html .= "</div>\n";
@@ -937,6 +940,7 @@ class U3aGroup
      */
     public static function get_parent_list($posts)
     {
+        global $wp;
         $catsUsed = array();
         foreach ($posts as $post) {
             $cat = get_the_terms($post->ID, U3A_GROUP_TAXONOMY);
@@ -946,7 +950,7 @@ class U3aGroup
         }
         $uniqueCats = array_unique($catsUsed);
         $html = "<div class=\"u3agroupselector\">\n";
-        $url = get_page_link() . "?type=par&par=";
+        $url = untrailingslashit(home_url($wp->request)) . "?type=par&par=";
         foreach ($uniqueCats as $catName) {
             $html .= "<a class='wp-element-button' href='" . $url . $catName . "' style='display:inline-block;'>" . $catName . "</a>";
         }
@@ -965,6 +969,7 @@ class U3aGroup
      */
     public static function get_day_list($posts)
     {
+        global $wp;
         $daysUsed = array();
         foreach ($posts as $post) {
             $day_NUM = get_post_meta($post->ID, 'day_NUM', true);
@@ -972,7 +977,7 @@ class U3aGroup
         }
         $uniqueDays = array_unique($daysUsed);
         asort($uniqueDays);
-        $url = get_page_link() . "?type=day&day=";
+        $url = untrailingslashit(home_url($wp->request)) . "?type=day&day=";
         $html = "<div class=\"u3agroupselector\">";
         foreach ($uniqueDays as $day_NUM) {
             $html .= "<a class='wp-element-button' style='display:inline-block;' href='" . $url . self::$day_list[$day_NUM] . "'>" . self::$day_list[$day_NUM] . "</a>";
