@@ -26,8 +26,11 @@ Please refer to the documentation on the [SiteWorks website](https://siteworks.u
 * Feature 491: Make group status available via REST API to support development of an Oversights facility for SiteWorks sites (Jan 2024)
 = 1.0.3 =
 * Feature 491: Make group status available via REST API to support development of an Oversights facility for SiteWorks sites (Jan 2024)
+* Feature 1003: Change error message when custom post has no title (Jan 2024)
 = 1.0.2 =
 * Feature 952:  Display all Group Sort By buttons on a single line if possible (Dec 2023)
+* Feature 1003: Omit prefix "When:" in group list display (Dec 2023)
+* Feature 996: Add optional start and end times to groups (Dec 2023)
 = 1.0.1 =
 * Bug 983:  Remove '2nd' prefix when a second group leader is shown in 'u3a single group data' block (Nov 2023)
 = 1.0.0 =
