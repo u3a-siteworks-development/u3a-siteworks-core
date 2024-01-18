@@ -20,11 +20,11 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Feature 991: Improve display of group contacts when 'hide email addresses' is off (Jan 2024)
 * Feature 994: Add editable attributes to event list and group list blocks (Jan 2024)
 = 1.0.5 =
 * Bug 1000: On Production website, display of Groups is unpredictable (Jan 2024)
 = 1.0.4 =
-* Feature 491: Make group status available via REST API to support development of an Oversights facility for SiteWorks sites (Jan 2024)
 * Feature 1003: Change error message when custom post type has no title (Jan 2024)
 = 1.0.3 =
 * Feature 491: Make group status available via REST API to support development of an Oversights facility for SiteWorks sites (Jan 2024)
