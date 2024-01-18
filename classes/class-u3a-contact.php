@@ -306,11 +306,14 @@ class U3aContact
     }
 
     /**
-     * Link email to contacts page if hide emails requested.
-     *  Otherwise creatae a mailto link for the email.
+     * Create a contact-form record and return a link to contact form if hide emails requested.
+     *  Otherwise create a mailto link for the email.
+     *  
+     * So name is a bit of a misnomer, since depends on option setting.
      * 
      * @param string $address email address
      * @param string $to name of recipient
+     * @return string HTML 
      */
     public static function cloak_email($address, $to)
     {
