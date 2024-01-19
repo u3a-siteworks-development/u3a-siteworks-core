@@ -6,6 +6,7 @@
 .u3aeventlist-item { /* each event in list */
     display:flex;
     flex-wrap:wrap;
+    margin: 24px 10px 0px;
 }
 .u3aevent-list-left { /* date/time container */
     flex: 0 0 180px;
