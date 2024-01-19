@@ -25,7 +25,6 @@ Please refer to the documentation on the [SiteWorks website](https://siteworks.u
 = 1.0.4 = 
 * Feature 491: Make group status available via REST API to support development of an Oversights facility for SiteWorks sites (Jan 2024)
 = 1.0.3 =
-* Feature 491: Make group status available via REST API to support development of an Oversights facility for SiteWorks sites (Jan 2024)
 * Feature 1003: Change error message when custom post has no title (Jan 2024)
 = 1.0.2 =
 * Feature 952:  Display all Group Sort By buttons on a single line if possible (Dec 2023)
