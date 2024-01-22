@@ -20,6 +20,7 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.0.6 =
 * Feature 491: Make group category available via REST API (Jan 2024)
 = 1.0.5 =
 * Bug 1000: On Production website, display of Groups is unpredictable (Jan 2024)
