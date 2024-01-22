@@ -377,18 +377,19 @@ class U3aNotice
 
         if (!$posts) return '<p>There are no current notices</p>';
 
-        $html = "<div class=\"u3a-notice-list\">\n<h3>Latest Notices</h3>\n";
+        $html = "<div class=\"u3a-notice-list\">\n<h3>Latest Notices</h3>\n<ul>\n";
         foreach ($posts as $notice) {
             $title = $notice->post_title;
             $alt_url = trim(get_post_meta($notice->ID, 'notice_url', true));
             $url = (strncasecmp($alt_url, 'http', 4) === 0) ? $alt_url : get_permalink($notice->ID);
-            $html .= "<h4><a href=\"$url\">$title</a></h4>\n";
+            $html .= "<li><h4><a href=\"$url\">$title</a></h4>\n";
             if (has_excerpt($notice)) {
                 $excerpt = get_the_excerpt($notice);
                 $html .= "<p>$excerpt</p>";
             }
+            $html .= "</li>";
         }
-        $html .= "</div>\n";
+        $html .= "</ul>\n</div>\n";
 
         return $html;
     }
