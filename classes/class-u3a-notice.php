@@ -351,6 +351,18 @@ class U3aNotice
     public static function display_noticelist($atts, $content = '')
     {
 
+        $display_args = [
+            'title' => 'Latest Notices',
+        ];
+        foreach ($display_args as $name => $default) {
+            if (isset($_GET[$name])) {
+                $display_args[$name] = sanitize_text_field($_GET[$name]);
+            // phpcs:enable WordPress.Security.NonceVerification.Recommended
+            } elseif (isset($atts[$name])) {
+                $display_args[$name] = $atts[$name];
+            }
+        }
+
         $posts = get_posts(array(
             'numberposts' => -1,
             'orderby' => 'meta_value',
@@ -377,7 +389,7 @@ class U3aNotice
 
         if (!$posts) return '<p>There are no current notices</p>';
 
-        $html = "<div class=\"u3a-notice-list\">\n<h3>Latest Notices</h3>\n";
+        $html = "<div class=\"u3a-notice-list\">\n<h3>" . $display_args['title'] . "</h3>\n";
         foreach ($posts as $notice) {
             $title = $notice->post_title;
             $alt_url = trim(get_post_meta($notice->ID, 'notice_url', true));

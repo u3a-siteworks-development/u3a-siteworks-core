@@ -4,7 +4,6 @@
 let NumberControl = wp.components.__experimentalNumberControl;
 let PanelBody = wp.components.PanelBody;
 let SelectControl = wp.components.SelectControl;
-let TextControl = wp.components.TextControl;
 let InspectorControls = wp.blockEditor.InspectorControls;
 let PanelColorSettings = wp.editor.PanelColorSettings;
 let useBlockProps = wp.editor.useBlockProps;
