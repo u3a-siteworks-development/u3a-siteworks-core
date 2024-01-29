@@ -597,7 +597,7 @@ class U3aEvent
                     $content = get_the_title($content);
                     break;
                 case 'eventBookingRequired':
-                    $content = ($content == 0) ? 'No' : 'yes';
+                    $content = ($content == 0) ? 'No' : 'Yes';
             }
         }
         return $content;
