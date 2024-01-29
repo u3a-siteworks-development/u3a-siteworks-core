@@ -1,3 +1,6 @@
+let PanelBody = wp.components.PanelBody;
+let SelectControl = wp.components.SelectControl;
+let InspectorControls = wp.blockEditor.InspectorControls;
 
 wp.blocks.registerBlockType("u3a/grouplist", {
     title: "u3a group list",
