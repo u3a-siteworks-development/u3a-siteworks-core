@@ -1,6 +1,3 @@
-
-
-
 let NumberControl = wp.components.__experimentalNumberControl;
 let PanelBody = wp.components.PanelBody;
 let SelectControl = wp.components.SelectControl;
@@ -51,8 +48,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
           type: "string"
       },
       bgcolor: {
-        type: "string",
-        default: "#ffc700"
+        type: "string"
       },
     },
     edit: function( {attributes, setAttributes } ) {
@@ -76,11 +72,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const onChangeDays = val => {
         setAttributes( { limitdays: Number(val)})
       };
-      var colorOn = (layout=='grid'); // Only have color panel for grid layout!
       const onChangeLayout = val => {
         setAttributes( { layout: val } )
-        setAttributes( { bgcolor: (val == 'list' ? '#ffc700' : '#63c369')}); //grid default is uta-light-green
-        colorOn = (val == 'grid');
+        setAttributes( { bgcolor: (val == 'list' ? '' : '#63c369')}); // grid default is uta-light-green
       }
       const onChangeBGColor = val => {
         setAttributes( { bgcolor: val } )
@@ -125,6 +119,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               return wp.element.createElement(PanelColorSettings, panelParams);}
           return '';
       }
+      var editBoxColor = (layout == 'list') ? '#ffc700' : bgcolor;
 
       var nest = [
           wp.element.createElement(
@@ -213,11 +208,11 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   ]
                 }
               ),
-              wp.element.createElement( ShowColorPanel, {colorOn:colorOn, title:'Colours', initialOpen:false, colorSettings:colorSettingsDropDown }, 
+              wp.element.createElement( ShowColorPanel, {colorOn:(layout=='grid'), title:'Colours', initialOpen:false, colorSettings:colorSettingsDropDown }, 
               ),
             ),
           ),
-        wp.element.createElement("div", {style: {color: 'black', backgroundColor: bgcolor, padding: '10px'}}, "This placeholder shows where a table of events will be shown.")
+        wp.element.createElement("div", {style: {color: 'black', backgroundColor: editBoxColor, padding: '10px'}}, "This placeholder shows where a table of events will be shown.")
       ];
       return  nest
     },

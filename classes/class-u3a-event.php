@@ -669,7 +669,7 @@ class U3aEvent
             'limitdays' => 0,
             'limitnum' => 0,
             'layout' => 'list',
-            'bgcolor' => '#63c369', // this is a Third Age Trust brand guide secondary colour
+            'bgcolor' => '',
         ];
         // set from page query or from call attributes, page query parameters take priority
         foreach ($display_args as $name => $default) {
@@ -826,7 +826,7 @@ class U3aEvent
         if (!$posts) return '';
 
         $when_text = ('past' == $when) ? 'Previous' : 'Forthcoming';
-        $html = "<h3>$when_text Events</h3>\n";
+        $html = "<h3>$when_text events</h3>\n";
         $html .= "<div class=\"u3aeventlist\">\n";
         foreach ($posts as $event) {
             $my_event = new self($event->ID); // an object of this class
@@ -922,8 +922,9 @@ class U3aEvent
                 END;
             } else {
                 $bgcolor = $display_args['bgcolor'];
+                $style_bgcolor = ('' != $bgcolor) ? "style=\"background-color:$bgcolor\" " : "";
                 $html .= <<< END
-                <div class="u3aeventlist-item" style="background-color:$bgcolor; margin:10px;">
+                <div class="u3aeventlist-item" $style_bgcolor>
                     <div class="u3aevent-grid-left">
                     $image_HTML
                     </div>
