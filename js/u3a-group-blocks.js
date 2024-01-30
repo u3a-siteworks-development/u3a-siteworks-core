@@ -1,3 +1,6 @@
+let PanelBody = wp.components.PanelBody;
+let SelectControl = wp.components.SelectControl;
+let InspectorControls = wp.blockEditor.InspectorControls;
 
 wp.blocks.registerBlockType("u3a/grouplist", {
     title: "u3a group list",
@@ -8,6 +11,9 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       sort: {
         type: "string"
       },
+      flow: {
+        type: "string"
+      },
       status: {
         type: "string"
       },
@@ -16,7 +22,7 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       }
     },
     edit: function( {attributes, setAttributes } ) {
-      const { sort, status, when } = attributes;
+      const { sort, flow, status, when } = attributes;
       const onChangeSort = val => {
         setAttributes( { sort: val });
       };
@@ -25,6 +31,9 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       };
       const onChangeWhen = val => {
         setAttributes( { when: val})
+      };
+      const onChangeFlow = val => {
+        setAttributes( { flow: val})
       };
     
       var nest = [
@@ -53,6 +62,22 @@ wp.blocks.registerBlockType("u3a/grouplist", {
                   value: 'venue',
                 }
                 ]
+              }
+            ),
+            wp.element.createElement( SelectControl,
+              { label:'Alphabetic flow', 
+                value: flow,
+                onChange: onChangeFlow,
+                options:[
+                {
+                  label: 'Down columns',
+                  value: 'column',
+                },
+                {
+                  label: 'Across rows',
+                  value: 'row',
+                }
+               ]
               }
             ),
             wp.element.createElement( SelectControl,

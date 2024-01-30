@@ -816,11 +816,12 @@ class U3aEvent
      * @param str $when 'past' / 'future'
      * @param boolean $show_group to display the group with which the event is associated.
      * @param array $display_args how and what fields to display ...
+     * NOTE: This function MUST ONLY be called from display_eventlist(), which ensures that all arguments are validly set.
      *
      * @return HTML <h3><div> with a pair of <div>s for each event </div>
      *              or empty string ''
      */
-    public static function display_event_listing($posts, $when, $show_group = true, $display_args)
+    public static function display_event_listing($posts, $when, $show_group, $display_args)
     {
         if (!$posts) return '';
 

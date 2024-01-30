@@ -66,17 +66,26 @@ div.u3agroupselector {
 }
 /* u3agrouplist css
    ----------------------- */
-/* Maybe change this to grid with 1/2/3/4 columns
-   which would go 'along and down' rather than 'down and along'
-   using {display: grid; grid-gap: 5px;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));}
-   */
-.u3agrouplist ul {
+
+   .u3agrouplist-column-first-flow ul {
     column-width: 300px;
     margin-top: 0;
     list-style-type:none;
 }
-.u3agrouplist ul li {
+.u3agrouplist-column-first-flow ul li {
+    margin-bottom: 5px;
+    break-inside: avoid-column;
+}
+
+.u3agrouplist-row-first-flow ul {
+    display: grid; 
+    grid-gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    column-width: 300px;
+    margin-top: 0;
+    list-style-type:none;
+}
+.u3agrouplist-row-first-flow ul li {
     margin-bottom: 5px;
     break-inside: avoid-column;
 }

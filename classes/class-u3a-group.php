@@ -601,6 +601,7 @@ class U3aGroup
         // valid display_args names and default values
         $display_args = [
             'sort' => 'alpha',
+            'flow' => 'column',
             'status' => 'y',
             'when' => 'y',
         ];
@@ -623,9 +624,13 @@ class U3aGroup
             <a class="wp-element-button" href="$thispage?sort=day">By Meeting Day</a>
             <a class="wp-element-button" href="$thispage?sort=venue">By Venue</a>
         </div>
-
-        <div class="u3agrouplist">
         END;
+        $list_flow = $display_args['flow'];
+        if ('row' == $list_flow) {
+            $html .= '<div class="u3agrouplist-row-first-flow">';
+        } else {
+            $html .= '<div class="u3agrouplist-column-first-flow">';
+        }
 
         $list_type = $display_args['sort'];
         if ('alpha' == $list_type) { // list all groups alphabetically
@@ -785,6 +790,7 @@ class U3aGroup
         $get_group_listing = false;
         // valid display_args names and default values
         $display_args = [
+            'flow' => 'column',
             'status' => 'y',
             'when' => 'n',
         ];
@@ -892,10 +898,15 @@ class U3aGroup
 
         if ($get_group_listing) {
             // List the selected groups
+            $list_head = '<div class="u3agrouplist-column-first-flow">';
+            $list_flow = $display_args['flow'];
+            if ('row' == $list_flow) {
+                $list_head = '<div class="u3agrouplist-row-first-flow">';
+            }
             $group_list_HTML = self::display_selected_groups($query_args, $display_args, '');
             if (!empty($group_list_HTML)) {
                 $html = <<< END
-                <div class="u3agrouplist">
+                $list_head
                 <h3>$list_heading</h3>
                 $group_list_HTML
                 </div>
