@@ -20,6 +20,7 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Feature 1004: Add support for Meta Field Block to display all group and event metadata
 * Feature 1002: Choice of alphabetic flow in group list
 * Feature 491: Make group category available via REST API (Jan 2024)
 * Feature 991: Improve display of group contacts when 'hide email addresses' is off (Jan 2024)

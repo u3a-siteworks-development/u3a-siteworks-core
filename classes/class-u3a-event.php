@@ -103,8 +103,8 @@ class U3aEvent
         // Customise the Quick Edit panel
         add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
 
-        // Convert event date to system format when rendered by the third party Meta Field Block
-        add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_date'), 10, 2);
+        // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
+        add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
     
     }
 
@@ -577,14 +577,28 @@ class U3aEvent
     }
 
     /** 
-     * Convert event date to system format when rendered by the third party Meta Field Block.
+     * Convert event metadata to displayable text when rendered by the third party Meta Field Block.
+     * Ref https://wordpress.org/plugins/display-a-meta-field-as-block/
      * (WP won't have a problem if the block isn't present)
+     * Where metadata is stored as references/codes return the associated text string
+     * Where metadata is already in text form leave alone. 
      * @usedby filter 'meta_field_block_get_block_content'
      */
-    public static function modify_meta_date($content, $attributes)
+    public static function modify_meta_data($content, $attributes)
     {
-        if (($attributes['fieldName'] == 'eventDate') && ($content != '')) {
-            return date(get_option('date_format'), strtotime($content));
+        if ($content != '') {
+            switch ($attributes['fieldName']) {
+                case 'eventDate':
+                    $content = date(get_option('date_format'), strtotime($content));
+                    break;
+                case 'eventVenue_ID':
+                case 'eventGroup_ID':
+                case 'eventOrganiser_ID':
+                    $content = get_the_title($content);
+                    break;
+                case 'eventBookingRequired':
+                    $content = ($content == 0) ? 'No' : 'Yes';
+            }
         }
         return $content;
     }
