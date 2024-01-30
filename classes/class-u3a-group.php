@@ -123,6 +123,9 @@ class U3aGroup
         // Add action to restrict database field lengths
         add_action('save_post_u3a_group', [self::class, 'validate_group_fields'], 30, 2);
 
+        // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
+        add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
+
     }
 
     // validate the lengths of fields on save
@@ -1217,4 +1220,39 @@ class U3aGroup
         }
         return $html;
     }
+
+
+    /** 
+     * Convert event metadata to displayable text when rendered by the third party Meta Field Block.
+     * Ref https://wordpress.org/plugins/display-a-meta-field-as-block/
+     * (WP won't have a problem if the block isn't present)
+     * @param mixed $content - raw metadata (or null if not present)
+     * @param mixed $attributes - array set by MFB
+     * @return mixed required content to be rendered
+     * Where metadata is stored as references/codes return the associated text string
+     * Where metadata is already in text form leave alone
+     * 
+     * @usedby filter 'meta_field_block_get_block_content'
+     */
+    public static function modify_meta_data($content, $attributes)
+    {
+        if ($content != '' ) {
+            switch ($attributes['fieldName']) {
+                case 'status_NUM':
+                    $content = self::$status_list[$content];
+                    break;
+                case 'day_NUM':
+                    $content = ($content == 0) ? '' : self::$day_list[$content];
+                    break;
+                case 'venue_ID':
+                case 'coordinator_ID':
+                case 'coordinator2_ID':
+                case 'deputy_ID':
+                case 'tutor_ID':
+                    $content = get_the_title($content);
+            }
+        }
+        return $content;
+    }
+    
 }
