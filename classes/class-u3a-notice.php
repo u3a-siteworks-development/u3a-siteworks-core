@@ -353,6 +353,7 @@ class U3aNotice
 
         $display_args = [
             'title' => 'Latest Notices',
+            'showtitle' => true,
         ];
         foreach ($display_args as $name => $default) {
             if (isset($_GET[$name])) {
@@ -361,6 +362,9 @@ class U3aNotice
             } elseif (isset($atts[$name])) {
                 $display_args[$name] = $atts[$name];
             }
+        }
+        if ($display_args['title'] == "") {
+            $display_args['title'] = "Latest Notices";
         }
 
         $posts = get_posts(array(
@@ -389,7 +393,10 @@ class U3aNotice
 
         if (!$posts) return '<p>There are no current notices</p>';
 
-        $html = "<div class=\"u3a-notice-list\">\n<h3>" . $display_args['title'] . "</h3>\n";
+        $html = "<div class=\"u3a-notice-list\">\n";
+        if ($display_args['showtitle']) {
+            $html .= "<h3>" . $display_args['title'] . "</h3>\n";
+        }
         foreach ($posts as $notice) {
             $title = $notice->post_title;
             $alt_url = trim(get_post_meta($notice->ID, 'notice_url', true));
