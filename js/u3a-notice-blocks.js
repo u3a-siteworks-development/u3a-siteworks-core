@@ -1,4 +1,5 @@
 let TextControl = wp.components.TextControl;
+let ToggleControl = wp.components.ToggleControl;
 
 wp.blocks.registerBlockType("u3a/noticelist", {
     title: "u3a notice list",
@@ -9,12 +10,19 @@ wp.blocks.registerBlockType("u3a/noticelist", {
       title: {
         type: "string",
         default: "Latest Notices"
+      },
+      showtitle: {
+        type: "boolean",
+        default: true
       }
     },
     edit: function ({attributes, setAttributes }) {
-      const { title } = attributes;
+      const { title, showtitle } = attributes;
       const onChangeTitle = val => {
         setAttributes( { title: val });
+      };
+      const onChangeShowTitle = val => {
+        setAttributes( { showtitle: val });
       };
       var nest = [
         wp.element.createElement(
@@ -24,6 +32,12 @@ wp.blocks.registerBlockType("u3a/noticelist", {
               { label:'Title', 
                 value: title,
                 onChange: onChangeTitle,
+              }
+            ),
+            wp.element.createElement( ToggleControl,
+              { label:'Show Title', 
+                checked: showtitle,
+                onChange: onChangeShowTitle,
               }
             )
           )
