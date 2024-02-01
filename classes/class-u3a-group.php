@@ -620,9 +620,9 @@ class U3aGroup
         $html = <<<END
         <div class="u3agroupbuttons">
             <a class="wp-element-button" href="$thispage?sort=alpha">Alphabetical</a>
-            <a class="wp-element-button" href="$thispage?sort=cat">By Category</a>
-            <a class="wp-element-button" href="$thispage?sort=day">By Meeting Day</a>
-            <a class="wp-element-button" href="$thispage?sort=venue">By Venue</a>
+            <a class="wp-element-button" href="$thispage?sort=cat">By category</a>
+            <a class="wp-element-button" href="$thispage?sort=day">By meeting day</a>
+            <a class="wp-element-button" href="$thispage?sort=venue">By venue</a>
         </div>
         END;
         $list_flow = $display_args['flow'];
