@@ -885,14 +885,14 @@ class U3aEvent
                 //width of image to match containing div and margin.
                 $image_HTML = <<<END
                     <figure>
-                      <img src="$featured_image" width=300px />
+                      <img class="u3a-eventlist-featured-image" src="$featured_image" width=300px height=225px/>
                       <figcaption>$caption</figcaption>
                     </figure>
                     END;
             } else {
                 $image_HTML = <<<END
                     <div class = "no-figure">
-                      <br>No featured image.
+                      <br>
                     </div>
                     END;
             }

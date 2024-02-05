@@ -23,12 +23,15 @@
     margin:10px;
     text-align: center;
 }
+.u3a-eventlist-featured-image {
+    object-fit: cover;
+    object-position: center;
+}
 .u3aeventlist .no-figure {
     width:300px;
     height:100px;
     margin:10px;
     text-align: center;
-    background-color:white;
 }
 /* close up paras in list */
 .u3aeventlist p {
