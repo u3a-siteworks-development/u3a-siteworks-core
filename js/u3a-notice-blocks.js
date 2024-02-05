@@ -1,6 +1,3 @@
-let TextControl = wp.components.TextControl;
-let ToggleControl = wp.components.ToggleControl;
-
 wp.blocks.registerBlockType("u3a/noticelist", {
     title: "u3a notice list",
     description: "Displays current notices",

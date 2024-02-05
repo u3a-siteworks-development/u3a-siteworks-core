@@ -1,4 +1,4 @@
-  wp.blocks.registerBlockType("u3a/venuelist", {
+wp.blocks.registerBlockType("u3a/venuelist", {
     title: "u3a venue list",
     description: "displays a list of venues",
     icon: "building",
