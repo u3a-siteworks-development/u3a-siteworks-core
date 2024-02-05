@@ -24,7 +24,8 @@
     text-align: center;
 }
 .u3a-eventlist-featured-image {
-    object-fit: scale-down;
+    object-fit: cover;
+    object-position: center;
 }
 .u3aeventlist .no-figure {
     width:300px;
