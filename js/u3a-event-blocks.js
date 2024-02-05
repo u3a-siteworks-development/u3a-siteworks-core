@@ -1,11 +1,3 @@
-let NumberControl = wp.components.__experimentalNumberControl;
-let PanelBody = wp.components.PanelBody;
-let SelectControl = wp.components.SelectControl;
-let InspectorControls = wp.blockEditor.InspectorControls;
-let PanelColorSettings = wp.editor.PanelColorSettings;
-let useBlockProps = wp.editor.useBlockProps;
-let useSelect = wp.data.useSelect;
-//let InnerBlock = wp.editor.InnerBlock;
 
 wp.blocks.registerBlockType("u3a/eventdata", {
     title: "u3a single event data",
@@ -38,6 +30,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       groups: {
         type: "string"
       },
+      bgroups: {
+        type: "boolean"
+      },
       limitnum: {
         type: "integer"
       },
@@ -52,7 +47,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       },
     },
     edit: function( {attributes, setAttributes } ) {
-      const { when, order, cat, groups, limitnum, limitdays, layout, bgcolor } = attributes;
+      const { when, order, cat, bgroups, groups, limitnum, limitdays, layout, bgcolor } = attributes;
       const onChangeWhen = val => {
         setAttributes( { when: val });
         setAttributes( { order: (val == 'future' ? 'asc' : 'desc')});
@@ -64,7 +59,12 @@ wp.blocks.registerBlockType("u3a/eventdata", {
         setAttributes( { cat: val})
       };
       const onChangeGroups = val => {
-        setAttributes( { groups: val})
+        setAttributes( { bgroups: val})
+        if (val) {
+          setAttributes( { groups: "y"})
+        } else {
+          setAttributes( { groups: "n"})
+        }
       };
       const onChangeNum = val => {
         setAttributes( { limitnum: Number(val)})
@@ -167,20 +167,10 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               )
             ),
             wp.element.createElement( PanelBody, {title:'Limits', initialOpen:false },
-              wp.element.createElement( SelectControl,
-                { label:'Include Groups', 
-                  value: groups,
+              wp.element.createElement( ToggleControl,
+                { label:'Show Groups', 
+                  checked: bgroups,
                   onChange: onChangeGroups,
-                  options:[
-                  {
-                    label: 'Included',
-                    value: 'y',
-                  },
-                  {
-                    label: 'Excluded',
-                    value: 'n',
-                  }
-                  ]
                 }
               ),
               wp.element.createElement( NumberControl,

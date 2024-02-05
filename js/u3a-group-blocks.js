@@ -1,6 +1,13 @@
+
+let NumberControl = wp.components.__experimentalNumberControl;
+let PanelColorSettings = wp.editor.PanelColorSettings;
+let useBlockProps = wp.editor.useBlockProps;
+let useSelect = wp.data.useSelect;
 let PanelBody = wp.components.PanelBody;
 let SelectControl = wp.components.SelectControl;
 let InspectorControls = wp.blockEditor.InspectorControls;
+let ToggleControl = wp.components.ToggleControl;
+let TextControl = wp.components.TextControl;
 
 wp.blocks.registerBlockType("u3a/grouplist", {
     title: "u3a group list",
@@ -17,20 +24,36 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       status: {
         type: "string"
       },
+      bstatus: {
+        type: "boolean"
+      },
       when: {
         type: "string"
+      },
+      bwhen: {
+        type: "boolean"
       }
     },
     edit: function( {attributes, setAttributes } ) {
-      const { sort, flow, status, when } = attributes;
+      const { sort, flow, bstatus, status, bwhen, when } = attributes;
       const onChangeSort = val => {
         setAttributes( { sort: val });
       };
       const onChangeStatus = val => {
-        setAttributes( { status: val });
+        setAttributes( { bstatus: val });
+        if (val) {
+          setAttributes( { status: "y"});
+        } else {
+          setAttributes( { status: "n"});
+        }
       };
       const onChangeWhen = val => {
-        setAttributes( { when: val})
+        setAttributes( { bwhen: val});
+        if (val) {
+          setAttributes( { when: "y"});
+        } else {
+          setAttributes( { when: "n"});
+        }
       };
       const onChangeFlow = val => {
         setAttributes( { flow: val})
@@ -80,36 +103,16 @@ wp.blocks.registerBlockType("u3a/grouplist", {
                ]
               }
             ),
-            wp.element.createElement( SelectControl,
-              { label:'Include Group Status', 
-                value: status,
+            wp.element.createElement( ToggleControl,
+              { label:'Show Group Status', 
+                checked: bstatus,
                 onChange: onChangeStatus,
-                options:[
-                {
-                  label: 'Yes',
-                  value: 'y',
-                },
-                {
-                  label: 'No',
-                  value: 'n',
-                }
-                ]
               }
             ),
-            wp.element.createElement( SelectControl,
-              { label:'Include Meeting Time', 
-                value: when,
+            wp.element.createElement( ToggleControl,
+              { label:'Show Meeting Time', 
+                checked: bwhen,
                 onChange: onChangeWhen,
-                options:[
-                {
-                  label: 'Yes',
-                  value: 'y',
-                },
-                {                    
-                  label: 'No',
-                   value: 'n',
-                }
-                ]
               }
             )
           )
