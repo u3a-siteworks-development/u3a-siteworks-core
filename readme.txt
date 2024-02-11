@@ -22,7 +22,7 @@ Please refer to the documentation on the [SiteWorks website](https://siteworks.u
 == Changelog ==
 = 1.0.6 =
 * Feature 1004: Add support for Meta Field Block to display all group and event metadata
-* Feature 491: Make group category available via REST API (Jan 2024)
+* Feature 491: Make some group and event metadata available via REST API (Feb 2024)
 = 1.0.5 =
 * Bug 1000: On Production website, display of Groups is unpredictable (Jan 2024)
 = 1.0.4 = 
