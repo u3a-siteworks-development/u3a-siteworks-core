@@ -22,7 +22,7 @@ Please refer to the documentation on the [SiteWorks website](https://siteworks.u
 == Changelog ==
 * Feature 1004: Add support for Meta Field Block to display all group and event metadata
 * Feature 1002: Choice of alphabetic flow in group list
-* Feature 491: Make group category available via REST API (Jan 2024)
+* Feature 491: Make some group and event metadata available via REST API (Feb 2024)
 * Feature 991: Improve display of group contacts when 'hide email addresses' is off (Jan 2024)
 * Feature 994: Add editable attributes to event list and group list blocks (Jan 2024)
 = 1.0.5 =
