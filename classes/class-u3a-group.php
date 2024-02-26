@@ -1175,7 +1175,7 @@ class U3aGroup
         $contact = new U3aContact(get_post_meta($this->ID, $role_field, true));
         $contact_info = $contact->contact_text();
         $edit_HTML = '';
-        if ($contact->exists and current_user_can('edit_posts')) {
+        if ($contact->exists and current_user_can('edit_others_posts')) {
             $edit_link = admin_url("post.php?post=" . $contact->ID . "&action=edit");
             $edit_text = "Edit <i>this</i> person's contact details";
             $edit_HTML = "<span style='background-color:yellow;'><a href= '$edit_link'>$edit_text</a> (Only visible to editors)<span>";
