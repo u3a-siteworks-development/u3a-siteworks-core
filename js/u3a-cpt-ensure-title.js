@@ -14,7 +14,7 @@ wp.data.subscribe(() => {
             wp.data.dispatch('core/editor').lockPostSaving('title-lock');
             wp.data.dispatch('core/notices').createNotice(
                 'error',
-                'Please enter the name below here, as requested',
+                'The name must be entered below before saving or publishing',
                 { id: 'title-lock', isDismissible: false }
             );
         }
