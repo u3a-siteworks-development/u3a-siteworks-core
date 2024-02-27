@@ -611,18 +611,19 @@ class U3aGroup
             if (isset($_GET[$name])) {
                 $display_args[$name] = sanitize_text_field($_GET[$name]);
          // phpcs:enable WordPress.Security.NonceVerification.Recommended
-           } elseif (isset($atts[$name])) {
+            } elseif (isset($atts[$name])) {
                 $display_args[$name] = $atts[$name];
             }
         }
         // set up some buttons to provide some built-in options
         $thispage = untrailingslashit(home_url($wp->request));
+        $button_identifier = "list_button_anchor";
         $html = <<<END
-        <div class="u3agroupbuttons">
-            <a class="wp-element-button" href="$thispage?sort=alpha">Alphabetical</a>
-            <a class="wp-element-button" href="$thispage?sort=cat">By category</a>
-            <a class="wp-element-button" href="$thispage?sort=day">By meeting day</a>
-            <a class="wp-element-button" href="$thispage?sort=venue">By venue</a>
+        <div id=$button_identifier class="u3agroupbuttons">
+            <a class="wp-element-button" href="$thispage?sort=alpha#$button_identifier">Alphabetical</a>
+            <a class="wp-element-button" href="$thispage?sort=cat#$button_identifier">By category</a>
+            <a class="wp-element-button" href="$thispage?sort=day#$button_identifier">By meeting day</a>
+            <a class="wp-element-button" href="$thispage?sort=venue#$button_identifier">By venue</a>
         </div>
         END;
         $list_flow = $display_args['flow'];
