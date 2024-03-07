@@ -20,6 +20,7 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+# Issues  #42 and #43 bug fixes
 * Feature 1004: Add support for Meta Field Block to display all group and event metadata
 * Feature 1002: Choice of alphabetic flow in group list
 * Feature 491: Make some group and event metadata available via REST API (Feb 2024)
