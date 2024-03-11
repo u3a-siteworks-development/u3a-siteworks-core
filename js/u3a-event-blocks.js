@@ -74,7 +74,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       };
       const onChangeLayout = val => {
         setAttributes( { layout: val } )
-        setAttributes( { bgcolor: (val == 'list' ? '' : '#63c369')}); // grid default is uta-light-green
+        setAttributes( { bgcolor: (val == 'list' ? '#ffc700' : '#63c369')}); // grid default is uta-light-green
       }
       const onChangeBGColor = val => {
         setAttributes( { bgcolor: val } )
@@ -88,6 +88,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
           },
         ];
       const query = {
+                /* The default context is 'edit' and authors don't have 'edit' capability on the taxonomy.
+                   adding the following line cures this problem in the REST call made by getEntityRecords() */
+                context: 'view',
                 per_page: -1,
                 orderby: 'name',
                 order: 'asc',
@@ -97,7 +100,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
             select( 'core' ).getEntityRecords( 'taxonomy', 'u3a_event_category', query )
         );
       if ( ! terms ) {
-          return 'Loading...';
+          return 'Loading, please wait...';
       }
       if ( terms.length === 0 ) {
           return 'No terms found';
@@ -119,7 +122,8 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               return wp.element.createElement(PanelColorSettings, panelParams);}
           return '';
       }
-      var editBoxColor = (layout == 'list') ? '#ffc700' : bgcolor;
+      /* default to #ffc700 if layout == 'list' or is not set*/
+      var editBoxColor = (layout == 'grid') ? bgcolor : '#ffc700';
 
       var nest = [
           wp.element.createElement(
