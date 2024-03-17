@@ -616,10 +616,11 @@ class U3aGroup
         }
         // set up some buttons to provide some built-in options
         $thispage = untrailingslashit(home_url($wp->request));
+        $category_singular_term = ucfirst(get_option('u3a_catsingular_term', 'category'));
         $html = <<<END
         <div class="u3agroupbuttons">
             <a class="wp-element-button" href="$thispage?sort=alpha">Alphabetical</a>
-            <a class="wp-element-button" href="$thispage?sort=cat">By Category</a>
+            <a class="wp-element-button" href="$thispage?sort=cat">By $category_singular_term</a>
             <a class="wp-element-button" href="$thispage?sort=day">By Meeting Day</a>
             <a class="wp-element-button" href="$thispage?sort=venue">By Venue</a>
         </div>
