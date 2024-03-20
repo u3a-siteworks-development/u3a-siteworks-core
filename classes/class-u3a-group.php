@@ -743,7 +743,7 @@ class U3aGroup
 
         } elseif ('cat' == $list_type) { // group the list by u3a_group_category
             $html  .= <<< END
-            <h3>Groups listed by category</h3>
+            <h3>Groups listed by $category_singular_term</h3>
             END;
             $term_args = array(
                 'taxonomy'      => U3A_GROUP_TAXONOMY,
@@ -815,15 +815,16 @@ class U3aGroup
             'order' => 'ASC',
             'post_status' => 'publish',
         );
+        $category_singular_term = get_option('u3a_catsingular_term', 'category');
         switch ($list_type) {
                 // Select groups in the chosen category
             case 'par':
                 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
                 $par = (isset($_GET['par'])) ? sanitize_text_field($_GET['par']) : '';
-                $none_msg = "<p>No groups found in category $par</p>";
+                $none_msg = "<p>No groups found in $category_singular_term $par</p>";
                 if (!empty($par)) {
                     $query_args['tax_query'] = [['taxonomy' => U3A_GROUP_TAXONOMY, 'field' => 'name', 'terms' => $par]];
-                    $list_heading = "Groups in category $par";
+                    $list_heading = "Groups in $category_singular_term $par";
                     $get_group_listing = true; // so will populate $html later
                 } else {
                     $html = $none_msg;
@@ -882,7 +883,7 @@ class U3aGroup
                     $html = "<p>Find a group by its initial letter</p>";
                     $html .= self::get_letter_list($all_group_posts);
 
-                    $html .= "<p>Find a group by its category</p>";
+                    $html .= "<p>Find a group by its $category_singular_term</p>";
                     $html .= self::get_parent_list($all_group_posts);
 
                     $html .= "<p>Find a group by day of the week it operates<br> Groups with unspecified day will be omitted.</p>";
