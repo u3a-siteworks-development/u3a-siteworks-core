@@ -1,6 +1,6 @@
 === u3a-custom-post-types ===
 Requires at least: 5.9
-Tested up to: 6.4
+Tested up to: 6.5
 Stable tag: 5.9
 Requires PHP: 7.3
 License: GPLv2 or later
@@ -20,6 +20,8 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Bug 1027: Label for "category" in u3a group list does not respect u3a settings
+# Issues  #42 and #43 bug fixes
 * Feature 1004: Add support for Meta Field Block to display all group and event metadata
 * Feature 1002: Choice of alphabetic flow in group list
 * Feature 491: Make some group and event metadata available via REST API (Feb 2024)
