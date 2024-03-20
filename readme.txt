@@ -20,6 +20,8 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.0.8 =
+* Bug 1027: Label for "category" in u3a group list does not respect u3a settings - further instances (March 2024)
 = 1.0.7 =
 * Bug 1027: Label for "category" in u3a group list does not respect u3a settings
 = 1.0.6 =
