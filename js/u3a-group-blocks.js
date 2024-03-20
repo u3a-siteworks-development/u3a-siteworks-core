@@ -62,7 +62,7 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       var nest = [
         wp.element.createElement(
           InspectorControls,
-          {}, wp.element.createElement( PanelBody, {title:'Sort Style', initialOpen:false }, 
+          {}, wp.element.createElement( PanelBody, {title:'Display options', initialOpen:false },
             wp.element.createElement( SelectControl,
               { label:'Sort Order', 
                 value: sort,

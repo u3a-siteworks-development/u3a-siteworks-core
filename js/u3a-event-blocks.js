@@ -172,7 +172,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
             ),
             wp.element.createElement( PanelBody, {title:'Limits', initialOpen:false },
               wp.element.createElement( ToggleControl,
-                { label:'Show Groups', 
+                { label:'Show group events',
                   checked: bgroups,
                   onChange: onChangeGroups,
                 }
