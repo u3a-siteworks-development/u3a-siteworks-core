@@ -191,14 +191,14 @@ class U3aAdmin
         <h3>Term for Group Coordinator</h3>
         <p>Your u3a may wish to use a different term for the person who manages a group, such as "leader"<br>
         You can change the term used here.</p>
-        <input type="text" class="regular-text" id="cterm" name="cterm" value="$coordinator_term">
+        <input type="text" class="regular-text" id="cterm" name="cterm" maxlength="30" value="$coordinator_term">
 
 
         <h3>Term for Group Categories</h3>
         <p>Your u3a may wish to use a different term for the group categories, such as "faculties"<br>
         You can change the terms used here.</p>
-        Singular: <input type="text" id="catsingleterm" name="catsingleterm" value="$category_singular_term">
-        Plural: <input type="text" id="catpluralterm" name="catpluralterm" value="$category_plural_term">
+        Singular: <input type="text" id="catsingleterm" name="catsingleterm" maxlength="20" value="$category_singular_term">
+        Plural: <input type="text" id="catpluralterm" name="catpluralterm" maxlength="20" value="$category_plural_term">
 
         <h3>Fields to show when adding a new group</h3>
         <p>Tick the fields you want to use when defining your groups</p>
