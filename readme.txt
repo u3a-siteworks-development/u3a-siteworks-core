@@ -20,6 +20,7 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Feature 1024: Support multiple u3a_group categories in REST API endpoint
 = 1.0.8 =
 * Bug 1027: Label for "category" in u3a group list does not respect u3a settings - further instances (March 2024)
 = 1.0.7 =
