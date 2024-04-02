@@ -657,15 +657,19 @@ class U3aGroup
 
         // if only displaying groups for a selected category 
         if ('all' != $cat) {
-            $query_args['tax_query'] = [[
-                'taxonomy' => U3A_GROUP_TAXONOMY,
-                'field'    => 'slug',
-                'terms' => $cat,
-            ]];
-            $cat_name = get_term_by('slug', $cat, U3A_GROUP_TAXONOMY)->name;
-            $html .= "<h3>Groups in $category_singular_term: $cat_name</h3>";
-            $html .= self::display_selected_groups($query_args, $display_args);
-
+            $term = get_term_by('slug', $cat, U3A_GROUP_TAXONOMY);
+            if (empty($term)) {
+                $html .=  "No category with slug = $cat";
+            } else {
+                $query_args['tax_query'] = [[
+                    'taxonomy' => U3A_GROUP_TAXONOMY,
+                    'field'    => 'slug',
+                    'terms' => $cat,
+                ]];
+                $cat_name = get_term_by('slug', $cat, U3A_GROUP_TAXONOMY)->name;
+                $html .= "<h3>Groups in $category_singular_term: $cat_name</h3>";
+                $html .= self::display_selected_groups($query_args, $display_args);
+            }
         } elseif ('alpha' == $list_type) { // list all groups alphabetically
             $html .= '<h3>Groups listed alphabetically</h3>';
             $html .= self::display_selected_groups($query_args, $display_args);
