@@ -1165,7 +1165,6 @@ class U3aGroup
      * @param str $role_field the name of the post-meta field of a contact
      * @param str $rolename the display name for this role
      *
-     * if user can edit posts then adds a link to edit this contact's details.
      *
      * @return str HTML complete <tr> item.
      */
@@ -1174,20 +1173,8 @@ class U3aGroup
         $html = '';
         $contact = new U3aContact(get_post_meta($this->ID, $role_field, true));
         $contact_info = $contact->contact_text();
-        $edit_HTML = '';
-        // add link to edit this contact, but only if ...
-        // user is logged-in as an editor and ...
-        // the u3a has not switched off the top toolbar for such users 
-        // (which will be done by the u3a-configuration plugin when 'u3a_enable_toolbar' == 9)
-        $enableToolbar = get_option('u3a_enable_toolbar', 1);
-        $disabled_top_toolbar = (!current_user_can('manage_options') && !is_admin() && ($enableToolbar == 9));
-        if ($contact->exists and current_user_can('edit_others_posts') and !$disabled_top_toolbar) {
-            $edit_link = admin_url("post.php?post=" . $contact->ID . "&action=edit");
-            $edit_text = "Edit <i>this</i> person's contact details";
-            $edit_HTML = "<span style='background-color:yellow;'><a href= '$edit_link'>$edit_text</a> (Only visible to editors)<span>";
-        };
         if ($contact_info) {
-            $html .= "<tr><td>$rolename:</td><td>$contact_info$edit_HTML</td></tr>";
+            $html .= "<tr><td>$rolename:</td><td>$contact_info</td></tr>";
         }
         return $html;
     }

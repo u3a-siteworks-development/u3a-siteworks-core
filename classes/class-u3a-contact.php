@@ -306,11 +306,14 @@ class U3aContact
     }
 
     /**
-     * Link email to contacts page if hide emails requested.
-     *  Otherwise creatae a mailto link for the email.
+     * Create a contact-form record and return a link to contact form if hide emails requested.
+     *  Otherwise create a mailto link for the email.
+     *  
+     * So name is a bit of a misnomer, since depends on option setting.
      * 
      * @param string $address email address
      * @param string $to name of recipient
+     * @return string HTML 
      */
     public static function cloak_email($address, $to)
     {
@@ -322,7 +325,7 @@ class U3aContact
             }
             return do_shortcode('[u3a_contact name="' .  $to . '" email="' . $address . '"]');
         } else {
-            return "<a href=\"mailto:$address\">Email $to</a>";
+            return "<a title='Opens your email app' href='mailto:$address'>$to</a> $address";   
         }
     }
 
@@ -330,6 +333,8 @@ class U3aContact
 
     /**
      * Produce text info for this contact.
+     *
+     * If user can edit posts then adds a link to edit this contact's details.
      *
      * @return HTML
      */
@@ -342,15 +347,29 @@ class U3aContact
         $phone = esc_html(get_post_meta($this->ID, 'phone', true));
         $phone2 = esc_html(get_post_meta($this->ID, 'phone2', true));
         $phonetext = empty($phone2) ? "$phone" : "$phone or $phone2";
-        $phonetext = empty($phonetext) ? '' : "&nbsp;&nbsp;<strong>Tel:</strong> $phonetext" ;
+        $phonetext = empty($phonetext) ? '' : "<strong>Tel:</strong> $phonetext" ;
         $email = self::cloak_email(get_post_meta($this->ID, 'email', true), $contact_name);
         // display email link if it exists, else display name
         $contact = ($email) ? $email : $contact_name;
+        // add link to edit this contact, but only if ...
+        // user is logged-in with editing rights and ...
+        // the u3a has not switched off the top toolbar for such users 
+        // (which will be done by the u3a-configuration plugin when 'u3a_enable_toolbar' == 9)
+        $enableToolbar = get_option('u3a_enable_toolbar', 1);
+        $disabled_top_toolbar = (!current_user_can('manage_options') && !is_admin() && ($enableToolbar == 9));
+        $edit_HTML = '';
+        if (current_user_can('edit_others_posts') and !$disabled_top_toolbar) {
+            $edit_link = admin_url("post.php?post=" . $this->ID . "&action=edit");
+            $edit_hint = "Edit this contact details";
+            $edit_HTML = "<a href= '$edit_link'><span style='flex; background-color:yellow;' class='dashicons dashicons-edit' title='$edit_hint'></span></a>";
+        };
+
         // The HTML uses a flex container around spans to prevent overflow with long name + email+ phone
         $html = <<<END
         <div style="display:flex; flex-wrap:wrap;">
-        <span style="flex: 0 1 auto; padding: 0px 0px;">$contact</span>
-        <span style="flex: 0 1 auto; ">$phonetext</span>
+        <span style="flex; padding-right: 4px;">$contact</span>
+        <span style="flex;  padding-right: 4px;">$phonetext</span>
+        $edit_HTML
         </div>
         END;
         return $html;
