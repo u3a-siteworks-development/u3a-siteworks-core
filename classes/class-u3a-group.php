@@ -123,6 +123,9 @@ class U3aGroup
         // Add action to restrict database field lengths
         add_action('save_post_u3a_group', [self::class, 'validate_group_fields'], 30, 2);
 
+        // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
+        add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
+
     }
 
     // validate the lengths of fields on save
@@ -594,9 +597,11 @@ class U3aGroup
      */
     public static function group_list_sorted($atts, $content = '')
     {
+        global $wp;
         // valid display_args names and default values
         $display_args = [
             'sort' => 'alpha',
+            'flow' => 'column',
             'status' => 'y',
             'when' => 'y',
         ];
@@ -606,22 +611,28 @@ class U3aGroup
             if (isset($_GET[$name])) {
                 $display_args[$name] = sanitize_text_field($_GET[$name]);
          // phpcs:enable WordPress.Security.NonceVerification.Recommended
-           } elseif (isset($atts[$name])) {
+            } elseif (isset($atts[$name])) {
                 $display_args[$name] = $atts[$name];
             }
         }
         // set up some buttons to provide some built-in options
-        $thispage = untrailingslashit(get_page_link());
+        $thispage = untrailingslashit(home_url($wp->request));
+        $button_identifier = "list_button_anchor";
+        $category_singular_term = get_option('u3a_catsingular_term', 'category');
         $html = <<<END
-        <div class="u3agroupbuttons">
-            <a class="wp-element-button" href="$thispage?sort=alpha">Alphabetical</a>
-            <a class="wp-element-button" href="$thispage?sort=cat">By Category</a>
-            <a class="wp-element-button" href="$thispage?sort=day">By Meeting Day</a>
-            <a class="wp-element-button" href="$thispage?sort=venue">By Venue</a>
+        <div id=$button_identifier class="u3agroupbuttons">
+            <a class="wp-element-button" href="$thispage?sort=alpha#$button_identifier">Alphabetical</a>
+            <a class="wp-element-button" href="$thispage?sort=cat#$button_identifier">By $category_singular_term</a>
+            <a class="wp-element-button" href="$thispage?sort=day#$button_identifier">By meeting day</a>
+            <a class="wp-element-button" href="$thispage?sort=venue#$button_identifier">By venue</a>
         </div>
-
-        <div class="u3agrouplist">
         END;
+        $list_flow = $display_args['flow'];
+        if ('row' == $list_flow) {
+            $html .= '<div class="u3agrouplist-row-first-flow">';
+        } else {
+            $html .= '<div class="u3agrouplist-column-first-flow">';
+        }
 
         $list_type = $display_args['sort'];
         if ('alpha' == $list_type) { // list all groups alphabetically
@@ -733,7 +744,7 @@ class U3aGroup
 
         } elseif ('cat' == $list_type) { // group the list by u3a_group_category
             $html  .= <<< END
-            <h3>Groups listed by category</h3>
+            <h3>Groups listed by $category_singular_term</h3>
             END;
             $term_args = array(
                 'taxonomy'      => U3A_GROUP_TAXONOMY,
@@ -775,11 +786,13 @@ class U3aGroup
      */
     public static function group_list_filtered($atts, $content = '')
     {
+        global $wp;
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $list_type = (isset($_GET['type'])) ? sanitize_text_field($_GET['type']) : "";
         $get_group_listing = false;
         // valid display_args names and default values
         $display_args = [
+            'flow' => 'column',
             'status' => 'y',
             'when' => 'n',
         ];
@@ -794,7 +807,7 @@ class U3aGroup
             }
         }
         // Add back to list
-        $url = get_page_link();
+        $url = untrailingslashit(home_url($wp->request));
         $para_with_back_link = "<p><br><a class=\"wp-element-button\" href=\"$url\">Back to full group list</a></p>";
         $query_args = array(
             'post_type' => 'u3a_group',
@@ -803,15 +816,16 @@ class U3aGroup
             'order' => 'ASC',
             'post_status' => 'publish',
         );
+        $category_singular_term = get_option('u3a_catsingular_term', 'category');
         switch ($list_type) {
                 // Select groups in the chosen category
             case 'par':
                 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
                 $par = (isset($_GET['par'])) ? sanitize_text_field($_GET['par']) : '';
-                $none_msg = "<p>No groups found in category $par</p>";
+                $none_msg = "<p>No groups found in $category_singular_term $par</p>";
                 if (!empty($par)) {
                     $query_args['tax_query'] = [['taxonomy' => U3A_GROUP_TAXONOMY, 'field' => 'name', 'terms' => $par]];
-                    $list_heading = "Groups in category $par";
+                    $list_heading = "Groups in $category_singular_term $par";
                     $get_group_listing = true; // so will populate $html later
                 } else {
                     $html = $none_msg;
@@ -870,7 +884,7 @@ class U3aGroup
                     $html = "<p>Find a group by its initial letter</p>";
                     $html .= self::get_letter_list($all_group_posts);
 
-                    $html .= "<p>Find a group by its category</p>";
+                    $html .= "<p>Find a group by its $category_singular_term</p>";
                     $html .= self::get_parent_list($all_group_posts);
 
                     $html .= "<p>Find a group by day of the week it operates<br> Groups with unspecified day will be omitted.</p>";
@@ -887,10 +901,15 @@ class U3aGroup
 
         if ($get_group_listing) {
             // List the selected groups
+            $list_head = '<div class="u3agrouplist-column-first-flow">';
+            $list_flow = $display_args['flow'];
+            if ('row' == $list_flow) {
+                $list_head = '<div class="u3agrouplist-row-first-flow">';
+            }
             $group_list_HTML = self::display_selected_groups($query_args, $display_args, '');
             if (!empty($group_list_HTML)) {
                 $html = <<< END
-                <div class="u3agrouplist">
+                $list_head
                 <h3>$list_heading</h3>
                 $group_list_HTML
                 </div>
@@ -913,6 +932,7 @@ class U3aGroup
      */
     public static function get_letter_list($posts)
     {
+        global $wp;
         $letters_used = '';
         foreach ($posts as $post) {
             $letters_used .= strtoupper(substr($post->post_title, 0, 1));
@@ -920,7 +940,7 @@ class U3aGroup
         $html = "<div class=\"u3agroupselector\">\n";
         foreach (range('A', 'Z') as $let) {
             if (strpos($letters_used, $let) === false) continue;
-            $url = get_page_link() . "?type=letter&letter=" . $let;
+            $url = untrailingslashit(home_url($wp->request)) . "?type=letter&letter=" . $let;
             $html .= "<a class='wp-element-button' href='" . $url . "' style='text-align: center; display:inline-block;'>" . $let . "</a>\n";
         }
         $html .= "</div>\n";
@@ -937,6 +957,7 @@ class U3aGroup
      */
     public static function get_parent_list($posts)
     {
+        global $wp;
         $catsUsed = array();
         foreach ($posts as $post) {
             $cat = get_the_terms($post->ID, U3A_GROUP_TAXONOMY);
@@ -946,7 +967,7 @@ class U3aGroup
         }
         $uniqueCats = array_unique($catsUsed);
         $html = "<div class=\"u3agroupselector\">\n";
-        $url = get_page_link() . "?type=par&par=";
+        $url = untrailingslashit(home_url($wp->request)) . "?type=par&par=";
         foreach ($uniqueCats as $catName) {
             $html .= "<a class='wp-element-button' href='" . $url . $catName . "' style='display:inline-block;'>" . $catName . "</a>";
         }
@@ -965,6 +986,7 @@ class U3aGroup
      */
     public static function get_day_list($posts)
     {
+        global $wp;
         $daysUsed = array();
         foreach ($posts as $post) {
             $day_NUM = get_post_meta($post->ID, 'day_NUM', true);
@@ -972,7 +994,7 @@ class U3aGroup
         }
         $uniqueDays = array_unique($daysUsed);
         asort($uniqueDays);
-        $url = get_page_link() . "?type=day&day=";
+        $url = untrailingslashit(home_url($wp->request)) . "?type=day&day=";
         $html = "<div class=\"u3agroupselector\">";
         foreach ($uniqueDays as $day_NUM) {
             $html .= "<a class='wp-element-button' style='display:inline-block;' href='" . $url . self::$day_list[$day_NUM] . "'>" . self::$day_list[$day_NUM] . "</a>";
@@ -1212,5 +1234,34 @@ class U3aGroup
             $html .= "</tr>";
         }
         return $html;
+    }
+
+    /** 
+     * Convert event metadata to displayable text when rendered by the third party Meta Field Block.
+     * Ref https://wordpress.org/plugins/display-a-meta-field-as-block/
+     * (WP won't have a problem if the block isn't present)
+     * Where metadata is stored as references/codes return the associated text string
+     * Where metadata is already in text form leave alone
+     * @usedby filter 'meta_field_block_get_block_content'
+     */
+    public static function modify_meta_data($content, $attributes)
+    {
+        if ($content != '' ) {
+            switch ($attributes['fieldName']) {
+                case 'status_NUM':
+                    $content = self::$status_list[$content];
+                    break;
+                case 'day_NUM':
+                    $content = ($content == 0) ? '' : self::$day_list[$content];
+                    break;
+                case 'venue_ID':
+                case 'coordinator_ID':
+                case 'coordinator2_ID':
+                case 'deputy_ID':
+                case 'tutor_ID':
+                    $content = get_the_title($content);
+            }
+        }
+        return $content;
     }
 }

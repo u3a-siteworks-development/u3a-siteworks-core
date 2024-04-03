@@ -1,16 +1,4 @@
 
-
-
-let NumberControl = wp.components.__experimentalNumberControl;
-let PanelBody = wp.components.PanelBody;
-let SelectControl = wp.components.SelectControl;
-let TextControl = wp.components.TextControl;
-let InspectorControls = wp.blockEditor.InspectorControls;
-let PanelColorSettings = wp.editor.PanelColorSettings;
-let useBlockProps = wp.editor.useBlockProps;
-let useSelect = wp.data.useSelect;
-//let InnerBlock = wp.editor.InnerBlock;
-
 wp.blocks.registerBlockType("u3a/eventdata", {
     title: "u3a single event data",
     description: "displays details of this event",
@@ -42,6 +30,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       groups: {
         type: "string"
       },
+      bgroups: {
+        type: "boolean"
+      },
       limitnum: {
         type: "integer"
       },
@@ -52,12 +43,11 @@ wp.blocks.registerBlockType("u3a/eventdata", {
           type: "string"
       },
       bgcolor: {
-        type: "string",
-        default: "#ffc700"
+        type: "string"
       },
     },
     edit: function( {attributes, setAttributes } ) {
-      const { when, order, cat, groups, limitnum, limitdays, layout, bgcolor } = attributes;
+      const { when, order, cat, bgroups, groups, limitnum, limitdays, layout, bgcolor } = attributes;
       const onChangeWhen = val => {
         setAttributes( { when: val });
         setAttributes( { order: (val == 'future' ? 'asc' : 'desc')});
@@ -69,7 +59,12 @@ wp.blocks.registerBlockType("u3a/eventdata", {
         setAttributes( { cat: val})
       };
       const onChangeGroups = val => {
-        setAttributes( { groups: val})
+        setAttributes( { bgroups: val})
+        if (val) {
+          setAttributes( { groups: "y"})
+        } else {
+          setAttributes( { groups: "n"})
+        }
       };
       const onChangeNum = val => {
         setAttributes( { limitnum: Number(val)})
@@ -77,11 +72,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const onChangeDays = val => {
         setAttributes( { limitdays: Number(val)})
       };
-      var colorOn = (layout=='grid'); // Only have color panel for grid layout!
       const onChangeLayout = val => {
         setAttributes( { layout: val } )
-        setAttributes( { bgcolor: (val == 'list' ? '#ffc700' : '#63c369')}); //grid default is uta-light-green
-        colorOn = (val == 'grid');
+        setAttributes( { bgcolor: (val == 'list' ? '#ffc700' : '#63c369')}); // grid default is uta-light-green
       }
       const onChangeBGColor = val => {
         setAttributes( { bgcolor: val } )
@@ -95,6 +88,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
           },
         ];
       const query = {
+                /* The default context is 'edit' and authors don't have 'edit' capability on the taxonomy.
+                   adding the following line cures this problem in the REST call made by getEntityRecords() */
+                context: 'view',
                 per_page: -1,
                 orderby: 'name',
                 order: 'asc',
@@ -104,7 +100,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
             select( 'core' ).getEntityRecords( 'taxonomy', 'u3a_event_category', query )
         );
       if ( ! terms ) {
-          return 'Loading...';
+          return 'Loading, please wait...';
       }
       if ( terms.length === 0 ) {
           return 'No terms found';
@@ -126,6 +122,8 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               return wp.element.createElement(PanelColorSettings, panelParams);}
           return '';
       }
+      /* default to #ffc700 if layout == 'list' or is not set*/
+      var editBoxColor = (layout == 'grid') ? bgcolor : '#ffc700';
 
       var nest = [
           wp.element.createElement(
@@ -173,20 +171,10 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               )
             ),
             wp.element.createElement( PanelBody, {title:'Limits', initialOpen:false },
-              wp.element.createElement( SelectControl,
-                { label:'Include Groups', 
-                  value: groups,
+              wp.element.createElement( ToggleControl,
+                { label:'Show group events',
+                  checked: bgroups,
                   onChange: onChangeGroups,
-                  options:[
-                  {
-                    label: 'Included',
-                    value: 'y',
-                  },
-                  {
-                    label: 'Excluded',
-                    value: 'n',
-                  }
-                  ]
                 }
               ),
               wp.element.createElement( NumberControl,
@@ -214,11 +202,11 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   ]
                 }
               ),
-              wp.element.createElement( ShowColorPanel, {colorOn:colorOn, title:'Colours', initialOpen:false, colorSettings:colorSettingsDropDown }, 
+              wp.element.createElement( ShowColorPanel, {colorOn:(layout=='grid'), title:'Colours', initialOpen:false, colorSettings:colorSettingsDropDown }, 
               ),
             ),
           ),
-        wp.element.createElement("div", {style: {color: 'black', backgroundColor: bgcolor, padding: '10px'}}, "This placeholder shows where a table of events will be shown.")
+        wp.element.createElement("div", {style: {color: 'black', backgroundColor: editBoxColor, padding: '10px'}}, "This placeholder shows where a table of events will be shown.")
       ];
       return  nest
     },

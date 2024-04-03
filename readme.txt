@@ -1,6 +1,6 @@
 === u3a-custom-post-types ===
 Requires at least: 5.9
-Tested up to: 6.4
+Tested up to: 6.5
 Stable tag: 5.9
 Requires PHP: 7.3
 License: GPLv2 or later
@@ -20,12 +20,25 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
-= 1.0.3 ==
-* Remove bullet points from Group List. Cosmetic change requested by Mike Christie
-= 1.0.2 ==
-* Feature 952  Display all Group Sort By buttons on a single line if possible
+* Bug 1027: Label for "category" in u3a group list does not respect u3a settings
+# Issues  #42 and #43 bug fixes
+* Feature 1004: Add support for Meta Field Block to display all group and event metadata
+* Feature 1002: Choice of alphabetic flow in group list
+* Feature 491: Make some group and event metadata available via REST API (Feb 2024)
+* Feature 991: Improve display of group contacts when 'hide email addresses' is off (Jan 2024)
+* Feature 994: Add editable attributes to event list and group list blocks (Jan 2024)
+= 1.0.5 =
+* Bug 1000: On Production website, display of Groups is unpredictable (Jan 2024)
+= 1.0.4 =
+* Feature 1003: Change error message when custom post type has no title (Jan 2024)
+= 1.0.3 =
+* Feature 491: Make group status available via REST API to support development of an Oversights facility for SiteWorks sites (Jan 2024)
+= 1.0.2 = 
+* Feature 952:  Display all Group Sort By buttons on a single line if possible (Dec 2023)
+* Feature 1003: Omit prefix "When:" in group list display (Dec 2023)
+* Feature 996: Add optional start and end times to groups (Dec 2023)
 = 1.0.1 =
-* Bug 983 - Remove '2nd' prefix when a second group leader is shown in 'u3a single group data' block (Nov 2023)
+* Bug 983: Remove '2nd' prefix when a second group leader is shown in 'u3a single group data' block (Nov 2023)
 = 1.0.0 =
 * First production code release
 * Tested up to WordPress 6.4

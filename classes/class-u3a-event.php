@@ -103,8 +103,8 @@ class U3aEvent
         // Customise the Quick Edit panel
         add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
 
-        // Convert event date to system format when rendered by the third party Meta Field Block
-        add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_date'), 10, 2);
+        // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
+        add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
     
     }
 
@@ -577,14 +577,28 @@ class U3aEvent
     }
 
     /** 
-     * Convert event date to system format when rendered by the third party Meta Field Block.
+     * Convert event metadata to displayable text when rendered by the third party Meta Field Block.
+     * Ref https://wordpress.org/plugins/display-a-meta-field-as-block/
      * (WP won't have a problem if the block isn't present)
+     * Where metadata is stored as references/codes return the associated text string
+     * Where metadata is already in text form leave alone. 
      * @usedby filter 'meta_field_block_get_block_content'
      */
-    public static function modify_meta_date($content, $attributes)
+    public static function modify_meta_data($content, $attributes)
     {
-        if (($attributes['fieldName'] == 'eventDate') && ($content != '')) {
-            return date(get_option('date_format'), strtotime($content));
+        if ($content != '') {
+            switch ($attributes['fieldName']) {
+                case 'eventDate':
+                    $content = date(get_option('date_format'), strtotime($content));
+                    break;
+                case 'eventVenue_ID':
+                case 'eventGroup_ID':
+                case 'eventOrganiser_ID':
+                    $content = get_the_title($content);
+                    break;
+                case 'eventBookingRequired':
+                    $content = ($content == 0) ? 'No' : 'Yes';
+            }
         }
         return $content;
     }
@@ -655,7 +669,7 @@ class U3aEvent
             'limitdays' => 0,
             'limitnum' => 0,
             'layout' => 'list',
-            'bgcolor' => '#63c369', // this is a Third Age Trust brand guide secondary colour
+            'bgcolor' => '',
         ];
         // set from page query or from call attributes, page query parameters take priority
         foreach ($display_args as $name => $default) {
@@ -802,16 +816,17 @@ class U3aEvent
      * @param str $when 'past' / 'future'
      * @param boolean $show_group to display the group with which the event is associated.
      * @param array $display_args how and what fields to display ...
+     * NOTE: This function MUST ONLY be called from display_eventlist(), which ensures that all arguments are validly set.
      *
      * @return HTML <h3><div> with a pair of <div>s for each event </div>
      *              or empty string ''
      */
-    public static function display_event_listing($posts, $when, $show_group = true, $display_args)
+    public static function display_event_listing($posts, $when, $show_group, $display_args)
     {
         if (!$posts) return '';
 
         $when_text = ('past' == $when) ? 'Previous' : 'Forthcoming';
-        $html = "<h3>$when_text Events</h3>\n";
+        $html = "<h3>$when_text events</h3>\n";
         $html .= "<div class=\"u3aeventlist\">\n";
         foreach ($posts as $event) {
             $my_event = new self($event->ID); // an object of this class
@@ -870,14 +885,14 @@ class U3aEvent
                 //width of image to match containing div and margin.
                 $image_HTML = <<<END
                     <figure>
-                      <img src="$featured_image" width=300px />
+                      <img class="u3a-eventlist-featured-image" src="$featured_image" width=300px height=225px/>
                       <figcaption>$caption</figcaption>
                     </figure>
                     END;
             } else {
                 $image_HTML = <<<END
                     <div class = "no-figure">
-                      <br>No featured image.
+                      <br>
                     </div>
                     END;
             }
@@ -907,8 +922,9 @@ class U3aEvent
                 END;
             } else {
                 $bgcolor = $display_args['bgcolor'];
+                $style_bgcolor = ('' != $bgcolor) ? "style=\"background-color:$bgcolor\" " : "";
                 $html .= <<< END
-                <div class="u3aeventlist-item" style="background-color:$bgcolor; margin:10px;">
+                <div class="u3aeventlist-item" $style_bgcolor>
                     <div class="u3aevent-grid-left">
                     $image_HTML
                     </div>
