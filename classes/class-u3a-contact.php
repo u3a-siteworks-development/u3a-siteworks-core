@@ -334,6 +334,8 @@ class U3aContact
     /**
      * Produce text info for this contact.
      *
+     * If user can edit posts then adds a link to edit this contact's details.
+     *
      * @return HTML
      */
     public function contact_text()
@@ -349,11 +351,25 @@ class U3aContact
         $email = self::cloak_email(get_post_meta($this->ID, 'email', true), $contact_name);
         // display email link if it exists, else display name
         $contact = ($email) ? $email : $contact_name;
+        // add link to edit this contact, but only if ...
+        // user is logged-in with editing rights and ...
+        // the u3a has not switched off the top toolbar for such users 
+        // (which will be done by the u3a-configuration plugin when 'u3a_enable_toolbar' == 9)
+        $enableToolbar = get_option('u3a_enable_toolbar', 1);
+        $disabled_top_toolbar = (!current_user_can('manage_options') && !is_admin() && ($enableToolbar == 9));
+        $edit_HTML = '';
+        if (current_user_can('edit_others_posts') and !$disabled_top_toolbar) {
+            $edit_link = admin_url("post.php?post=" . $this->ID . "&action=edit");
+            $edit_hint = "Edit this contact details";
+            $edit_HTML = "<a href= '$edit_link'><span style='flex; background-color:yellow;' class='dashicons dashicons-edit' title='$edit_hint'></span></a>";
+        };
+
         // The HTML uses a flex container around spans to prevent overflow with long name + email+ phone
         $html = <<<END
         <div style="display:flex; flex-wrap:wrap;">
         <span style="flex; padding-right: 4px;">$contact</span>
-        <span style="flex; ">$phonetext</span>
+        <span style="flex;  padding-right: 4px;">$phonetext</span>
+        $edit_HTML
         </div>
         END;
         return $html;

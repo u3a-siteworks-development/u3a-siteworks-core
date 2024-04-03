@@ -1187,6 +1187,7 @@ class U3aGroup
      * @param str $role_field the name of the post-meta field of a contact
      * @param str $rolename the display name for this role
      *
+     *
      * @return str HTML complete <tr> item.
      */
     public function contact_text($role_field, $rolename)
