@@ -341,7 +341,8 @@ class U3aGroup
      */
     public static function field_descriptions()
     {
-        $category_singular_term = ucfirst(get_option('u3a_catsingular_term', 'category'));
+        $category_singular_term = get_option('u3a_catsingular_term', 'category');
+        $ucfirst_category_singular_term = ucfirst($category_singular_term);
         $coordinator_term = ucfirst(get_option('u3a_coord_term', 'coordinator'));
 
         $fields = [];
@@ -359,11 +360,13 @@ class U3aGroup
         ];
         $fields[] = [
             'type'       => 'taxonomy',
-            'name'       => $category_singular_term,
+            'name'       => $ucfirst_category_singular_term,
             'id'         => 'category',
             'taxonomy'   => U3A_GROUP_TAXONOMY,
+            'multiple'   => true,
             'field_type' => 'select_advanced',
             'required' => true,
+            'desc'    => "You may enter more than one $category_singular_term here.",
         ];
         $fields[] = [
             'type'    => 'heading',
@@ -584,7 +587,7 @@ class U3aGroup
      * Can be called either as a shortcode or as a render callback of a block.
      * Attributes will also be taken from the page's URL query parameters.
      * If present these query parameters will override parameters passed as arguments
-     * Note: Currently we do not use attributes from block settings!!!
+     * 
      * @param arr $atts attributes with the following possible keys
      *  Attributes
      *  sort: either 'alpha' (default) for a listing in group name alphabet order
@@ -600,6 +603,7 @@ class U3aGroup
         global $wp;
         // valid display_args names and default values
         $display_args = [
+            'cat'  => 'all',
             'sort' => 'alpha',
             'flow' => 'column',
             'status' => 'y',
@@ -615,55 +619,72 @@ class U3aGroup
                 $display_args[$name] = $atts[$name];
             }
         }
-        // set up some buttons to provide some built-in options
-        $thispage = untrailingslashit(home_url($wp->request));
-        $button_identifier = "list_button_anchor";
+        $list_type = $display_args['sort'];
+        $cat = $display_args['cat'];
         $category_singular_term = get_option('u3a_catsingular_term', 'category');
-        $html = <<<END
-        <div id=$button_identifier class="u3agroupbuttons">
-            <a class="wp-element-button" href="$thispage?sort=alpha#$button_identifier">Alphabetical</a>
-            <a class="wp-element-button" href="$thispage?sort=cat#$button_identifier">By $category_singular_term</a>
-            <a class="wp-element-button" href="$thispage?sort=day#$button_identifier">By meeting day</a>
-            <a class="wp-element-button" href="$thispage?sort=venue#$button_identifier">By venue</a>
-        </div>
-        END;
+        $html = '';
+
+        // set up some buttons to provide some built-in options
+        // omit this if not displaying all groups
+        if ('all' == $cat){
+            $thispage = untrailingslashit(home_url($wp->request));
+            $button_identifier = "list_button_anchor";
+            $html = <<<END
+            <div id=$button_identifier class="u3agroupbuttons">
+                <a class="wp-element-button" href="$thispage?sort=alpha#$button_identifier">Alphabetical</a>
+                <a class="wp-element-button" href="$thispage?sort=cat#$button_identifier">By $category_singular_term</a>
+                <a class="wp-element-button" href="$thispage?sort=day#$button_identifier">By meeting day</a>
+                <a class="wp-element-button" href="$thispage?sort=venue#$button_identifier">By venue</a>
+            </div>
+            END;
+        }
+
         $list_flow = $display_args['flow'];
         if ('row' == $list_flow) {
             $html .= '<div class="u3agrouplist-row-first-flow">';
         } else {
             $html .= '<div class="u3agrouplist-column-first-flow">';
         }
+        // we will close the <div> before returning!
 
-        $list_type = $display_args['sort'];
-        if ('alpha' == $list_type) { // list all groups alphabetically
+        // set up basic query args
+        $query_args = array(
+            'post_type' => 'u3a_group',
+            'posts_per_page' => -1,
+            'orderby' => 'title',
+            'order' => 'ASC',
+        );
 
+        // if only displaying groups for a selected category 
+        if ('all' != $cat) {
+            $term = get_term_by('slug', $cat, U3A_GROUP_TAXONOMY);
+            if (empty($term)) {
+                $html .=  "No category with slug = $cat";
+            } else {
+                $query_args['tax_query'] = [[
+                    'taxonomy' => U3A_GROUP_TAXONOMY,
+                    'field'    => 'slug',
+                    'terms' => $cat,
+                ]];
+                $cat_name = get_term_by('slug', $cat, U3A_GROUP_TAXONOMY)->name;
+                $html .= "<h3>Groups in $category_singular_term: $cat_name</h3>";
+                $html .= self::display_selected_groups($query_args, $display_args);
+            }
+        } elseif ('alpha' == $list_type) { // list all groups alphabetically
             $html .= '<h3>Groups listed alphabetically</h3>';
-            $query_args = array(
-                'post_type' => 'u3a_group',
-                'posts_per_page' => -1,
-                'orderby' => 'title',
-                'order' => 'ASC',
-            );
             $html .= self::display_selected_groups($query_args, $display_args);
-            $html .= "</div> <!-- end of u3agrouplist -->\n";
-            return $html;
+
         } elseif ('day' == $list_type) { // group the list by usual meeting day of week
             $html .= "<h3>Groups listed by meeting day</h3>\n";
 
             $weekdays = self::$day_list;
             $weekdays[0] = "Unspecified"; // append default value( 0 ) to list.
             foreach ($weekdays as $day_NUM => $weekday) {
-                $query_args = [
-                    'post_type' => 'u3a_group',
-                    'posts_per_page' => -1,
-                    'orderby' => 'title',
-                    'order' => 'ASC',
-                    'meta_query' => [
+                $query_args['meta_query'] = [
                         [
                             'key' => 'day_NUM',
                             'value'    => $day_NUM,
                         ],
-                    ],
                 ];
                 // Alter query for 'Unspecified' to select when day_NUM is zero or not defined
                 // Only needed when database has been incorrectly loaded, as day_NUM should always be set.
@@ -701,17 +722,11 @@ class U3aGroup
             $venue_IDs = get_posts($venue_query_args);
             $venue_IDs[] = 0; //  append default value( 0 ) to list.
             foreach ($venue_IDs as $venue_ID) {
-                $query_args = [
-                    'post_type' => 'u3a_group',
-                    'posts_per_page' => -1,
-                    'orderby' => 'title',
-                    'order' => 'ASC',
-                    'meta_query' => [
+                $query_args['meta_query'] = [
                         [
                             'key' => 'venue_ID',
                             'value'    => $venue_ID,
                         ],
-                    ],
                 ];
                 // Alter query for 'Unspecified' to select when venue_ID is zero or not defined
                 if (0 == $venue_ID) {
@@ -891,8 +906,6 @@ class U3aGroup
                     $html .= self::get_day_list($all_group_posts);
                 } else {
                     $none_msg = "<p>No groups found.</p>";
-                    $group_list_HTML = self::display_selected_groups($query_args, $display_args, '');
-                    $get_group_listing = true; // so will populate $html later
                     $list_heading = "Showing all groups";
                     $get_group_listing = true; // so will populate $html later
                     $para_with_back_link = ''; // not needed in default case!!
@@ -960,9 +973,11 @@ class U3aGroup
         global $wp;
         $catsUsed = array();
         foreach ($posts as $post) {
-            $cat = get_the_terms($post->ID, U3A_GROUP_TAXONOMY);
-            if ((false !== $cat) && !is_wp_error($cat)) {
-                $catsUsed[] = $cat[0]->name;
+            $categories = get_the_terms($post->ID, U3A_GROUP_TAXONOMY);
+            if ((false !== $categories) && !is_wp_error($categories)) {
+                foreach ($categories as $cat) {// allows for a group to be in multiple categories
+                    $catsUsed[] = $cat->name;
+                }
             }
         }
         $uniqueCats = array_unique($catsUsed);
