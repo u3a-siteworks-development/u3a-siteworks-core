@@ -5,7 +5,7 @@
  * Specifically for use with Oversights but may have other applications
  * Provides fields:
  *  - group status as 'groupstatus' (int)
- *  - group category as 'groupcategory' (string)
+ *  - group category as 'groupcategory' (string array)
  *  - event category as 'eventcategory' (string)
  *  - event date as 'eventdate' (string YYYY-MM-DD)
  *  - event duration as 'eventduration' (int default 1)
@@ -86,18 +86,27 @@ function rest_get_u3a_groupstatus($object)
 }
 
 /**
- * Make u3a group category available as 'groupcategory' (text)
+ * Make u3a group category available as 'groupcategory' (string array)
  *
  * @param WP $object
- * @return (string) group category text (first category only if more than one)
+ * 
+ * @return (array) group category text 
  */
 function rest_get_u3a_groupcategory($object)
 {
     $post_id = $object['id'];
     $cats = get_the_terms($post_id, U3A_GROUP_TAXONOMY);
-    $cat = !empty($cats) ? $cats[0]->name : '';
-    return (string) $cat;
+    if ($cats === false || is_wp_error($cats)) {
+        return array();
+    }
+    $cat_names = array();
+    foreach ($cats as $cat) {
+        $cat_names[] = $cat->name;
+    }
+    return $cat_names;
 }
+
+
 
 /**
  * Make u3a event category available as 'eventcategory' (string)
