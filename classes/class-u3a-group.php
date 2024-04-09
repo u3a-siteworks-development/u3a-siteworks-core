@@ -1086,15 +1086,18 @@ class U3aGroup
         $coordinator_term = ucfirst(get_option('u3a_coord_term', 'coordinator'));
 
         $status = $this->status_text();
-
+        // Could put the initial word Group inside a span, which can be given display=none in css
+        // $group_prefix = '<span class= "group-prefix">Group </span>';
+        // but don't bother!!
+        $group_prefix = '';
         // Group leader (or whatever term is set) as the principal (or only) contact
-        $contacttext = $this->contact_text('coordinator_ID', 'Group ' . $coordinator_term);
+        $contacttext = $this->contact_text('coordinator_ID', $group_prefix . $coordinator_term);
 
         // now all the other optional contact data, if required
         $extrahtml = '';
         if (get_option('field_coord2', '1') == '1') {
             // Second Group leader (or whatever term is set)
-            $extrahtml .= $this->contact_text('coordinator2_ID', 'Group ' . $coordinator_term);
+            $extrahtml .= $this->contact_text('coordinator2_ID', $group_prefix . $coordinator_term);
         }
         if (get_option('field_deputy', '1') == '1') {
             // Deputy leader (or whatever term is set)
@@ -1176,10 +1179,10 @@ class U3aGroup
         $timetext = ($time == '' || $time == 'all day') ? $time : $time . 's';  // usually add 's'!
 
         $start = get_post_meta($this->ID, 'startTime', true);  // in NN:NN format
-        $start = (!empty($start)) ? date('g:i',strtotime($start)) : '';// e.g. convert to 3:30 
+        $start = (!empty($start)) ? date('g:ia',strtotime($start)) : '';// e.g. convert to 3:30 
         $connector = '-';  // without spaces to enforce (simply) no break of line
         $end = get_post_meta($this->ID, 'endTime', true);
-        $end = (!empty($end)) ? $connector . date('g:i',strtotime($end)) : '';// e.g. convert to -5:30
+        $end = (!empty($end)) ? $connector . date('g:ia',strtotime($end)) : '';// e.g. convert to -5:30
         $fromtotext = $start . $end;
 
         $daytext .= ($weekday != '' && $time == '') ? 's' : '';  // usually add 's' if time is blank
