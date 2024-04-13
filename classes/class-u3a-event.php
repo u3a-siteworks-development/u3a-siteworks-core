@@ -278,6 +278,7 @@ class U3aEvent
             'name'    => 'End time',
             'id'      => 'eventEndTime',
             'desc' => 'Optional',
+            'pattern' => '[0-2][0-9]:[0-5][0-9]', // catches most bad input!
         ];
         $fields[] = [
             'type'    => 'number',
