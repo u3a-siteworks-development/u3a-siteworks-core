@@ -4,6 +4,7 @@
  * This class manages these metadata fields:
  * eventDate        event date YYYY-MM-DD
  * eventTime        time of event HH:MM
+ * eventEndTime     end time of event HH:MM
  * eventDays        event duration in days (integer)
  * eventGroup_ID    ID of group
  * eventVenue_ID    ID of venue
@@ -125,6 +126,10 @@ class U3aEvent
         $value = get_post_meta($post_id, 'eventTime', true);
         if (strlen($value) > self::MAX_TIME) {
             update_post_meta($post_id, 'eventTime', 0);
+        }
+        $value = get_post_meta($post_id, 'eventEndTime', true);
+        if (strlen($value) > self::MAX_TIME) {
+            update_post_meta($post_id, 'eventEndTime', 0);
         }
     }
     
@@ -259,7 +264,7 @@ class U3aEvent
             'required' => true,
             // TODO: Maybe no pattern needed as the picker restricts the value range?
             'pattern' => '[1-2][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]', // catches most bad input!
-       ];
+        ];
         $fields[] = [
             'type'    => 'time',
             'name'    => 'Start time',
@@ -267,6 +272,12 @@ class U3aEvent
             'desc' => 'Optional',
             // TODO: Maybe no pattern needed as the picker restricts the value range?
             'pattern' => '[0-2][0-9]:[0-5][0-9]', // catches most bad input!
+        ];
+        $fields[] = [
+            'type'    => 'time',
+            'name'    => 'End time',
+            'id'      => 'eventEndTime',
+            'desc' => 'Optional',
         ];
         $fields[] = [
             'type'    => 'number',
@@ -830,7 +841,7 @@ class U3aEvent
         $html .= "<div class=\"u3aeventlist\">\n";
         foreach ($posts as $event) {
             $my_event = new self($event->ID); // an object of this class
-            list($date, $time) = $my_event->event_date_and_time();
+            list($date, $time, $endtime) = $my_event->event_date_and_time();
             $title = $event->post_title;
             $permalink = get_the_permalink($event);
             $event_category = '';
@@ -853,7 +864,13 @@ class U3aEvent
             if (!empty($extract)) {
                 $extract .= '<br>';
             }
-            $time_line = ($time) ? '<br>' . $time : '';
+            $time_line = '';
+            if ('' != $time) {
+                $time_line = '<br>' . $time;
+                if ('' != $endtime) {
+                    $time_line .= ' - ' . $endtime;
+                }
+            }
             $the_venue = new U3aVenue(get_post_meta($event->ID, 'eventVenue_ID', true));
             $venue_name_with_link = $the_venue->venue_name_with_link();
             $venue_line = '';
@@ -985,11 +1002,15 @@ class U3aEvent
         $date_time = $this->event_date_and_time();
         $date = $date_time[0];
         $time = $date_time[1];
+        $endtime = $date_time[2];
+        if ('' != $endtime) {
+            $endtime = '- ' . $endtime;
+        }
         if (!empty($date)) {
             $html .= "<tr><td>Date: </td> <td>$date</td></tr>";
         }
         if (!empty($time)) {
-            $html .= "<tr><td>Time: </td> <td>$time</td></tr>";
+            $html .= "<tr><td>Time: </td> <td>$time $endtime</td></tr>";
         }
         $duration = get_post_meta($this->ID, 'eventDays', true);
         if (!empty($duration) && $duration > 1) {
@@ -1040,17 +1061,22 @@ class U3aEvent
 
     /** 
      * Formats the event date and time.
-     * @return array [formatted date,formatted time]
+     * 
+     * @return array [formatted date, formatted time, formatted end time]
      */
     public function event_date_and_time()
     {
         $date = get_post_meta($this->ID, 'eventDate', true);
         if (empty($date)) {
-            return ['', ''];
+            return ['', '', ''];  // Should never occur as eventDate is required
         }
         $time = get_post_meta($this->ID, 'eventTime', true);
         $time = (!empty($time)) ? $time : '';
-        $temp = strtotime($date . ' ' . $time);
+        $tempstart = strtotime($date . ' ' . $time);
+
+        $endtime = get_post_meta($this->ID, 'eventEndTime', true);
+        $endtime = (!empty($endtime)) ? $endtime : '';
+        $tempend = strtotime($date . ' ' . $endtime);
 
         // Use the date and time format settings from Event tab on u3a Settings page
         $events_dateformat = get_option('events_dateformat', 'system');
@@ -1077,9 +1103,16 @@ class U3aEvent
         }
 
         if ('' != $time) {
-            return [date($dateformat, $temp), date($timeformat, $temp)];
+            if ('' != $endtime) {
+                // we have both start and end time
+                return [date($dateformat, $tempstart), date($timeformat, $tempstart), date($timeformat, $tempend)];
+            } else {
+                // we only have start time
+                return [date($dateformat, $tempstart), date($timeformat, $tempstart), ''];
+            }
         } else {
-            return [date($dateformat, $temp), ''];
+            // only event date
+            return [date($dateformat, $tempstart), '', ''];
         }
     }
 

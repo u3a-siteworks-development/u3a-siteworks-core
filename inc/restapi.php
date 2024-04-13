@@ -8,6 +8,8 @@
  *  - group category as 'groupcategory' (string array)
  *  - event category as 'eventcategory' (string)
  *  - event date as 'eventdate' (string YYYY-MM-DD)
+ *  - event start time as 'eventstarttime' (string HH:MM)
+ *  - event end time as 'eventendtime' (string HH:MM)
  *  - event duration as 'eventduration' (int default 1)
  *  - event groupname as 'eventgroup' (string default null for not a group event)
  */
@@ -55,6 +57,21 @@ function u3a_setup_rest_meta_data()
         )
     );
     register_rest_field(
+        array(U3A_EVENT_CPT),
+        'eventstarttime',
+        array(
+            'get_callback'    => 'rest_get_u3a_eventstarttime',
+            'schema'          => null,
+        )
+    );
+    register_rest_field(
+        array(U3A_EVENT_CPT),
+        'eventendtime',
+        array(
+            'get_callback'    => 'rest_get_u3a_eventendtime',
+            'schema'          => null,
+        )
+    );    register_rest_field(
         array(U3A_EVENT_CPT),
         'eventduration',
         array(
@@ -132,6 +149,33 @@ function rest_get_u3a_eventdate($object)
     $date = get_post_meta($post_id, 'eventDate', true);
     return (string) $date;
 }
+
+/**
+ * Make u3a event start time available as 'eventstarttime' (string HH:MM)
+ *
+ * @param WP $object
+ * @return (string) event date
+ */
+function rest_get_u3a_eventstarttime($object)
+{
+    $post_id = $object['id'];
+    $time = get_post_meta($post_id, 'eventTime', true);
+    return (string) $time;
+}
+
+/**
+ * Make u3a event start time available as 'eventendtime' (string HH:MM)
+ *
+ * @param WP $object
+ * @return (string) event date
+ */
+function rest_get_u3a_eventendtime($object)
+{
+    $post_id = $object['id'];
+    $time = get_post_meta($post_id, 'eventEndTime', true);
+    return (string) $time;
+}
+
 
 /**
  * Make u3a event duration in days available as 'eventduration' (int, default 1)

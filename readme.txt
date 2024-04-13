@@ -20,6 +20,7 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Feature 1015: Add optional event end time (metadata field eventEndTime)
 * Feature 1024: Support multiple u3a_group categories in REST API endpoint
 * Bug 1027: Label for "category" in u3a group list does not respect u3a settings
 # Issues  #42 and #43 bug fixes
