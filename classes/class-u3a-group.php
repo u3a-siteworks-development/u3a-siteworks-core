@@ -596,6 +596,7 @@ class U3aGroup
      *        or 'venue' for a listing grouped by venue
      *  status=y: to include each group's status (default=y)
      *  when=y: to include meeting day, time and frequency (default=y)
+     *  venue=y: to show the meeting venue (default=n)
      *  Maybe in future add more options!!
      */
     public static function group_list_sorted($atts, $content = '')
@@ -608,6 +609,7 @@ class U3aGroup
             'flow' => 'column',
             'status' => 'y',
             'when' => 'y',
+            'venue' => 'n',
         ];
         // set from page query or from call attributes
         // phpcs:disable WordPress.Security.NonceVerification.Recommended
@@ -626,7 +628,7 @@ class U3aGroup
 
         // set up some buttons to provide some built-in options
         // omit this if not displaying all groups
-        if ('all' == $cat){
+        if ('all' == $cat) {
             $thispage = untrailingslashit(home_url($wp->request));
             $button_identifier = "list_button_anchor";
             $html = <<<END
@@ -709,8 +711,9 @@ class U3aGroup
                     END;
                 }
             } // endfor
-
         } elseif ('venue' == $list_type) { // group the list by venue
+
+            $display_args['venue'] = 'n'; // dont display venue if sorted by venue
             $html .= "<h3>Groups listed by venue</h3>\n";
             $venue_query_args = [
                 'post_type' => 'u3a_venue',
@@ -1034,6 +1037,7 @@ class U3aGroup
     {
         $show_status = $display_args['status'];
         $show_when = $display_args['when'];
+        $show_venue = $display_args['venue'];
 
         $groups = new WP_Query($query_args);
         if ($groups->have_posts()) :
@@ -1050,6 +1054,12 @@ class U3aGroup
                 if ('y' == $show_status) {
                     $status = $the_group->status_text_short();
                     $html .= "<br><span class=\"u3a_group_status\">Status: $status </span>\n";
+                }
+                if ('y' == $show_venue) {
+                    $venue = $the_group->venue_text();
+                    if (!empty($venue)) {
+                        $html .= "<br><span class=\"u3a_group_status\">Venue: $venue </span>\n";
+                    }
                 }
                 if ('y' == $show_when) {
                     $when = $the_group->when_text();
@@ -1145,6 +1155,20 @@ class U3aGroup
     {
         $status_NUM = get_post_meta($this->ID, 'status_NUM', true);
         return (!empty($status_NUM)) ? self::$status_list_short[$status_NUM] : 'ERROR: no status entered';
+    }
+
+    /**
+     * Returns the venue text (or unspecified)
+     * @return str
+     */
+    public function venue_text()
+    {
+        $venue_ID = get_post_meta($this->ID, 'venue_ID', true);
+        if (0 == $venue_ID) {
+            return "Unspecified venue";
+        }
+        $venue_object = new U3aVenue($venue_ID);
+        return $venue_object->venue_name_with_link();
     }
 
     /**
