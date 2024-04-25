@@ -35,10 +35,16 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       },
       bwhen: {
         type: "boolean"
+      },
+      venue: {
+        type: "string"
+      },
+      bvenue: {
+        type: "boolean"
       }
     },
     edit: function( {attributes, setAttributes } ) {
-      const { cat, sort, flow, bstatus, status, bwhen, when } = attributes;
+      const { cat, sort, flow, bstatus, status, bwhen, when, bvenue, venue } = attributes;
       const onChangeCat = val => {
         setAttributes( { cat: val });
       };
@@ -59,6 +65,14 @@ wp.blocks.registerBlockType("u3a/grouplist", {
           setAttributes( { when: "y"});
         } else {
           setAttributes( { when: "n"});
+        }
+      };
+      const onChangeVenue = val => {
+        setAttributes( { bvenue: val});
+        if (val) {
+          setAttributes( { venue: "y"});
+        } else {
+          setAttributes( { venue: "n"});
         }
       };
       const onChangeFlow = val => {
@@ -160,6 +174,12 @@ wp.blocks.registerBlockType("u3a/grouplist", {
               { label:'Show Meeting Time', 
                 checked: bwhen,
                 onChange: onChangeWhen,
+              }
+            ),
+            wp.element.createElement( ToggleControl,
+              { label:'Show Venue',
+                checked: bvenue,
+                onChange: onChangeVenue,
               }
             )
           )
