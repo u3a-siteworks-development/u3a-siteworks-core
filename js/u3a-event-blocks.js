@@ -198,7 +198,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   onChange: onChangeLayout,
                   options:[
                     {label: 'Simple list', value: 'list',},
-                    {label: 'Grid with image', value: 'grid',}
+                    {label: 'Grid with featured image', value: 'grid',}
                   ]
                 }
               ),
@@ -206,7 +206,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               ),
             ),
           ),
-        wp.element.createElement("div", {style: {color: 'black', backgroundColor: editBoxColor, padding: '10px'}}, "This placeholder shows where a table of events will be shown.")
+        wp.element.createElement("div", {style: {color: 'black', backgroundColor: editBoxColor, padding: '10px', border: '1px solid lightgrey'}}, "This placeholder shows where a table of events will be shown.")
       ];
       return  nest
     },
