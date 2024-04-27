@@ -1191,6 +1191,7 @@ class U3aGroup
      */
     public function when_text()
     {
+        $timeformat = get_option('time_format', 'g:i a');  // use WordPress settings for time format 
         $day_NUM = get_post_meta($this->ID, 'day_NUM', true);
         // set valid weekday or empty string (use ?? operator)
         $weekday = (!empty($day_NUM)) ? (self::$day_list[$day_NUM] ?? '') : '';
@@ -1203,10 +1204,10 @@ class U3aGroup
         $timetext = ($time == '' || $time == 'all day') ? $time : $time . 's';  // usually add 's'!
 
         $start = get_post_meta($this->ID, 'startTime', true);  // in NN:NN format
-        $start = (!empty($start)) ? date('g:ia',strtotime($start)) : '';// e.g. convert to 3:30 
+        $start = (!empty($start)) ? date($timeformat, strtotime($start)) : '';// e.g. convert to 3:30 
         $connector = '-';  // without spaces to enforce (simply) no break of line
         $end = get_post_meta($this->ID, 'endTime', true);
-        $end = (!empty($end)) ? $connector . date('g:ia',strtotime($end)) : '';// e.g. convert to -5:30
+        $end = (!empty($end)) ? $connector . date($timeformat, strtotime($end)) : '';// e.g. convert to -5:30
         $fromtotext = $start . $end;
 
         $daytext .= ($weekday != '' && $time == '') ? 's' : '';  // usually add 's' if time is blank
