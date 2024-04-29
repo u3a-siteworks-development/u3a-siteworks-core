@@ -42,12 +42,16 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       layout: {
           type: "string"
       },
+      crop: {
+        type: "string",
+        default: "y"
+      },
       bgcolor: {
         type: "string"
       },
     },
     edit: function( {attributes, setAttributes } ) {
-      const { when, order, cat, bgroups, groups, limitnum, limitdays, layout, bgcolor } = attributes;
+      const { when, order, cat, bgroups, groups, crop, limitnum, limitdays, layout, bgcolor } = attributes;
       const onChangeWhen = val => {
         setAttributes( { when: val });
         setAttributes( { order: (val == 'future' ? 'asc' : 'desc')});
@@ -64,6 +68,14 @@ wp.blocks.registerBlockType("u3a/eventdata", {
           setAttributes( { groups: "y"})
         } else {
           setAttributes( { groups: "n"})
+        }
+      };
+      const onChangeCrop = val => {
+          bcrop = val;
+        if (val) {
+          setAttributes( { crop: "y"})
+        } else {
+          setAttributes( { crop: "n"})
         }
       };
       const onChangeNum = val => {
@@ -116,14 +128,24 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               value: terms[i].slug
           } );
       };
-      function ShowColorPanel(params){
-          const {colorOn, ...panelParams} = params;
-          if (colorOn) {
-              return wp.element.createElement(PanelColorSettings, panelParams);}
+      function ShowGridOptions(params){
+          const {gridOn, cropOn, ...panelParams} = params;
+          if (gridOn) {
+              return wp.element.createElement("div", {},
+                         wp.element.createElement( ToggleControl,
+                          { label:'Crop image to fit',
+                            checked: cropOn,
+                            onChange: onChangeCrop,
+                          }
+                         ),
+                         wp.element.createElement(PanelColorSettings, panelParams),
+                     );
+          }
           return '';
       }
       /* default to #ffc700 if layout == 'list' or is not set*/
       var editBoxColor = (layout == 'grid') ? bgcolor : '#ffc700';
+      var bcrop = (crop == 'y');
 
       var nest = [
           wp.element.createElement(
@@ -202,7 +224,11 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   ]
                 }
               ),
-              wp.element.createElement( ShowColorPanel, {colorOn:(layout=='grid'), title:'Colours', initialOpen:false, colorSettings:colorSettingsDropDown }, 
+              wp.element.createElement( ShowGridOptions,
+                   {gridOn:(layout=='grid'),
+                    cropOn: (crop == 'y'),
+                    title:'Colours', initialOpen:false, colorSettings:colorSettingsDropDown 
+                   }, 
               ),
             ),
           ),
