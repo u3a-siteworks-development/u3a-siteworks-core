@@ -671,7 +671,6 @@ class U3aEvent
     public static function display_eventlist($atts, $content = '')
     {
         global $post;
-        
         // valid display_args names and default values
         $display_args = [
             'when' => 'future',
@@ -681,6 +680,7 @@ class U3aEvent
             'limitdays' => 0,
             'limitnum' => 0,
             'layout' => 'list',
+            'crop' => 'y',
             'bgcolor' => '',
         ];
         // set from page query or from call attributes, page query parameters take priority
@@ -740,6 +740,11 @@ class U3aEvent
         if (!in_array($layout, ['list', 'grid'])) {
             $error .= 'bad parameter: layout=' . esc_html($layout) . '<br>';
             $layout = 'list'; //default
+        }
+        $crop = $display_args['crop'];
+        if (!in_array($crop, ['y', 'n'])) {
+            $error .= 'bad parameter: crop=' . esc_html($crop) . '<br>';
+            $crop = 'y'; //default
         }
         $bgcolor = $display_args['bgcolor'];
 
@@ -817,7 +822,7 @@ class U3aEvent
         // Generate table from array of posts
         // no need to show the event's group if we are on the group page!
         $show_group_info = !($on_group_page);
-        $display_args = ['layout' => $layout,'bgcolor' => $bgcolor];
+        $display_args = ['layout' => $layout,'crop' => $crop,'bgcolor' => $bgcolor];
         if ($posts)  return self::display_event_listing($posts, $when, $show_group_info, $display_args);
         else return '';
     }
@@ -900,10 +905,11 @@ class U3aEvent
             $caption = get_the_post_thumbnail_caption($event->ID);
             $image_HTML = '';
             if ($featured_image) {
+                $fit = ("y" == $display_args['crop']) ? "u3a-crop" : "u3a-scale-down";
                 //width of image to match containing div and margin.
                 $image_HTML = <<<END
                     <figure>
-                      <img class="u3a-eventlist-featured-image" src="$featured_image" width=300px height=225px/>
+                      <img class="u3a-eventlist-featured-image $fit" src="$featured_image" />
                       <figcaption>$caption</figcaption>
                     </figure>
                     END;

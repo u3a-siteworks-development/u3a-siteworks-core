@@ -24,8 +24,15 @@
     text-align: center;
 }
 .u3a-eventlist-featured-image {
-    object-fit: cover;
+    width: 300px; /*width of image to match containing div and margin */
+    height: 225px; /* portait 4:3 ratio*/
     object-position: center;
+}
+.u3a-crop {
+    object-fit: cover;
+}
+.u3a-scale-down {
+    object-fit: scale-down;
 }
 .u3aeventlist .no-figure {
     width:300px;
