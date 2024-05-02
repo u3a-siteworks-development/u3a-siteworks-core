@@ -835,7 +835,7 @@ class U3aEvent
      * @param array $display_args how and what fields to display ...
      * NOTE: This function MUST ONLY be called from display_eventlist(), which ensures that all arguments are validly set.
      *
-     * @return HTML <h3><div> with a pair of <div>s for each event </div>
+     * @return HTML <div> with a <h3> and a div and sub-divs for each event </div>
      *              or empty string ''
      */
     public static function display_event_listing($posts, $when, $show_group, $display_args)
@@ -843,8 +843,8 @@ class U3aEvent
         if (!$posts) return '';
 
         $when_text = ('past' == $when) ? 'Previous' : 'Forthcoming';
-        $html = "<h3>$when_text events</h3>\n";
-        $html .= "<div class=\"u3aeventlist\">\n";
+        $html = "<div class=\"u3aeventlist\">\n";
+        $html .= "<h3>$when_text events</h3>\n";
         foreach ($posts as $event) {
             $my_event = new self($event->ID); // an object of this class
             list($date, $time, $endtime) = $my_event->event_date_and_time();
