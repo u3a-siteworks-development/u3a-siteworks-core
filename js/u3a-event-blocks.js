@@ -18,6 +18,10 @@ wp.blocks.registerBlockType("u3a/eventdata", {
     icon: "tickets-alt",
     category: "widgets",
     attributes: {
+      showtitle: {
+        type: "string",
+        default: "y"
+      },
       when: {
         type: "string"
       },
@@ -51,7 +55,15 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       },
     },
     edit: function( {attributes, setAttributes } ) {
-      const { when, order, cat, bgroups, groups, crop, limitnum, limitdays, layout, bgcolor } = attributes;
+      const { when, order, cat, bgroups, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle } = attributes;
+      const onChangeShowTitle = val => {
+        bshowtitle = val;
+        if (val) {
+          setAttributes( { showtitle: "y"})
+        } else {
+          setAttributes( { showtitle: "n"})
+        }
+      };
       const onChangeWhen = val => {
         setAttributes( { when: val });
         setAttributes( { order: (val == 'future' ? 'asc' : 'desc')});
@@ -146,6 +158,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       /* default to #ffc700 if layout == 'list' or is not set*/
       var editBoxColor = (layout == 'grid') ? bgcolor : '#ffc700';
       var bcrop = (crop == 'y');
+      var bshowtitle = (showtitle == 'y');
 
       var nest = [
           wp.element.createElement(
@@ -222,6 +235,12 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                     {label: 'Simple list', value: 'list',},
                     {label: 'Grid with featured image', value: 'grid',}
                   ]
+                }
+              ),
+              wp.element.createElement( ToggleControl,
+                { label:'Show Title', 
+                  checked: bshowtitle,
+                  onChange: onChangeShowTitle,
                 }
               ),
               wp.element.createElement( ShowGridOptions,
