@@ -673,6 +673,7 @@ class U3aEvent
         global $post;
         // valid display_args names and default values
         $display_args = [
+            'showtitle' => 'y',
             'when' => 'future',
             'order' => '',
             'cat' => 'all',
@@ -748,6 +749,8 @@ class U3aEvent
         }
         $bgcolor = $display_args['bgcolor'];
 
+        $showtitle = ($display_args['showtitle'] == "y") ? true : false;
+
         // end of validation checks
 
         $numposts = ($limitnum > 0) ? $limitnum : -1; // if unlimited display all selected events
@@ -822,7 +825,7 @@ class U3aEvent
         // Generate table from array of posts
         // no need to show the event's group if we are on the group page!
         $show_group_info = !($on_group_page);
-        $display_args = ['layout' => $layout,'crop' => $crop,'bgcolor' => $bgcolor];
+        $display_args = ['showtitle' => $showtitle, 'layout' => $layout,'crop' => $crop,'bgcolor' => $bgcolor];
         if ($posts)  return self::display_event_listing($posts, $when, $show_group_info, $display_args);
         else return '';
     }
@@ -844,7 +847,9 @@ class U3aEvent
 
         $when_text = ('past' == $when) ? 'Previous' : 'Forthcoming';
         $html = "<div class=\"u3aeventlist\">\n";
-        $html .= "<h3>$when_text events</h3>\n";
+        if ($display_args['showtitle']) {
+            $html .= "<h3>$when_text events</h3>\n";
+        }
         foreach ($posts as $event) {
             $my_event = new self($event->ID); // an object of this class
             list($date, $time, $endtime) = $my_event->event_date_and_time();
