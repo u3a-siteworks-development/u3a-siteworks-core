@@ -825,6 +825,20 @@ class U3aEvent
         // Generate table from array of posts
         // no need to show the event's group if we are on the group page!
         $show_group_info = !($on_group_page);
+
+        if ($show_group_info) {
+            // we are not on the group page, hide events associated with a non-published group
+            $index = 0;
+            foreach ($posts as $event) {
+                if ($event->eventGroup_ID != '') {
+                    $groupstatus = get_post_status($event->eventGroup_ID);
+                    if ($groupstatus != 'publish') {
+                        unset($posts[$index]);
+                    }
+                }
+                $index++;
+            }
+        }
         $display_args = ['showtitle' => $showtitle, 'layout' => $layout,'crop' => $crop,'bgcolor' => $bgcolor];
         if ($posts)  return self::display_event_listing($posts, $when, $show_group_info, $display_args);
         else return '';
