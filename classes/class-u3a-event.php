@@ -826,21 +826,23 @@ class U3aEvent
         // no need to show the event's group if we are on the group page!
         $show_group_info = !($on_group_page);
 
+        $valid_posts = array();
         if ($show_group_info) {
             // we are not on the group page, hide events associated with a non-published group
-            $index = 0;
             foreach ($posts as $event) {
                 if ($event->eventGroup_ID != '') {
                     $groupstatus = get_post_status($event->eventGroup_ID);
                     if ($groupstatus != 'publish') {
-                        unset($posts[$index]);
+                        continue;
                     }
                 }
-                $index++;
+                $valid_posts[] = $event;
             }
+        } else {
+            $valid_posts = $posts;
         }
         $display_args = ['showtitle' => $showtitle, 'layout' => $layout,'crop' => $crop,'bgcolor' => $bgcolor];
-        if ($posts)  return self::display_event_listing($posts, $when, $show_group_info, $display_args);
+        if ($valid_posts)  return self::display_event_listing($valid_posts, $when, $show_group_info, $display_args);
         else return '';
     }
 
