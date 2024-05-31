@@ -16,7 +16,8 @@ wp.blocks.registerBlockType("u3a/grouplist", {
     category: "widgets",
     attributes: {
       cat: {
-        type: "string"
+        type: "string",
+        default: "all"
       },
       sort: {
         type: "string"
