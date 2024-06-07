@@ -20,6 +20,10 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.1.2 =
+* Bug 1048: venue not initialised in shortcode u3agrouplist
+* Bug 1046: u3a group list properties panel does not initially show Sort Order option
+* Bug 1042: group events should not appear in listings if group is not currently 'published'
 = 1.1.1 =
 * Bug 1034: Allow suppression of the default event list title
 = 1.1.0 =
