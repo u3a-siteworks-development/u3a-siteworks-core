@@ -813,6 +813,7 @@ class U3aGroup
             'flow' => 'column',
             'status' => 'y',
             'when' => 'n',
+            'venue' => 'n',
         ];
         // set from page query or from call attributes
         foreach ($display_args as $name => $default) {
