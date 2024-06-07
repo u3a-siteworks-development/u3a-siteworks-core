@@ -20,6 +20,8 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.1.1 =
+* Bug 1034: Allow suppression of the default event list title
 = 1.1.0 =
 * Release 1098 feedback: Respect WordPress time format in group listings, minor changes to event list block properties
 * Feature 1023: Option to display venue in group list.
