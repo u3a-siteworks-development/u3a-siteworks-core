@@ -173,7 +173,7 @@ class U3aGroup
         $args = array(
             'public' => true,
             'show_in_rest' => true,
-            'supports' => array('title', 'editor', 'author', 'thumbnail', 'color'),
+            'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'color'),
             'rewrite' => array('slug' => sanitize_title(U3A_GROUP_CPT . 's')),
             'has_archive' => false,
             'menu_icon' => U3A_GROUP_ICON,
