@@ -557,12 +557,16 @@ class U3aEvent
         if (!(($query->query['post_type'] === U3A_EVENT_CPT) && (isset($_GET['groupID']) && !empty($_GET['groupID'])))) {
             return $query;
         }
+        //add a meta_query for group selection
+        $meta_query[] = array(
+                'key' => 'eventGroup_ID',
+                // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                'value' => sanitize_text_field($_GET['groupID']),
+                'compare' => '=',
+                'type' => '',
+        );
+        $query->set('meta_query', $meta_query);
 
-        //modify the query_vars for group selection
-        $query->query_vars['meta_key'] = 'eventGroup_ID';
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $query->query_vars['meta_value'] = sanitize_text_field($_GET['groupID']);
-        $query->query_vars['meta_compare'] = '=';
         return $query;
     }
 
