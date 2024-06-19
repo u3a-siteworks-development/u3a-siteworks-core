@@ -20,6 +20,7 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Bug 1055: add support for Excerpts when defining Group and Venue custom post types
 = 1.1.2 =
 * Bug 1048: venue not initialised in shortcode u3agrouplist
 * Bug 1046: u3a group list properties panel does not initially show Sort Order option

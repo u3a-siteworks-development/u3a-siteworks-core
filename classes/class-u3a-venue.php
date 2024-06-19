@@ -161,7 +161,7 @@ class U3aVenue
         $args = array(
             'public' => true,
             'show_in_rest' => true,
-            'supports' => array('title', 'editor', 'author', 'thumbnail'),
+            'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt'),
             'rewrite' => array('slug' => sanitize_title(U3A_VENUE_CPT . 's')),
             'has_archive' => false,
             'menu_icon' => U3A_VENUE_ICON,
