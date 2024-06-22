@@ -934,7 +934,9 @@ class U3aEvent
                 //width of image to match containing div and margin.
                 $image_HTML = <<<END
                     <figure>
-                      <img class="u3a-eventlist-featured-image $fit" src="$featured_image" />
+                      <a href="$permalink">
+                        <img class="u3a-eventlist-featured-image $fit" src="$featured_image" />
+                      </a>
                       <figcaption>$caption</figcaption>
                     </figure>
                     END;
