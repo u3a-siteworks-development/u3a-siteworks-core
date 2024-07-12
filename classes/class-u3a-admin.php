@@ -178,6 +178,9 @@ class U3aAdmin
         $u3a_grouplist_type = get_option('u3a_grouplist_type', 'sorted');
         $list_sorted = ($u3a_grouplist_type == 'sorted') ? ' checked' : '';
         $list_filtered = ($u3a_grouplist_type == 'filtered') ? ' checked' : '';
+        
+        $grouplist_scroll = get_option('u3a_groups_list_scroll', 'enabled');
+        $grouplist_scroll_chk = ('enabled' == $grouplist_scroll) ? ' checked' : '';
 
         $field_coord2 = get_option('field_coord2', '1');
         $field_coord2_chk = ($field_coord2 == '1') ? ' checked' : '';
@@ -230,6 +233,10 @@ class U3aAdmin
         <p> Group lists can be shown either with sorting or filtering options. Choose which will be used.</p>
         <label for="sorted"><input type="radio" id="sorted" name="u3a_grouplist_type" value="sorted" $list_sorted>sorted</label><br>
         <label for="filtered"><input type="radio" id="filtered" name="u3a_grouplist_type" value="filtered" $list_filtered>filtered</label>
+
+        <p>For the sorted option, a set of 'sort by' buttons appears above the list. When clicking one of these buttons the page refreshes and optionally scrolls the page down to these buttons.<br>
+        <label for="grouplist_scroll"> Enable auto-scrolling to sort buttons?</label>
+        <input type="checkbox" id="grouplist_scroll" name="grouplist_scroll"  value="1" $grouplist_scroll_chk></p>
 
         <p>For the filtered option, with a limited number of groups, the list will be shown in alphabetical order.  With more groups, the system will display options to filter the list before showing the selected groups.<br>
         <label for="grouplistthreshold">Maximum size of group list before automatically filtering:</label> <input type="number" class="small-text" id="grouplistthreshold" name="grouplistthreshold" value="$grouplist_threshold" min="0" max="999"></p>
@@ -446,6 +453,9 @@ class U3aAdmin
         } else {
             add_option('u3a_grouplist_type', $u3a_grouplist_type);
         }
+
+        $grouplist_scroll = isset($_POST['grouplist_scroll']) ? 'enabled' : 'disabled';
+        update_option('u3a_groups_list_scroll', $grouplist_scroll); // will add if not present!
 
         $grouplist_threshold = $_POST['grouplistthreshold'];
         if (get_option('grouplist_threshold') !== false) {
