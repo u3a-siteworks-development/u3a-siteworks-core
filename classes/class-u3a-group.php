@@ -631,12 +631,17 @@ class U3aGroup
         if ('all' == $cat) {
             $thispage = untrailingslashit(home_url($wp->request));
             $button_identifier = "list_button_anchor";
+            $button_anchor = "#$button_identifier";
+            // if disabled don't use the anchor.
+            if ('disabled' == get_option('u3a_groups_list_scroll', 'enabled')) {
+                $button_anchor = '';
+            }
             $html = <<<END
             <div id=$button_identifier class="u3agroupbuttons">
-                <a class="wp-element-button" href="$thispage?sort=alpha#$button_identifier">Alphabetical</a>
-                <a class="wp-element-button" href="$thispage?sort=cat#$button_identifier">By $category_singular_term</a>
-                <a class="wp-element-button" href="$thispage?sort=day#$button_identifier">By meeting day</a>
-                <a class="wp-element-button" href="$thispage?sort=venue#$button_identifier">By venue</a>
+                <a class="wp-element-button" href="$thispage?sort=alpha$button_anchor">Alphabetical</a>
+                <a class="wp-element-button" href="$thispage?sort=cat$button_anchor">By $category_singular_term</a>
+                <a class="wp-element-button" href="$thispage?sort=day$button_anchor">By meeting day</a>
+                <a class="wp-element-button" href="$thispage?sort=venue$button_anchor">By venue</a>
             </div>
             END;
         }
