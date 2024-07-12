@@ -332,9 +332,9 @@ class U3aAdmin
         <input type="radio" id="timeformat-system" name="timeformat" value="system" $events_timeformat_system>
         <label for="timeformat-system">WordPress Time Format: $system_time_example</label><br>
         <input type="radio" id="timeformat-12hr" name="timeformat" value="12hr" $events_timeformat_12hr>
-        <label for="timeformat-system">12 hour format: 2:30pm</label><br>
+        <label for="timeformat-12hr">12 hour format: 2:30pm</label><br>
         <input type="radio" id="timeformat-24hr" name="timeformat" value="24hr" $events_timeformat_24hr>
-        <label for="timeformat-system">24 hour format: 14:30</label>
+        <label for="timeformat-24hr">24 hour format: 14:30</label>
         </p>
 
         <h3>Date format</h3>
