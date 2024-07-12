@@ -633,7 +633,7 @@ class U3aGroup
             $button_identifier = "list_button_anchor";
             $button_anchor = "#$button_identifier";
             // if disabled don't use the anchor.
-            if ('disabled' == get_option('u3a-groups-list-scroll-disable', '')) {
+            if ('disabled' == get_option('u3a_groups_list_scroll_disable', '')) {
                 $button_anchor = '';
             }
             $html = <<<END
