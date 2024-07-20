@@ -70,7 +70,7 @@ class U3aCommon
      */
     public static function remove_date_filter($months, $post_type)
     {
-        if (in_array($post_type, [U3A_EVENT_CPT, U3A_GROUP_CPT, U3A_VENUE_CPT, U3A_CONTACT_CPT])) {
+        if (in_array($post_type, [U3A_EVENT_CPT, U3A_GROUP_CPT, U3A_VENUE_CPT, U3A_CONTACT_CPT,U3A_EVENTSERIES_CPT])) {
             return array();
         }
         return $months;
@@ -85,7 +85,7 @@ class U3aCommon
     {
         global $post;
         if ($hook == 'post-new.php' || $hook == 'post.php') {
-            if (in_array($post->post_type, [U3A_EVENT_CPT, U3A_GROUP_CPT, U3A_VENUE_CPT, U3A_CONTACT_CPT, U3A_NOTICE_CPT])) {
+            if (in_array($post->post_type, [U3A_EVENT_CPT, U3A_GROUP_CPT, U3A_VENUE_CPT, U3A_CONTACT_CPT, U3A_NOTICE_CPT,U3A_EVENTSERIES_CPT])) {
                 wp_enqueue_script(
                     'ensure_title_script', 
                     plugins_url('js/u3a-cpt-ensure-title.js', self::$plugin_file), 
