@@ -157,6 +157,12 @@ trait ManageCrossRefs
             wp_die($message);
         }
     }
+
+    public static function dateCompare($a, $b)
+    {
+        return $a->date > $b->date;
+    }
+
     /**
      * Gets all xrefs to this post in other posts.
      *
@@ -171,10 +177,10 @@ trait ManageCrossRefs
     {
         $meta_key_list = self::$xref_meta_key_list;
         global $wpdb;
-        // This query finds custom groups or events with a contact postmeta key whose value matches
+         // This query finds custom groups or events with a contact postmeta key whose value matches
         // the contact post_id.
         // Much simpler than using WP_Query to do this!
-        $query = "SELECT post_title, post_name, post_type FROM $wpdb->posts AS p JOIN $wpdb->postmeta AS m ON p.ID = m.post_ID";
+        $query = "SELECT ID, post_title, post_name, post_type FROM $wpdb->posts AS p JOIN $wpdb->postmeta AS m ON p.ID = m.post_ID";
         $query .= " WHERE p.post_status = 'publish'";
         $query .= " AND p.post_type IN ('u3a_group', 'u3a_event')";
         $query .= " AND m.meta_key IN ($meta_key_list)";
@@ -184,6 +190,10 @@ trait ManageCrossRefs
         $events = array();
         $xrefs["groups"] = $groups;
         $xrefs["events"] = $events;
+        $eventdates = array();
+        $current_date = strtotime("00:00:00");
+        $user_is_admin = in_array('administrator', wp_get_current_user()->roles);
+
         //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $meta_key_list is a constant string
         $results = $wpdb->get_results($wpdb->prepare($query, $post_id));
         if ($results) {
@@ -191,8 +201,28 @@ trait ManageCrossRefs
                 if ($result->post_type == 'u3a_group') {
                     $xrefs["groups"][] = '<a href="' . get_site_url() . '/' . $result->post_type . 's/' . $result->post_name . '">' . $result->post_title . '</a>';
                 } else {
-                    $xrefs["events"][] = '<a href="' . get_site_url() . '/' . $result->post_type . 's/' . $result->post_name . '">' . $result->post_title . '</a>';
+                    // get the date of the event
+                    $eventdate = get_post_meta($result->ID, 'eventDate', true);
+                    if (strlen($eventdate) > 0) {
+                        // should always be gt 0, but being cautious.
+                        $eventdate = strtotime($eventdate);
+                        if ($user_is_admin || $eventdate >= $current_date) {
+                            $event = new stdClass();
+                            $event->date = $eventdate;
+                            $event->link = '<a href="' . get_site_url() . '/' . $result->post_type . 's/' . $result->post_name . '">' . $result->post_title . '</a>' . ' on ' . date(get_option('date_format'), $eventdate);
+                            $eventdates[] = $event;
+                        }
+                    } else {
+                        $event = new stdClass();
+                        $event->date = $current_time;
+                        $event->link = '<a href="' . get_site_url() . '/' . $result->post_type . 's/' . $result->post_name . '">' . $result->post_title . '</a>';
+                        $eventdates[] = $event;
+                    }
                 }
+            }
+            usort($eventdates, "ManageCrossRefs::dateCompare");
+            foreach ($eventdates as $eventdate) {
+                $xrefs["events"][] = $eventdate->link;
             }
         }
         return $xrefs;
