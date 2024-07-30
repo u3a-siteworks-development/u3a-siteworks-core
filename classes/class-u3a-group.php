@@ -623,6 +623,10 @@ class U3aGroup
         }
         $list_type = $display_args['sort'];
         $cat = $display_args['group_cat'];
+        // backward compatibility
+        if ("" == $cat) {
+            $cat = $display_args['cat'];
+        }
         $category_singular_term = get_option('u3a_catsingular_term', 'category');
         $html = '';
 
@@ -1044,6 +1048,10 @@ class U3aGroup
     public static function display_selected_groups($query_args, $display_args, $none_msg = 'No groups.')
     {
         $show_status = $display_args['group_status'];
+        // backward compatibility
+        if ("" == $show_status) {
+            $show_status = $display_args['status'];
+        }
         $show_when = $display_args['when'];
         $show_venue = $display_args['venue'];
 
