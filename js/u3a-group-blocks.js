@@ -15,7 +15,7 @@ wp.blocks.registerBlockType("u3a/grouplist", {
     icon: "groups",
     category: "widgets",
     attributes: {
-      cat: {
+      group_cat: {
         type: "string",
         default: "all"
       },
@@ -25,7 +25,7 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       flow: {
         type: "string"
       },
-      status: {
+      group_status: {
         type: "string"
       },
       bstatus: {
@@ -45,19 +45,19 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       }
     },
     edit: function( {attributes, setAttributes } ) {
-      const { cat, sort, flow, bstatus, status, bwhen, when, bvenue, venue } = attributes;
-      const onChangeCat = val => {
-        setAttributes( { cat: val });
+      const { group_cat, sort, flow, bstatus, group_status, bwhen, when, bvenue, venue } = attributes;
+      const onChangeGroupCat = val => {
+        setAttributes( { group_cat: val });
       };
       const onChangeSort = val => {
         setAttributes( { sort: val });
       };
-      const onChangeStatus = val => {
+      const onChangeGroupStatus = val => {
         setAttributes( { bstatus: val });
         if (val) {
-          setAttributes( { status: "y"});
+          setAttributes( { group_status: "y"});
         } else {
-          setAttributes( { status: "n"});
+          setAttributes( { group_status: "n"});
         }
       };
       const onChangeWhen = val => {
@@ -127,14 +127,14 @@ wp.blocks.registerBlockType("u3a/grouplist", {
           {}, wp.element.createElement( PanelBody, {title:'Display options', initialOpen:true },
               wp.element.createElement( SelectControl,
                 { label:'Category', 
-                  value: cat,
+                  value: group_cat,
                   help: 'Either all categories or a single category',
-                  onChange: onChangeCat,
+                  onChange: onChangeGroupCat,
                   options: catlist
                 }
               ),
             wp.element.createElement(ShowOrNot,
-              { show:('all' == cat),
+              { show:('all' == group_cat),
                 el: wp.element.createElement( SelectControl,
                       { label:'Sort Order', 
                         value: sort,
@@ -168,7 +168,7 @@ wp.blocks.registerBlockType("u3a/grouplist", {
             wp.element.createElement( ToggleControl,
               { label:'Show Group Status', 
                 checked: bstatus,
-                onChange: onChangeStatus,
+                onChange: onChangeGroupStatus,
               }
             ),
             wp.element.createElement( ToggleControl,
