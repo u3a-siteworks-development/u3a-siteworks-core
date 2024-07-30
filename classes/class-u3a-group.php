@@ -604,10 +604,10 @@ class U3aGroup
         global $wp;
         // valid display_args names and default values
         $display_args = [
-            'cat'  => 'all',
+            'group_cat'  => 'all',
             'sort' => 'alpha',
             'flow' => 'column',
-            'status' => 'y',
+            'group_status' => 'y',
             'when' => 'y',
             'venue' => 'n',
         ];
@@ -622,7 +622,7 @@ class U3aGroup
             }
         }
         $list_type = $display_args['sort'];
-        $cat = $display_args['cat'];
+        $cat = $display_args['group_cat'];
         $category_singular_term = get_option('u3a_catsingular_term', 'category');
         $html = '';
 
@@ -812,12 +812,12 @@ class U3aGroup
     {
         global $wp;
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $list_type = (isset($_GET['type'])) ? sanitize_text_field($_GET['type']) : "";
+        $list_type = (isset($_GET['list_type'])) ? sanitize_text_field($_GET['list_type']) : "";
         $get_group_listing = false;
         // valid display_args names and default values
         $display_args = [
             'flow' => 'column',
-            'status' => 'y',
+            'group_status' => 'y',
             'when' => 'n',
             'venue' => 'n',
         ];
@@ -859,7 +859,7 @@ class U3aGroup
 
             case 'day':
                 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                $day = (isset($_GET['day'])) ? sanitize_text_field($_GET['day']) : '';
+                $day = (isset($_GET['weekday'])) ? sanitize_text_field($_GET['weekday']) : '';
                 $none_msg = "<p>No groups found that meet on $day</p>";
                 if (!empty($day)) {
                     // $day_NUM = date("N", strtotime($day)) - 1;
@@ -951,7 +951,7 @@ class U3aGroup
      * @param array $posts all published group posts.
      *
      * @return HTML <div> with a set of links to current page with added query parameter,
-     *              specifying a letter, e,g ?type=letter&letter=b
+     *              specifying a letter, e,g ?list_type=letter&letter=b
      */
     public static function get_letter_list($posts)
     {
@@ -963,7 +963,7 @@ class U3aGroup
         $html = "<div class=\"u3agroupselector\">\n";
         foreach (range('A', 'Z') as $let) {
             if (strpos($letters_used, $let) === false) continue;
-            $url = untrailingslashit(home_url($wp->request)) . "?type=letter&letter=" . $let;
+            $url = untrailingslashit(home_url($wp->request)) . "?list_type=letter&letter=" . $let;
             $html .= "<a class='wp-element-button' href='" . $url . "' style='text-align: center; display:inline-block;'>" . $let . "</a>\n";
         }
         $html .= "</div>\n";
@@ -976,7 +976,7 @@ class U3aGroup
      * @param array $posts all published group posts.
      *
      * @return HTML <div> with a set of links to current page with added query parameter,
-     *              specifying a category, e,g ?type=par&par=Arts
+     *              specifying a category, e,g ?list_type=par&par=Arts
      */
     public static function get_parent_list($posts)
     {
@@ -992,7 +992,7 @@ class U3aGroup
         }
         $uniqueCats = array_unique($catsUsed);
         $html = "<div class=\"u3agroupselector\">\n";
-        $url = untrailingslashit(home_url($wp->request)) . "?type=par&par=";
+        $url = untrailingslashit(home_url($wp->request)) . "?list_type=par&par=";
         foreach ($uniqueCats as $catName) {
             $html .= "<a class='wp-element-button' href='" . $url . $catName . "' style='display:inline-block;'>" . $catName . "</a>";
         }
@@ -1007,7 +1007,7 @@ class U3aGroup
      * @param array $posts all published group posts.
      *
      * @return HTML <div> with a set of links to current page with added query parameter,
-     *              specifying a category, e,g ?type=day&day=Tuesday
+     *              specifying a category, e,g ?list_type=day&weekdayday=Tuesday
      */
     public static function get_day_list($posts)
     {
@@ -1019,7 +1019,7 @@ class U3aGroup
         }
         $uniqueDays = array_unique($daysUsed);
         asort($uniqueDays);
-        $url = untrailingslashit(home_url($wp->request)) . "?type=day&day=";
+        $url = untrailingslashit(home_url($wp->request)) . "?list_type=day&weekday=";
         $html = "<div class=\"u3agroupselector\">";
         foreach ($uniqueDays as $day_NUM) {
             $html .= "<a class='wp-element-button' style='display:inline-block;' href='" . $url . self::$day_list[$day_NUM] . "'>" . self::$day_list[$day_NUM] . "</a>";
@@ -1034,15 +1034,16 @@ class U3aGroup
      *
      * @param array $query_args parameters for WP_Query
      * @param array $display_args options for what info is displayed for each group
-     *        possble args:
-     *        'status' = y
+     *        possible args:
+     *        'group_status' = y
      *        'when' = y
+     *        'venue' = y
      * @param str $none_msg output if no matching groups found.
      * @return HTML <ul> with a list item for each group found.     
      */
     public static function display_selected_groups($query_args, $display_args, $none_msg = 'No groups.')
     {
-        $show_status = $display_args['status'];
+        $show_status = $display_args['group_status'];
         $show_when = $display_args['when'];
         $show_venue = $display_args['venue'];
 
