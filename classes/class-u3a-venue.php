@@ -384,7 +384,8 @@ class U3aVenue
      */
     public function display($atts, $content)
     {
-        $html = "<table class=\"u3a_venue_table\">\n";
+        $blockattrs = wp_kses_data(get_block_wrapper_attributes());
+        $html = "<div $blockattrs ><table class=\"u3a_venue_table\">\n";
 
         // District
         // Check Settings
@@ -427,7 +428,7 @@ class U3aVenue
             $html .= "<tr><td>Accessibility:</td><td>$access</td></tr>\n";
         }
 
-        $html .= "</table>";
+        $html .= "</table></div>";
 
         return $html;
     }
