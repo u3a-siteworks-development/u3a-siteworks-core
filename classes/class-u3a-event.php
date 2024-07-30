@@ -866,7 +866,8 @@ class U3aEvent
         if (!$posts) return '';
 
         $when_text = ('past' == $when) ? 'Previous' : 'Forthcoming';
-        $html = "<div class=\"u3aeventlist\">\n";
+        $blockattrs = wp_kses_data(get_block_wrapper_attributes(['class' => 'u3aeventlist']));
+        $html = "<div $blockattrs >\n";
         if ($display_args['showtitle']) {
             $html .= "<h3>$when_text events</h3>\n";
         }

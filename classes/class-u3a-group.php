@@ -648,10 +648,11 @@ class U3aGroup
 
         $list_flow = $display_args['flow'];
         if ('row' == $list_flow) {
-            $html .= '<div class="u3agrouplist-row-first-flow">';
+            $blockattrs = wp_kses_data(get_block_wrapper_attributes(['class' => 'u3agrouplist-row-first-flow']));
         } else {
-            $html .= '<div class="u3agrouplist-column-first-flow">';
+            $blockattrs = wp_kses_data(get_block_wrapper_attributes(['class' => 'u3agrouplist-column-first-flow']));
         }
+        $html .= "<div $blockattrs >\n";
         // we will close the <div> before returning!
 
         // set up basic query args
@@ -1139,8 +1140,10 @@ class U3aGroup
         $cost_row = (!empty($cost)) ? "<tr><td>Cost:</td> <td>$cost</td></tr>" : '';
 
         // compose output
+        $blockattrs = wp_kses_data(get_block_wrapper_attributes());
         $html = <<< END
         <!-- Custom Single Group View -->
+        <div $blockattrs >
         <table class="u3a_group_table">
             <tr><td>Status:</td><td>$status</td></tr>
             $contacttext
@@ -1149,6 +1152,7 @@ class U3aGroup
             $venue_row
             $cost_row
         </table>
+        </div>
         END;
         return $html;
     }

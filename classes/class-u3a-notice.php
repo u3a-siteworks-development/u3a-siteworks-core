@@ -392,8 +392,9 @@ class U3aNotice
         ));
 
         if (!$posts) return '<p>There are no current notices</p>';
-
-        $html = "<div class=\"u3a-notice-list\">\n";
+        
+        $blockattrs = wp_kses_data(get_block_wrapper_attributes(['class' => 'u3a-notice-list']));
+        $html = "<div $blockattrs >\n";
         if ($display_args['showtitle']) {
             $html .= "<h3>" . $display_args['title'] . "</h3>\n";
         }
