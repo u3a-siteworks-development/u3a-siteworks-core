@@ -1,6 +1,6 @@
-=== u3a-custom-post-types ===
+=== u3a-siteworks-core ===
 Requires at least: 5.9
-Tested up to: 6.5
+Tested up to: 6.6
 Stable tag: 5.9
 Requires PHP: 7.3
 License: GPLv2 or later
@@ -20,7 +20,14 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.1.3 =
+* Bug 1043: Venue page shows associated events with no indication of date
+* Bug 1053: Posts not displayed in dashboard when filtering by group and sorting by date
 * Bug 1055: add support for Excerpts when defining Group and Venue custom post types
+* Bug 1062: Incorrect result when using the u3a group list on the homepage with the Filtered display option and selecting a day
+* Feature 1054: Make featured image in event list grid layout a clickable link to the event
+* Feature 1055: Add support for Excerpt in Group and Venue post types
+* Feature 1063: Add option to enable/disable auto-scrolling to group list sort buttons
 = 1.1.2 =
 * Bug 1048: venue not initialised in shortcode u3agrouplist
 * Bug 1046: u3a group list properties panel does not initially show Sort Order option
