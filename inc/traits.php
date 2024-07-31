@@ -59,7 +59,7 @@ trait ModifyQuickEdit
             $(this).parent().parent().remove();
         });
         $('.inline-edit-date').each(function(i) {
-            $(this).remove();
+            $(this).hide();
         });
     });
 </script>
