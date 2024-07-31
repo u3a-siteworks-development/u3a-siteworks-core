@@ -26,6 +26,7 @@ Please refer to the documentation on the [SiteWorks website](https://siteworks.u
 * Bug 1053: Posts not displayed in dashboard when filtering by group and sorting by date
 * Bug 1055: add support for Excerpts when defining Group and Venue custom post types
 * Bug 1062: Incorrect result when using the u3a group list on the homepage with the Filtered display option and selecting a day
+* Bug 1065: WordPress quick edit shows "published" posts as "scheduled"
 * Feature 1054: Make featured image in event list grid layout a clickable link to the event
 * Feature 1063: Add option to enable/disable auto-scrolling to group list sort buttons
 = 1.1.2 =
