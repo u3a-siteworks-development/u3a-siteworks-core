@@ -15,7 +15,7 @@ to store related contact and venue information.
 
 For more information please refer to the [SiteWorks website](https://siteworks.u3a.org.uk/)
 
-== Frequently Asked Questions ===
+== Frequently Asked Questions ==
 
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
