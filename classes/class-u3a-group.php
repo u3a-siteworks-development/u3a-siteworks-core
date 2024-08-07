@@ -605,9 +605,11 @@ class U3aGroup
         // valid display_args names and default values
         $display_args = [
             'group_cat'  => 'all',
+            'cat' => 'all', // older version of group_cat
             'sort' => 'alpha',
             'flow' => 'column',
             'group_status' => 'y',
+            'status' => 'y', // older version of group_status
             'when' => 'y',
             'venue' => 'n',
         ];
