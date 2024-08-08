@@ -681,6 +681,7 @@ class U3aEvent
             'when' => 'future',
             'order' => '',
             'event_cat' => 'all',
+            'cat' => 'all', // deprecated version of event_cat kept for backward compatibility
             'groups' => '',
             'limitdays' => 0,
             'limitnum' => 0,
@@ -698,6 +699,11 @@ class U3aEvent
                 $display_args[$name] = strtolower($atts[$name]);
             }
         }
+        // For backwards compatibility, if $display_args['cat'] is set to a non-default value, use it!
+        if ($display_args['cat'] != 'all') {
+            $display_args['event_cat'] = $display_args['cat']
+        }
+
         // validate all args
         // do this by treating each arg explicitly
         $error = '';
