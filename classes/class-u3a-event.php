@@ -723,10 +723,6 @@ class U3aEvent
         }
 
         $cat = sanitize_text_field($display_args['event_cat']);
-        // backward compatibility
-        if ("" == $cat) {
-            $cat = sanitize_text_field($display_args['cat']);
-        }
 
         $include_groups = $display_args['groups'];
         if ('y' != $include_groups && 'n' != $include_groups &&  '' != $include_groups) {
