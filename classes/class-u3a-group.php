@@ -605,9 +605,11 @@ class U3aGroup
         // valid display_args names and default values
         $display_args = [
             'group_cat'  => 'all',
+            'cat' => 'all', // deprecated version of group_cat kept for backward compatibility
             'sort' => 'alpha',
             'flow' => 'column',
             'group_status' => 'y',
+            'status' => 'y', // deprecated version of group_status kept for backward compatibility
             'when' => 'y',
             'venue' => 'n',
         ];
@@ -621,12 +623,18 @@ class U3aGroup
                 $display_args[$name] = $atts[$name];
             }
         }
+        // For backwards compatibility, if $display_args['status'] is set to a non-default value, use it!
+        if ($display_args['status'] != 'y') {
+            $display_args['group_status'] = $display_args['status'];
+        }
+        // For backwards compatibility, if $display_args['cat'] is set to a non-default value, use it!
+        if ($display_args['cat'] != 'all') {
+            $display_args['group_cat'] = $display_args['cat'];
+        }
+
         $list_type = $display_args['sort'];
         $cat = $display_args['group_cat'];
-        // backward compatibility
-        if ("" == $cat) {
-            $cat = $display_args['cat'];
-        }
+
         $category_singular_term = get_option('u3a_catsingular_term', 'category');
         $html = '';
 
@@ -822,7 +830,8 @@ class U3aGroup
         $display_args = [
             'flow' => 'column',
             'group_status' => 'y',
-            'when' => 'n',
+            'status' => 'y', // deprecated version of group_status kept for backward compatibility
+            'when' => 'y',
             'venue' => 'n',
         ];
         // set from page query or from call attributes
@@ -835,7 +844,12 @@ class U3aGroup
                 $display_args[$name] = $atts[$name];
             }
         }
-        // Add back to list
+        // For backwards compatibility, if $display_args['status'] is set to a non-default value, use it!
+        if ($display_args['status'] != 'y') {
+            $display_args['group_status'] = $display_args['status'];
+        }
+
+        // Add a link back to full group list
         $url = untrailingslashit(home_url($wp->request));
         $para_with_back_link = "<p><br><a class=\"wp-element-button\" href=\"$url\">Back to full group list</a></p>";
         $query_args = array(
@@ -1039,19 +1053,15 @@ class U3aGroup
      * @param array $query_args parameters for WP_Query
      * @param array $display_args options for what info is displayed for each group
      *        possible args:
-     *        'group_status' = y
-     *        'when' = y
-     *        'venue' = y
+     *        'group_status' = y/n
+     *        'when' = y/n
+     *        'venue' = y/n
      * @param str $none_msg output if no matching groups found.
      * @return HTML <ul> with a list item for each group found.     
      */
     public static function display_selected_groups($query_args, $display_args, $none_msg = 'No groups.')
     {
         $show_status = $display_args['group_status'];
-        // backward compatibility
-        if ("" == $show_status) {
-            $show_status = $display_args['status'];
-        }
         $show_when = $display_args['when'];
         $show_venue = $display_args['venue'];
 
