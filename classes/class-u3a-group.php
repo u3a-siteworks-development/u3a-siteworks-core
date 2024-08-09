@@ -625,11 +625,11 @@ class U3aGroup
         }
         // For backwards compatibility, if $display_args['status'] is set to a non-default value, use it!
         if ($display_args['status'] != 'y') {
-            $display_args['group_status'] = $display_args['status']
+            $display_args['group_status'] = $display_args['status'];
         }
         // For backwards compatibility, if $display_args['cat'] is set to a non-default value, use it!
         if ($display_args['cat'] != 'all') {
-            $display_args['group_cat'] = $display_args['cat']
+            $display_args['group_cat'] = $display_args['cat'];
         }
 
         $list_type = $display_args['sort'];
@@ -846,7 +846,7 @@ class U3aGroup
         }
         // For backwards compatibility, if $display_args['status'] is set to a non-default value, use it!
         if ($display_args['status'] != 'y') {
-            $display_args['group_status'] = $display_args['status']
+            $display_args['group_status'] = $display_args['status'];
         }
 
         // Add a link back to full group list

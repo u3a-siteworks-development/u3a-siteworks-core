@@ -701,7 +701,7 @@ class U3aEvent
         }
         // For backwards compatibility, if $display_args['cat'] is set to a non-default value, use it!
         if ($display_args['cat'] != 'all') {
-            $display_args['event_cat'] = $display_args['cat']
+            $display_args['event_cat'] = $display_args['cat'];
         }
 
         // validate all args
