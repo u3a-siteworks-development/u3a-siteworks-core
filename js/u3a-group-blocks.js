@@ -29,19 +29,22 @@ wp.blocks.registerBlockType("u3a/grouplist", {
         type: "string"
       },
       bstatus: {
-        type: "boolean"
+        type: "boolean",
+        default: true
       },
       when: {
         type: "string"
       },
       bwhen: {
-        type: "boolean"
+        type: "boolean",
+        default: true
       },
       venue: {
         type: "string"
       },
       bvenue: {
-        type: "boolean"
+        type: "boolean",
+        default: false
       }
     },
     edit: function( {attributes, setAttributes } ) {
