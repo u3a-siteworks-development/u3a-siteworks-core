@@ -37,7 +37,7 @@ require_once "classes/class-u3a-notice.php";
 // Update data to conform to current data structure
 // Done as init action rather than immediately
 global $siteworks_storage_version;
-$siteworks_storage_version = 3;
+$siteworks_storage_version = 4;
 add_action('init', 'u3a_core_check_storage_updates');
 
 
