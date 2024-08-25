@@ -17,7 +17,7 @@ function u3a_core_check_storage_updates()
             update_option('SiteWorks_storage_version', 1);
             $stored_version = 1;
         } else {
-            u3a_core_updates_failure($status);
+            u3a_core_updates_failure($status, 1);
             return false;
         }
     }
@@ -27,7 +27,7 @@ function u3a_core_check_storage_updates()
             update_option('SiteWorks_storage_version', 2);
             $stored_version = 2;
         } else {
-            u3a_core_updates_failure($status);
+            u3a_core_updates_failure($status, 2);
             return false;
         }
     }
@@ -37,23 +37,31 @@ function u3a_core_check_storage_updates()
             update_option('SiteWorks_storage_version', 3);
             $stored_version = 3;
         } else {
-            u3a_core_updates_failure($status);
+            u3a_core_updates_failure($status, 3);
             return false;
         }
     }
     if (3 == $stored_version &&  3 < $latest_version) {
-        $status = u3a_core_update_storage_3_to_4();
-        if ('ok' == $status) {
-            update_option('SiteWorks_storage_version', 4);
-            $stored_version = 4;
-        } else {
-            u3a_core_updates_failure($status);
-            return false;
-        }
+        // the following option is only set on failure.
+        $v4_status = get_option('Siteworks_storage_v4_status', 'ok');
+        if ('ok' == $v4_status) {
+            //Only proceed if a previous failure has been maunually cleared)
+            $status = u3a_core_update_storage_3_to_4();
+            if ('ok' == $status) {
+                update_option('SiteWorks_storage_version', 4);
+                $stored_version = 4;
+            } else {
+                update_option('Siteworks_storage_v4_status', $status);
+                u3a_core_updates_failure($status, 4);
+                return false;
+            }
     }
     if (4 < $latest_version) {
         // we only handle versions up to 4 at present!!
-        u3a_core_updates_failure('No update available for storage version ' . $latest_version);
+        u3a_core_updates_failure(
+            'No update available for storage version ' . $latest_version,
+            $latest_version
+        );
         return false;
     }
     return true;
@@ -129,7 +137,7 @@ function u3a_core_update_storage_3_to_4()
 
         // find all occurences of attribute "cat": within a u3a/eventlist block
         // and replace with "event_cat":
-        $pattern = '#(<!-- wp:u3a/eventlist.*?)("cat":)(.*?/-->)#';
+        $pattern = '#(<!-- wp:u3a/eventlist [^>]*?)("cat":)([^>]*?/-->)#';
         $replacement = '$1"event_cat":$3';
         $content1 = preg_replace($pattern, $replacement, $content0, -1, $count);
         if ($count === false) { 
@@ -139,7 +147,7 @@ function u3a_core_update_storage_3_to_4()
 
         // find all occurences of attribute "cat": within a u3a/grouplist block
         // and replace with "group_cat":
-        $pattern = '#(<!-- wp:u3a/grouplist.*?)("cat":)(.*?/-->)#';
+        $pattern = '#(<!-- wp:u3a/grouplist[^>]*?)("cat":)([^>]*?/-->)#';
         $replacement = '$1"group_cat":$3';
         $content2 = preg_replace($pattern, $replacement, $content1, -1, $count);
         if ($count === false) { 
@@ -149,7 +157,7 @@ function u3a_core_update_storage_3_to_4()
 
         // find all occurences of attribute "status": within a u3a/grouplist block
         // and replace with "group_status":
-        $pattern = '#(<!-- wp:u3a/grouplist.*?)("status":)(.*?/-->)#';
+        $pattern = '#(<!-- wp:u3a/grouplist[^>]*?)("status":)([^>]*?/-->)#';
         $replacement = '$1"group_status":$3';
         $content3 = preg_replace($pattern, $replacement, $content2, -1, $count);
         if ($count === false) { 
@@ -162,7 +170,7 @@ function u3a_core_update_storage_3_to_4()
         // find all occurences of attribute cat within a u3aeventlist shortcode
         // and replace with event_cat
         // need to escape single quote in $pattern
-        $pattern = '#(\[u3aeventlist.*?\h+?)(cat)(\h*?=\h*?["\'].*?])#';
+        $pattern = '#(\[u3aeventlist[^\]]*?\h+?)(cat)(\h*?=\h*?["\'][^\]]*?])#';
         $replacement = '$1event_cat$3';
         $content4 = preg_replace($pattern, $replacement, $content3, -1, $count);
         if ($count === false) { 
@@ -173,7 +181,7 @@ function u3a_core_update_storage_3_to_4()
         // find all occurences of attribute cat within a u3agrouplist shortcode
         // and replace with group_cat
         // need to escape single quote in $pattern
-        $pattern = '#(\[u3agrouplist.*?\h+?)(cat)(\h*?=\h*?["\'].*?])#';
+        $pattern = '#(\[u3agrouplist[^\]]*?\h+?)(cat)(\h*?=\h*?["\'][^\]]*?])#';
         $replacement = '$1group_cat$3';
         $content5 = preg_replace($pattern, $replacement, $content4, -1, $count);
         if ($count === false) { 
@@ -184,7 +192,7 @@ function u3a_core_update_storage_3_to_4()
         // find all occurences of attribute status within a u3agrouplist shortcode
         // and replace with group_status
         // need to escape single quote in $pattern
-        $pattern = '#(\[u3agrouplist.*?\h+?)(status)(\h*?=\h*?["\'].*?])#';
+        $pattern = '#(\[u3agrouplist[^\]]*?\h+?)(status)(\h*?=\h*?["\'][^\]]*?])#';
         $replacement = '$1group_status$3';
         $content6 = preg_replace($pattern, $replacement, $content5, -1, $count);
         if ($count === false) { 
@@ -211,7 +219,7 @@ function u3a_core_update_storage_3_to_4()
  * Displays an admin notice about an error.
  * @param str $reason
  */
-function u3a_core_updates_failure($reason)
+function u3a_core_updates_failure($reason, $version)
 {
     global $u3a_core_updates_failure_reason;
     $u3a_core_updates_failure_reason = $reason;
@@ -219,5 +227,11 @@ function u3a_core_updates_failure($reason)
         global $u3a_core_updates_failure_reason;
         print '<div class="notice notice-error"><p><strong>' . esc_HTML($u3a_core_updates_failure_reason) . '<br> Seek expert help.</strong></p></div>';
     });
+    $to = get_bloginfo('admin_email');
+    $subject = "u3a Siteworks Core plugin - update to storage v$version failure";
+    wp_mail($to,
+            $subject,
+            $reason . '\n' . 'Ask the Siteworks team for help.'
+           );
 }
   
