@@ -55,6 +55,7 @@ function u3a_core_check_storage_updates()
                 u3a_core_updates_failure($status, 4);
                 return false;
             }
+        }
     }
     if (4 < $latest_version) {
         // we only handle versions up to 4 at present!!
@@ -199,7 +200,7 @@ function u3a_core_update_storage_3_to_4()
             return "post id: $id - Grouplist shortcode - failed to change \"status\".";
         }
         $changes += 100*$count;
-        
+
         if ($changes > 0) {
             $num_changed_rows += 1;
             $status = $wpdb->update($wpdb->posts,
@@ -231,7 +232,7 @@ function u3a_core_updates_failure($reason, $version)
     $subject = "u3a Siteworks Core plugin - update to storage v$version failure";
     wp_mail($to,
             $subject,
-            $reason . '\n' . 'Ask the Siteworks team for help.'
+            "Error:\n" . $reason . "\n" . 'Ask the Siteworks team for help.'
            );
 }
   
