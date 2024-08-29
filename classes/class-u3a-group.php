@@ -605,12 +605,10 @@ class U3aGroup
         // valid display_args names and default values
         $display_args = [
             'group_cat'  => 'all',
-            'cat' => 'all', // deprecated version of group_cat kept for backward compatibility
             'sort' => 'alpha',
             'flow' => 'column',
             'group_status' => 'y',
-            'status' => 'y', // deprecated version of group_status kept for backward compatibility
-            'when' => 'y',
+           'when' => 'y',
             'venue' => 'n',
         ];
         // set from page query or from call attributes
@@ -622,14 +620,6 @@ class U3aGroup
             } elseif (isset($atts[$name])) {
                 $display_args[$name] = $atts[$name];
             }
-        }
-        // For backwards compatibility, if $display_args['status'] is set to a non-default value, use it!
-        if ($display_args['status'] != 'y') {
-            $display_args['group_status'] = $display_args['status'];
-        }
-        // For backwards compatibility, if $display_args['cat'] is set to a non-default value, use it!
-        if ($display_args['cat'] != 'all') {
-            $display_args['group_cat'] = $display_args['cat'];
         }
 
         $list_type = $display_args['sort'];
@@ -830,7 +820,6 @@ class U3aGroup
         $display_args = [
             'flow' => 'column',
             'group_status' => 'y',
-            'status' => 'y', // deprecated version of group_status kept for backward compatibility
             'when' => 'y',
             'venue' => 'n',
         ];
@@ -843,10 +832,6 @@ class U3aGroup
             } elseif (isset($atts[$name])) {
                 $display_args[$name] = $atts[$name];
             }
-        }
-        // For backwards compatibility, if $display_args['status'] is set to a non-default value, use it!
-        if ($display_args['status'] != 'y') {
-            $display_args['group_status'] = $display_args['status'];
         }
 
         // Add a link back to full group list

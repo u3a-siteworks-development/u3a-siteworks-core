@@ -20,6 +20,8 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.1.4 =
+* Bug 1074 u3aeventlist and u3agrouplist filters. Now fixed the bug introduced in v1.1.3
 = 1.1.3 =
 * Bug 1043: Venue page shows associated events with no indication of date
 * Bug 1045: u3a blocks do not implement support for additional CSS classes
