@@ -98,7 +98,7 @@ trait ManageCrossRefs
     {
         global $post;
         if (self::$post_type == $post->post_type) {
-            $result = self::find_xrefs($post->ID);
+            $result = self::find_xrefs($post->ID, true);
             $name = self::$post_type_name;
             if (!empty($result)) {
                 if (!empty($result['groups'])) {
@@ -123,7 +123,7 @@ trait ManageCrossRefs
     public static function restrict_post_deletion($post_id)
     {
         if (self::$post_type == get_post_type($post_id)) {
-            $result = self::find_xrefs($post_id);
+            $result = self::find_xrefs($post_id, false);
             if (empty($result)) {
                 return;
             }
@@ -167,13 +167,14 @@ trait ManageCrossRefs
      * Gets all xrefs to this post in other posts.
      *
      * @param int   $post_id id of this u3a_contact post
+     * @param bool   $date_filter whether to only return events yet to happen.
      * @uses string self::$xref_meta_key_list Keys that contain xrefs to this type of post
      *
      * @return array  list of titles of groups/events that ref this contact,
      *                 or empty array if no xrefs.
      * @usedby action 'wp_trash_post'
      */
-    public static function find_xrefs($post_id)
+    public static function find_xrefs($post_id, $date_filter)
     {
         $meta_key_list = self::$xref_meta_key_list;
         global $wpdb;
@@ -206,7 +207,7 @@ trait ManageCrossRefs
                     if (strlen($eventdate) > 0) {
                         // should always be gt 0, but being cautious.
                         $eventdate = strtotime($eventdate);
-                        if ($user_is_admin || $eventdate >= $current_date) {
+                        if (!$date_filter || $user_is_admin || $eventdate >= $current_date){
                             $event = new stdClass();
                             $event->date = $eventdate;
                             $event->link = '<a href="' . get_site_url() . '/' . $result->post_type . 's/' . $result->post_name . '">' . $result->post_title . '</a>' . ' on ' . date(get_option('date_format'), $eventdate);
@@ -214,7 +215,7 @@ trait ManageCrossRefs
                         }
                     } else {
                         $event = new stdClass();
-                        $event->date = $current_time;
+                        $event->date = $current_date;
                         $event->link = '<a href="' . get_site_url() . '/' . $result->post_type . 's/' . $result->post_name . '">' . $result->post_title . '</a>';
                         $eventdates[] = $event;
                     }
