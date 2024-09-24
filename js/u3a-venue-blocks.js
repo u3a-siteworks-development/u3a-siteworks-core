@@ -1,3 +1,4 @@
+/* NOT IMPLEMENTED
 wp.blocks.registerBlockType("u3a/venuelist", {
     title: "u3a venue list",
     description: "displays a list of venues",
@@ -10,6 +11,7 @@ wp.blocks.registerBlockType("u3a/venuelist", {
       return null
     }
   })
+*/
 
   wp.blocks.registerBlockType("u3a/venuedata", {
     title: "u3a single venue data",
