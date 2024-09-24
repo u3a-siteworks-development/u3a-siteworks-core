@@ -344,25 +344,18 @@ class U3aVenue
         );
         wp_enqueue_script('u3avenueblocks');
 
+/* NOT IMPLEMENTED
         register_block_type('u3a/venuelist', array(
             'editor_script' => 'u3avenueblocks',
             'render_callback' => array(self::class, 'venue_list_cb')
         ));
+*/
         register_block_type('u3a/venuedata', array(
             'editor_script' => 'u3avenueblocks',
             'render_callback' => array(self::class, 'display_cb')
         ));
     }
 
-    /**
-     * This is the callback function for block u3a/grouplist.
-     * Not yet implemented TBD
-     *
-     */
-    public static function venue_list_cb()
-    {
-        return "<h2>Venue list here</h2><p>To be implemented</p>";
-    }
     /**
      * Calls the display function for an object of this class
      * This code is common to all our custom post types, so don't edit it!
