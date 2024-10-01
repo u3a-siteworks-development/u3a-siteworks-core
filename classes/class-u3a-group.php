@@ -4,6 +4,7 @@ class U3aGroup
 {
     use ModifyQuickEdit;
     use ChangePrompt;
+    use AddMetabox;
 
     /**
      * The post_type for this class
@@ -18,6 +19,13 @@ class U3aGroup
      * @var string 
      */
     public static $term_for_title = "name of the Group";
+
+    /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Group Information";
 
     // The names of the post metadata fields for this CPT
     // ..._ID means this field is the ID of the related post or term, or if not set the string ''
@@ -308,30 +316,6 @@ class U3aGroup
             return $content;
         }
         return $content;
-    }
-
-    /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     * @usedby filter 'rwmb_meta_boxes'
-     */
-    public static function add_metabox($metaboxes)
-    {
-        $metabox = [
-            'title'    => 'Group Information',
-            'id'       => U3A_GROUP_CPT,
-            'post_types' => [U3A_GROUP_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
     }
 
     /*

@@ -2,8 +2,8 @@
 
 class U3aVenue
 {
-    use ModifyQuickEdit;
     use ChangePrompt;
+    use AddMetabox;
     use ManageCrossRefs;
 
     /**
@@ -26,6 +26,13 @@ class U3aVenue
      * @var string 
      */
     public static $term_for_title = "venue name";
+
+    /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Venue Information";
 
     /**
      * The meta keys that contain xrefs to this type of post
@@ -213,29 +220,6 @@ class U3aVenue
             return $content;
         }
         return $content;
-    }
-
-    /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     */
-    public static function add_metabox( $metaboxes )
-    {
-        $metabox = [
-            'title'    => 'Venue Information',
-            'id'       => U3A_VENUE_CPT,
-            'post_types' => [U3A_VENUE_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
     }
 
     /**

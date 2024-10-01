@@ -13,8 +13,8 @@
  */
 class U3aEvent
 {
-    use ModifyQuickEdit;
     use ChangePrompt;
+    use AddMetabox;
 
     /**
      * The post_type for this class
@@ -29,6 +29,13 @@ class U3aEvent
      * @var string 
      */
     public static $term_for_title = "title for event";
+
+    /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Event Information";
 
     // $plugin_file is the value of __FILE__ from the main plugin file
     private static $plugin_file;
@@ -213,29 +220,6 @@ class U3aEvent
         foreach ($newTerms as $term) {
             wp_insert_term($term, U3A_EVENT_TAXONOMY);
         }
-    }
-
-    /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     */
-    public static function add_metabox($metaboxes)
-    {
-        $metabox = [
-            'title'    => 'Event Information',
-            'id'       => U3A_EVENT_CPT,
-            'post_types' => [U3A_EVENT_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
     }
 
     /*
