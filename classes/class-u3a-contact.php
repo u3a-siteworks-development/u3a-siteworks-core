@@ -98,9 +98,6 @@ class U3aContact
         add_filter('manage_' . U3A_CONTACT_CPT . '_posts_columns', array(self::class, 'change_columns'));
         add_action('manage_' . U3A_CONTACT_CPT . '_posts_custom_column', array(self::class, 'show_column_data'), 10, 2);
 
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
-
         // Prevent trashing when there there xrefs to this post in other posts.
         add_action('wp_trash_post', array(self::class, 'restrict_post_deletion'));
         

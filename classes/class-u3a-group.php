@@ -2,7 +2,6 @@
 
 class U3aGroup
 {
-    use ModifyQuickEdit;
     use ChangePrompt;
     use AddMetabox;
 
@@ -121,9 +120,6 @@ class U3aGroup
 
         // Set up the custom fields in a metabox (using free plugin from on metabox.io)
         add_filter('rwmb_meta_boxes', [self::class, 'add_metabox'], 10, 1);
-
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
 
         // Add custom filters to the admin posts list
         add_action('restrict_manage_posts', array(self::class, 'add_admin_filters'));

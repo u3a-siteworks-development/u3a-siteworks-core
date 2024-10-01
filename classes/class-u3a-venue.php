@@ -112,9 +112,6 @@ class U3aVenue
 
         // Set up the custom fields in a metabox (using free plugin from on metabox.io)
         add_filter( 'rwmb_meta_boxes', [self::class, 'add_metabox'] , 10, 1 );
-
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
  
         // Prevent trashing when there there xrefs to this post in other posts.
         add_action('wp_trash_post', array(self::class, 'restrict_post_deletion'));

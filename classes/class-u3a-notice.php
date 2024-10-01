@@ -90,9 +90,6 @@ class U3aNotice
         add_filter('manage_edit-' . U3A_NOTICE_CPT . '_sortable_columns', array(self::class, 'make_column_sortable'));
         add_action('pre_get_posts', array(self::class, 'sort_column_data'));
 
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
-
         // Change prompt shown for post title
         add_filter('enter_title_here', array(self::class, 'change_prompt'));
 

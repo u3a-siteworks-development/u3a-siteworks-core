@@ -108,9 +108,6 @@ class U3aEvent
         add_filter('parse_query', array(self::class, 'filter_posts'));
         add_action('restrict_manage_posts', array(self::class, 'add_admin_filters'));
 
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
-
         // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
         add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
     
