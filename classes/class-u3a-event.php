@@ -479,6 +479,7 @@ class U3aEvent
         // Selector for event category
         $taxonomy_slug = U3A_EVENT_TAXONOMY;
         $select_title = 'All event categories';
+        $selected = isset($_GET[$taxonomy_slug]) ? $_GET[$taxonomy_slug] : '';
 
         // Retrieve taxonomy terms and genenerate select
         $terms = get_terms($taxonomy_slug);
@@ -487,46 +488,36 @@ class U3aEvent
         print "<select name='{$taxonomy_slug}' id='{$taxonomy_slug}' class='postform'>";
         print '<option value="">' . $select_title . '</option>';
         foreach ($terms as $term) {
+            $sel = ($term->slug == $selected) ? ' selected' : '';
             printf(
                 '<option value="%1$s" %2$s>%3$s (%4$s)</option>',
                 $term->slug,
-                ((isset($_GET[$taxonomy_slug]) && ($_GET[$taxonomy_slug] == $term->slug)) ? ' selected="selected"' : ''),
-                $term->name,
+                $sel,
+                esc_html($term->name),
                 $term->count
             );
         }
         print '</select>';
 
         // Selector for group
-        $groups = self::get_posts_array('u3a_group');
-        $selected = isset($_GET['groupID']) ? $_GET['groupID'] : '';
+        $name = 'groupID'; // used to identify this filter when adding criterion to query.
+        $groups = get_posts(array('post_type' => 'u3a_group', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC'));
         if ($groups) {
-            print '<select name="groupID"><option value="">All groups</option>';
-            foreach ($groups as $id => $text) {
-                $sel = ($id == $selected) ? '" selected>' : '">';
-                print '<option value="' . $id . $sel . esc_HTML($text) . '</option>';
+            $selected = isset($_GET[$name]) ? $_GET[$name] : '';
+            print "<select name='$name'><option value=''>All groups</option>";
+             foreach ($groups as $group) {
+                 $id = $group->ID;
+                 $sel = ($id == $selected) ? ' selected' : '';
+                 printf(
+                    '<option value="%1$s" %2$s>%3$s </option>',
+                    $id,
+                    $sel,
+                    esc_HTML($group->post_title)
+                 );
             }
             print "</select>\n";
         }
         //phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped,WordPress.Security.NonceVerification.Recommended
-    }
-
-    /**
-     * Get all posts for a custom post type.
-     * @param $cpt the custom post type
-     * @return associative array in the form Post_ID => Post_title
-     */
-    public static function get_posts_array($cpt)
-    {
-        $all_posts = get_posts(array('post_type' => $cpt, 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC'));
-        if ($all_posts) {
-            $posts = array();
-            foreach ($all_posts as $cur_post) {
-                $posts[$cur_post->ID] = $cur_post->post_title;
-            }
-            return $posts;
-        }
-        return null;
     }
 
     /** 
