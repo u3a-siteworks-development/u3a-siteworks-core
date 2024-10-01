@@ -466,7 +466,7 @@ class U3aEvent
     }
 
     /**
-     * Add filter by event category to "all Events" posts list
+     * Add filter by event category and by group to "all Events" posts list
      * @param $post_type
      * @usedby action 'restrict_manage_posts'
      */
