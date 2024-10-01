@@ -881,8 +881,8 @@ class U3aEvent
             $event_category_line = "<br>".$event_category;
             $group_line = '';
             if ($show_group) {
-                list($groupName, $group_link) = $my_event->event_group_title_and_permalink();
-                $group_line = ($groupName) ? "<p>(Group: <a href=\"$group_link\">$groupName</a>)</p>" : '';
+                $group_text = $my_event->event_group_name_with_link();
+                $group_line = ($group_text) ? "<p>$group_text</p>" : '';
             }
             add_filter( 'excerpt_length', function ($length ) { return 30; } );
             $extract = get_the_excerpt($event->ID);
@@ -1053,9 +1053,8 @@ class U3aEvent
 
         // Group
 
-        list($group_title, $group_permalink) = $this->event_group_title_and_permalink();
-        if (!empty($group_title)) {
-            $group_text = "<a href='$group_permalink'>$group_title</a>";
+        $group_text = $this->event_group_name_with_link();
+        if (!empty($group_text)) {
             $html .= "<tr><td>Group: </td> <td>$group_text</td></tr>";
         }
 
@@ -1175,15 +1174,19 @@ class U3aEvent
     /**
      * Gets the title and permalink of the group related to this event.
      *
-     * @return array [title,permalink]
+     * @return HTML as <a> link
      */
-    public function event_group_title_and_permalink()
+    public function event_group_name_with_link()
     {
         $group_ID = get_post_meta($this->ID, 'eventGroup_ID', true);
         if (!empty($group_ID) && is_numeric($group_ID)) {
-            return [get_post($group_ID)->post_title, get_permalink($group_ID, false)];
+            // return [get_post($group_ID)->post_title, get_permalink($group_ID, false)];
+            $group_name = get_post($group_ID)->post_title;
+            $permalink = get_permalink($group_ID);
+            return "<a href='$permalink'>$group_name</a>";
         } else {
-            return ['', ''];
+            //return ['', ''];
+            return '';
         }
     }
 }
