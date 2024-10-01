@@ -259,12 +259,11 @@ class U3aContact
      */
     public static function change_columns($columns)
     {
-        $ncolumns=array();
-        $ncolumns['cb'] = $columns['cb'];
-        $ncolumns['title'] = 'Contact Name';
-        $ncolumns['email'] = 'Email';
-        $ncolumns['author'] = 'Author';
-        return $ncolumns;
+        unset($columns['date']);
+
+        $columns['title'] = 'Contact Name'; // just changing the displayed name of this column.
+        $columns['email'] = 'Email';
+        return $columns;
     }
 
     /**

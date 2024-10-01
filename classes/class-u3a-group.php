@@ -121,6 +121,9 @@ class U3aGroup
         // Set up the custom fields in a metabox (using free plugin from on metabox.io)
         add_filter('rwmb_meta_boxes', [self::class, 'add_metabox'], 10, 1);
 
+        // Alter the columns that are displayed in the Posts list admin page
+        add_filter('manage_' . U3A_GROUP_CPT . '_posts_columns', array(self::class, 'change_columns'));
+
         // Add custom filters to the admin posts list
         add_action('restrict_manage_posts', array(self::class, 'add_admin_filters'));
 
@@ -498,6 +501,18 @@ class U3aGroup
             ];
         }
         return $fields;
+    }
+
+    /**
+     * Alter the columns that are displayed in the Groups posts list admin page.
+     * @param array $columns
+     * @return modified columns
+     * @usedby filter 'manage_' . U3A_GROUP_CPT . '_posts_columns'
+     */
+    public static function change_columns($columns)
+    {
+        unset($columns['date']);
+        return $columns;
     }
 
     /**

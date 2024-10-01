@@ -236,7 +236,7 @@ class U3aNotice
 
     /**
      * Alter the columns that are displayed in the Posts list admin page to remove the standard 
-     * WordPress date and author columns and add the Notice Start and End dates
+     * WordPress date column and add the Notice Start and End dates
      * @param array $columns
      * @return modified columns
      * @usedby filter 'manage_' . U3A_NOTICE_CPT . '_posts_columns'
@@ -244,7 +244,6 @@ class U3aNotice
     public static function change_columns($columns)
     {
         unset($columns['date']);
-        unset($columns['author']);
 
         $columns['noticeStart'] = 'Start date';
         $columns['noticeEnd'] = 'End date';
