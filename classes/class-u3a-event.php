@@ -105,7 +105,7 @@ class U3aEvent
         add_action('pre_get_posts', array(self::class, 'sort_column_data'));
 
         // Add custom filters to the admin posts list
-        add_filter('parse_query', array(self::class, 'filter_posts'));
+        add_action('pre_get_posts', array(self::class, 'add_groupID_to_query'));
         add_action('restrict_manage_posts', array(self::class, 'add_admin_filters'));
 
         // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
@@ -521,26 +521,37 @@ class U3aEvent
     }
 
     /** 
-     * Filter posts if the groupID filter is set (ie $_GET contains groupID).
-     * Only apply for the u3a_event post type
+     * Adds filtering of posts by eventGroup_ID.
      * 
-     * This filter is used when generating the admin page listing u3a Events.  If the filter-by-group control
-     * is used, this filter alters the main query so that only events for the chosen group are shown.
-     * 
-     * @usedby filter 'parse_query'
+     * This filtering is an option on the admin page listing u3a Events,
+     * as set up by the function add_admin_filters().
+     * If in use, this function alters the main query so that only events for the chosen group are shown.
+     * @param object $query 
+     * @return object modified query 
+     * @usedby filter 'pre_get_posts'
      */
-    public static function filter_posts($query)
+    public static function add_groupID_to_query($query)
     {
-        //modify the query only if it is admin and main query.
-        if (!(is_admin() && $query->is_main_query())) {
-            return $query;
+        // This is a very general purpose hook, so ...
+        // query must be main query for an admin page with a query for u3a_event post-type
+        if (!( is_admin()
+               && ($query->is_main_query())
+               && ('u3a_event' == $query->get('post_type'))
+             )){
+            return;
         }
-        //only modify query if filter is set for this post type
+        // also check that we are on the All Events page
+        // Note: get_current_screen() may not exist at the start of this function 
+        $screen = get_current_screen(); 
+        if ('edit-u3a_event' !== $screen->id) {
+            return;
+        }
+        //only modify query if filtering for groupID is set
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        if (!(($query->query['post_type'] === U3A_EVENT_CPT) && (isset($_GET['groupID']) && !empty($_GET['groupID'])))) {
+        if (!(isset($_GET['groupID']) && !empty($_GET['groupID']))) {
             return $query;
         }
-        //add a meta_query for group selection
+        // add a meta_query for group selection
         $meta_query[] = array(
                 'key' => 'eventGroup_ID',
                 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
