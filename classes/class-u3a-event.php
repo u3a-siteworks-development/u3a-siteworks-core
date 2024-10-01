@@ -430,12 +430,23 @@ class U3aEvent
     /**
      * Provide sorting mechanism for the event date column.
      *
-     * @param array $query attributes of query
+     * @param obj $query attributes of query, passed by ref
      * @usedby action 'pre_get_posts'
      */
     public static function sort_column_data($query)
     {
-        if (!is_admin() /* || !$query->is_main_query() */) {
+        // This is a very general purpose hook, so ...
+        // query must be main query for an admin page with a query for u3a_event post-type
+        if (!( is_admin()
+               && ($query->is_main_query())
+               && ('u3a_event' == $query->get('post_type'))
+             )){
+            return;
+        }
+        // also check that we are on the All Events page
+        // Note: get_current_screen() may not exist at the start of this function 
+        $screen = get_current_screen(); 
+        if ('edit-u3a_event' !== $screen->id) {
             return;
         }
         if ('eventDate' === $query->get('orderby')) {
