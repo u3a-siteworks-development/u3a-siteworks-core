@@ -1,14 +1,3 @@
-
-let NumberControl = wp.components.__experimentalNumberControl;
-let PanelColorSettings = wp.editor.PanelColorSettings;
-let useBlockProps = wp.editor.useBlockProps;
-let useSelect = wp.data.useSelect;
-let PanelBody = wp.components.PanelBody;
-let SelectControl = wp.components.SelectControl;
-let InspectorControls = wp.blockEditor.InspectorControls;
-let ToggleControl = wp.components.ToggleControl;
-let TextControl = wp.components.TextControl;
-
 wp.blocks.registerBlockType("u3a/grouplist", {
     title: "u3a group list",
     description: "displays a list of all groups",
@@ -49,6 +38,13 @@ wp.blocks.registerBlockType("u3a/grouplist", {
     },
     edit: function( {attributes, setAttributes } ) {
       const { group_cat, sort, flow, bstatus, group_status, bwhen, when, bvenue, venue } = attributes;
+
+      const InspectorControls = wp.blockEditor.InspectorControls;
+      const PanelBody = wp.components.PanelBody;
+      const SelectControl = wp.components.SelectControl;
+      const ToggleControl = wp.components.ToggleControl;
+      const useSelect = wp.data.useSelect;
+
       const onChangeGroupCat = val => {
         setAttributes( { group_cat: val });
       };

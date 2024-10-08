@@ -282,7 +282,7 @@ class U3aGroup
         wp_register_script(
             'u3agroupblocks',
             plugins_url('js/u3a-group-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element','wp-components','wp-editor'),
+            array('wp-blocks', 'wp-element','wp-components','wp-block-editor','wp-data'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );

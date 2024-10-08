@@ -56,6 +56,15 @@ wp.blocks.registerBlockType("u3a/eventdata", {
     },
     edit: function( {attributes, setAttributes } ) {
       const { when, order, event_cat, bgroups, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle } = attributes;
+
+      const InspectorControls = wp.blockEditor.InspectorControls;
+      const PanelBody = wp.components.PanelBody;
+      const SelectControl = wp.components.SelectControl;
+      const NumberControl = wp.components.__experimentalNumberControl;
+      const PanelColorSettings = wp.blockEditor.PanelColorSettings;
+      const ToggleControl = wp.components.ToggleControl;
+      const useSelect = wp.data.useSelect;
+
       const onChangeShowTitle = val => {
         bshowtitle = val;
         if (val) {

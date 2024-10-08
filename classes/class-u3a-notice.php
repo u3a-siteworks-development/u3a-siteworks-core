@@ -219,7 +219,7 @@ class U3aNotice
         wp_register_script(
             'u3anoticeblocks',
             plugins_url('js/u3a-notice-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element'),
+            array('wp-blocks', 'wp-element','wp-components','wp-block-editor'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
