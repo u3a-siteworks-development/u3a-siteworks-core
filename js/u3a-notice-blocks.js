@@ -15,6 +15,12 @@ wp.blocks.registerBlockType("u3a/noticelist", {
     },
     edit: function ({attributes, setAttributes }) {
       const { title, showtitle } = attributes;
+
+      const InspectorControls = wp.blockEditor.InspectorControls;
+      const PanelBody = wp.components.PanelBody;
+      const TextControl = wp.components.TextControl;
+      const ToggleControl = wp.components.ToggleControl;
+
       const onChangeTitle = val => {
         setAttributes( { title: val });
       };

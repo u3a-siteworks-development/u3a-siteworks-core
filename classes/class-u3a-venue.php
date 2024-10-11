@@ -2,8 +2,8 @@
 
 class U3aVenue
 {
-    use ModifyQuickEdit;
     use ChangePrompt;
+    use AddMetabox;
     use ManageCrossRefs;
 
     /**
@@ -26,6 +26,13 @@ class U3aVenue
      * @var string 
      */
     public static $term_for_title = "venue name";
+
+    /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Venue Information";
 
     /**
      * The meta keys that contain xrefs to this type of post
@@ -106,9 +113,9 @@ class U3aVenue
         // Set up the custom fields in a metabox (using free plugin from on metabox.io)
         add_filter( 'rwmb_meta_boxes', [self::class, 'add_metabox'] , 10, 1 );
 
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
- 
+        // Alter the columns that are displayed in the Posts list admin page
+        add_filter('manage_' . U3A_VENUE_CPT . '_posts_columns', array(self::class, 'change_columns'));
+
         // Prevent trashing when there there xrefs to this post in other posts.
         add_action('wp_trash_post', array(self::class, 'restrict_post_deletion'));
         
@@ -216,29 +223,6 @@ class U3aVenue
     }
 
     /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     */
-    public static function add_metabox( $metaboxes )
-    {
-        $metabox = [
-            'title'    => 'Venue Information',
-            'id'       => U3A_VENUE_CPT,
-            'post_types' => [U3A_VENUE_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
-    }
-
-    /**
      * Defines the fields for this class.
      *
      * @return array
@@ -327,6 +311,18 @@ class U3aVenue
             'maxlength' => self::MAX_URL,
             ];
         return $fields;
+    }
+
+    /**
+     * Alter the columns that are displayed in the Venues posts list admin page.
+     * @param array $columns
+     * @return modified columns
+     * @usedby filter 'manage_' . U3A_VENUE_CPT . '_posts_columns'
+     */
+    public static function change_columns($columns)
+    {
+        unset($columns['date']);
+        return $columns;
     }
 
     /**

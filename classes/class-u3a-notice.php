@@ -2,8 +2,8 @@
 
 class U3aNotice
 {
-    use ModifyQuickEdit;
     use ChangePrompt;
+    use AddMetabox;
 
     /**
      * The post_type for this class
@@ -18,6 +18,13 @@ class U3aNotice
      * @var string 
      */
     public static $term_for_title = "title for the Notice";
+
+    /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Notice Settings";
 
     /**
      * The short name for this class
@@ -82,9 +89,6 @@ class U3aNotice
         add_action('manage_' . U3A_NOTICE_CPT . '_posts_custom_column', array(self::class, 'show_column_data'), 10, 2);
         add_filter('manage_edit-' . U3A_NOTICE_CPT . '_sortable_columns', array(self::class, 'make_column_sortable'));
         add_action('pre_get_posts', array(self::class, 'sort_column_data'));
-
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
 
         // Change prompt shown for post title
         add_filter('enter_title_here', array(self::class, 'change_prompt'));
@@ -157,29 +161,6 @@ class U3aNotice
     }
 
     /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     */
-    public static function add_metabox($metaboxes)
-    {
-        $metabox = [
-            'title'    => 'Notice Settings',
-            'id'       => U3A_NOTICE_CPT,
-            'post_types' => [U3A_NOTICE_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
-    }
-
-    /**
      * Defines the fields for this class.
      *
      * @return array
@@ -238,7 +219,7 @@ class U3aNotice
         wp_register_script(
             'u3anoticeblocks',
             plugins_url('js/u3a-notice-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element'),
+            array('wp-blocks', 'wp-element','wp-components','wp-block-editor'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
@@ -255,7 +236,7 @@ class U3aNotice
 
     /**
      * Alter the columns that are displayed in the Posts list admin page to remove the standard 
-     * WordPress date and author columns and add the Notice Start and End dates
+     * WordPress date column and add the Notice Start and End dates
      * @param array $columns
      * @return modified columns
      * @usedby filter 'manage_' . U3A_NOTICE_CPT . '_posts_columns'
@@ -263,7 +244,6 @@ class U3aNotice
     public static function change_columns($columns)
     {
         unset($columns['date']);
-        unset($columns['author']);
 
         $columns['noticeStart'] = 'Start date';
         $columns['noticeEnd'] = 'End date';
@@ -310,12 +290,23 @@ class U3aNotice
     /**
      * Provide sorting mechanism for the Notice start and end date columns.
      *
-     * @param array $query attributes of query
+     * @param obj $query attributes of query, passed by ref
      * @usedby action 'pre_get_posts'
      */
     public static function sort_column_data($query)
     {
-        if (!is_admin() /* || !$query->is_main_query() */) {
+        // This is a very general purpose hook, so ...
+        // query must be main query for an admin page with a query for u3a_notice post-type
+        if (!( is_admin()
+               && ($query->is_main_query())
+               && ('u3a_notice' == $query->get('post_type'))
+             )){
+            return;
+        }
+        // also check that we are on the All Notices page
+        // Note: get_current_screen() may not exist at the start of this function 
+        $screen = get_current_screen(); 
+        if ('edit-u3a_notice' !== $screen->id) {
             return;
         }
         if ('noticeStart' === $query->get('orderby')) {

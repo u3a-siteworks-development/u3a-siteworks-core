@@ -2,8 +2,8 @@
 
 class U3aGroup
 {
-    use ModifyQuickEdit;
     use ChangePrompt;
+    use AddMetabox;
 
     /**
      * The post_type for this class
@@ -18,6 +18,13 @@ class U3aGroup
      * @var string 
      */
     public static $term_for_title = "name of the Group";
+
+    /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Group Information";
 
     // The names of the post metadata fields for this CPT
     // ..._ID means this field is the ID of the related post or term, or if not set the string ''
@@ -114,8 +121,8 @@ class U3aGroup
         // Set up the custom fields in a metabox (using free plugin from on metabox.io)
         add_filter('rwmb_meta_boxes', [self::class, 'add_metabox'], 10, 1);
 
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
+        // Alter the columns that are displayed in the Posts list admin page
+        add_filter('manage_' . U3A_GROUP_CPT . '_posts_columns', array(self::class, 'change_columns'));
 
         // Add custom filters to the admin posts list
         add_action('restrict_manage_posts', array(self::class, 'add_admin_filters'));
@@ -275,7 +282,7 @@ class U3aGroup
         wp_register_script(
             'u3agroupblocks',
             plugins_url('js/u3a-group-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element','wp-components','wp-editor'),
+            array('wp-blocks', 'wp-element','wp-components','wp-block-editor','wp-data'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
@@ -308,30 +315,6 @@ class U3aGroup
             return $content;
         }
         return $content;
-    }
-
-    /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     * @usedby filter 'rwmb_meta_boxes'
-     */
-    public static function add_metabox($metaboxes)
-    {
-        $metabox = [
-            'title'    => 'Group Information',
-            'id'       => U3A_GROUP_CPT,
-            'post_types' => [U3A_GROUP_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
     }
 
     /*
@@ -518,6 +501,18 @@ class U3aGroup
             ];
         }
         return $fields;
+    }
+
+    /**
+     * Alter the columns that are displayed in the Groups posts list admin page.
+     * @param array $columns
+     * @return modified columns
+     * @usedby filter 'manage_' . U3A_GROUP_CPT . '_posts_columns'
+     */
+    public static function change_columns($columns)
+    {
+        unset($columns['date']);
+        return $columns;
     }
 
     /**
