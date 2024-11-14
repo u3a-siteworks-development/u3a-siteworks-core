@@ -1,6 +1,6 @@
 === u3a-siteworks-core ===
 Requires at least: 5.9
-Tested up to: 6.6
+Tested up to: 6.7
 Stable tag: 5.9
 Requires PHP: 7.3
 License: GPLv2 or later
@@ -20,6 +20,9 @@ For more information please refer to the [SiteWorks website](https://siteworks.u
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Tested up to WP 6.7
+* Add Requires Plugins: meta-box header
+* Feature 1094: Change short text form of group status to "Waiting list"
 = 1.1.5 =
 * Bug 1081: Remove u3a venue list block as this will not be implemented
 = 1.1.4 =
