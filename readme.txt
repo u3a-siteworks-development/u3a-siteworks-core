@@ -14,12 +14,17 @@ This plugin is part of the SiteWorks project.  It provides facilities to manage 
 to store related contact and venue information.
 
 For more information please refer to the [SiteWorks website](https://siteworks.u3a.org.uk/)
+For guidance on the design of the code read file 'u3a Siteworks Core structure.odt'
 
 == Frequently Asked Questions ==
 
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.1.6 =
+* Added documentation u3a Siteworks Core structure.odt
+* Refactored code for ease of future maintenance
+* Feature 1082 Have consistent approach to admin page AllEvents/AllGroups etc
 * Tested up to WP 6.7
 * Add Requires Plugins: meta-box header
 * Feature 1094: Change short text form of group status to "Waiting list"
