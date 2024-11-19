@@ -8,6 +8,7 @@ Author URI: https://siteworks.u3a.org.uk/
 Plugin URI: https://siteworks.u3a.org.uk/
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Requires Plugins: meta-box
 */
 
 if (!defined('ABSPATH')) exit;
