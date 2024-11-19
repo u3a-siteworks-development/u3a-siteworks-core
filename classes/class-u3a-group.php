@@ -62,7 +62,7 @@ class U3aGroup
     public static $status_list_short = [
         1 => 'Active',
         2 => 'Full',
-        3 => 'Wait list only',
+        3 => 'Waiting list',
         4 => 'Dormant',
         5 => 'Closed'
     ];
