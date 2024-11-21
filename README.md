@@ -1,4 +1,4 @@
-# u3a-groups
+# u3a-siteworks-core
 A WordPress plugin for use by u3as to provide a simple facility to manage groups and related venues and contacts
 
 # Contributing
