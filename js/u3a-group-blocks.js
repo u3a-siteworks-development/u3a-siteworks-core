@@ -1,21 +1,10 @@
-
-let NumberControl = wp.components.__experimentalNumberControl;
-let PanelColorSettings = wp.editor.PanelColorSettings;
-let useBlockProps = wp.editor.useBlockProps;
-let useSelect = wp.data.useSelect;
-let PanelBody = wp.components.PanelBody;
-let SelectControl = wp.components.SelectControl;
-let InspectorControls = wp.blockEditor.InspectorControls;
-let ToggleControl = wp.components.ToggleControl;
-let TextControl = wp.components.TextControl;
-
 wp.blocks.registerBlockType("u3a/grouplist", {
     title: "u3a group list",
     description: "displays a list of all groups",
     icon: "groups",
     category: "widgets",
     attributes: {
-      cat: {
+      group_cat: {
         type: "string",
         default: "all"
       },
@@ -25,39 +14,49 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       flow: {
         type: "string"
       },
-      status: {
+      group_status: {
         type: "string"
       },
       bstatus: {
-        type: "boolean"
+        type: "boolean",
+        default: true
       },
       when: {
         type: "string"
       },
       bwhen: {
-        type: "boolean"
+        type: "boolean",
+        default: true
       },
       venue: {
         type: "string"
       },
       bvenue: {
-        type: "boolean"
+        type: "boolean",
+        default: false
       }
     },
     edit: function( {attributes, setAttributes } ) {
-      const { cat, sort, flow, bstatus, status, bwhen, when, bvenue, venue } = attributes;
-      const onChangeCat = val => {
-        setAttributes( { cat: val });
+      const { group_cat, sort, flow, bstatus, group_status, bwhen, when, bvenue, venue } = attributes;
+
+      const InspectorControls = wp.blockEditor.InspectorControls;
+      const PanelBody = wp.components.PanelBody;
+      const SelectControl = wp.components.SelectControl;
+      const ToggleControl = wp.components.ToggleControl;
+      const useSelect = wp.data.useSelect;
+
+      const onChangeGroupCat = val => {
+        setAttributes( { group_cat: val });
       };
       const onChangeSort = val => {
         setAttributes( { sort: val });
       };
-      const onChangeStatus = val => {
+      const onChangeGroupStatus = val => {
         setAttributes( { bstatus: val });
         if (val) {
-          setAttributes( { status: "y"});
+          setAttributes( { group_status: "y"});
         } else {
-          setAttributes( { status: "n"});
+          setAttributes( { group_status: "n"});
         }
       };
       const onChangeWhen = val => {
@@ -127,14 +126,14 @@ wp.blocks.registerBlockType("u3a/grouplist", {
           {}, wp.element.createElement( PanelBody, {title:'Display options', initialOpen:true },
               wp.element.createElement( SelectControl,
                 { label:'Category', 
-                  value: cat,
+                  value: group_cat,
                   help: 'Either all categories or a single category',
-                  onChange: onChangeCat,
+                  onChange: onChangeGroupCat,
                   options: catlist
                 }
               ),
             wp.element.createElement(ShowOrNot,
-              { show:('all' == cat),
+              { show:('all' == group_cat),
                 el: wp.element.createElement( SelectControl,
                       { label:'Sort Order', 
                         value: sort,
@@ -168,7 +167,7 @@ wp.blocks.registerBlockType("u3a/grouplist", {
             wp.element.createElement( ToggleControl,
               { label:'Show Group Status', 
                 checked: bstatus,
-                onChange: onChangeStatus,
+                onChange: onChangeGroupStatus,
               }
             ),
             wp.element.createElement( ToggleControl,

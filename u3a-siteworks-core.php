@@ -2,17 +2,18 @@
 /*
 Plugin Name: u3a SiteWorks Core
 Description: Provides facility to manage content for u3a groups, events, notices and related contacts and venues.
-Version: 1.1.2
+Version: 1.1.6
 Author: u3a SiteWorks team
 Author URI: https://siteworks.u3a.org.uk/
 Plugin URI: https://siteworks.u3a.org.uk/
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Requires Plugins: meta-box
 */
 
 if (!defined('ABSPATH')) exit;
 
-define('U3A_SITEWORKS_CORE_VERSION', '1.1.2'); // Set to current plugin version number
+define('U3A_SITEWORKS_CORE_VERSION', '1.1.6'); // Set to current plugin version number
 
 // Check for metabox plugin present and activated
 if ((require_once "inc/check-metabox.php") == false) return;
@@ -37,7 +38,7 @@ require_once "classes/class-u3a-notice.php";
 // Update data to conform to current data structure
 // Done as init action rather than immediately
 global $siteworks_storage_version;
-$siteworks_storage_version = 3;
+$siteworks_storage_version = 4;
 add_action('init', 'u3a_core_check_storage_updates');
 
 

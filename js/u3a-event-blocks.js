@@ -28,7 +28,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       order: {
         type: "string"
       },
-      cat: {
+      event_cat: {
         type: "string"
       },
       groups: {
@@ -55,7 +55,16 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       },
     },
     edit: function( {attributes, setAttributes } ) {
-      const { when, order, cat, bgroups, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle } = attributes;
+      const { when, order, event_cat, bgroups, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle } = attributes;
+
+      const InspectorControls = wp.blockEditor.InspectorControls;
+      const PanelBody = wp.components.PanelBody;
+      const SelectControl = wp.components.SelectControl;
+      const NumberControl = wp.components.__experimentalNumberControl;
+      const PanelColorSettings = wp.blockEditor.PanelColorSettings;
+      const ToggleControl = wp.components.ToggleControl;
+      const useSelect = wp.data.useSelect;
+
       const onChangeShowTitle = val => {
         bshowtitle = val;
         if (val) {
@@ -71,8 +80,8 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const onChangeOrder = val => {
         setAttributes( { order: val });
       };
-      const onChangeCat = val => {
-        setAttributes( { cat: val})
+      const onChangeEventCat = val => {
+        setAttributes( { event_cat: val})
       };
       const onChangeGroups = val => {
         setAttributes( { bgroups: val})
@@ -198,9 +207,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               ),
               wp.element.createElement( SelectControl,
                 { label:'Category', 
-                  value: cat,
+                  value: event_cat,
                   help: 'Either all categories or chosen category',
-                  onChange: onChangeCat,
+                  onChange: onChangeEventCat,
                   options: catlist
                 }
               )
