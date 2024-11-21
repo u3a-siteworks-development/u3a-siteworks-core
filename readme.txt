@@ -1,6 +1,6 @@
-=== u3a-custom-post-types ===
+=== u3a-siteworks-core ===
 Requires at least: 5.9
-Tested up to: 6.5
+Tested up to: 6.7
 Stable tag: 5.9
 Requires PHP: 7.3
 License: GPLv2 or later
@@ -14,12 +14,33 @@ This plugin is part of the SiteWorks project.  It provides facilities to manage 
 to store related contact and venue information.
 
 For more information please refer to the [SiteWorks website](https://siteworks.u3a.org.uk/)
+For guidance on the design of the code read file 'u3a Siteworks Core structure.odt'
 
 == Frequently Asked Questions ==
 
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.1.6 =
+* Added documentation u3a Siteworks Core structure.odt
+* Refactored code for ease of future maintenance
+* Feature 1082 Have consistent approach to admin page AllEvents/AllGroups etc
+* Tested up to WP 6.7
+* Add Requires Plugins: meta-box header
+* Feature 1094: Change short text form of group status to "Waiting list"
+= 1.1.5 =
+* Bug 1081: Remove u3a venue list block as this will not be implemented
+= 1.1.4 =
+* Bug 1074 u3aeventlist and u3agrouplist filters. Now fixed the bug introduced in v1.1.3
+= 1.1.3 =
+* Bug 1043: Venue page shows associated events with no indication of date
+* Bug 1045: u3a blocks do not implement support for additional CSS classes
+* Bug 1053: Posts not displayed in dashboard when filtering by group and sorting by date
+* Bug 1055: add support for Excerpts when defining Group and Venue custom post types
+* Bug 1062: Incorrect result when using the u3a group list on the homepage with the Filtered display option and selecting a day
+* Bug 1065: WordPress quick edit shows "published" posts as "scheduled"
+* Feature 1054: Make featured image in event list grid layout a clickable link to the event
+* Feature 1063: Add option to enable/disable auto-scrolling to group list sort buttons
 = 1.1.2 =
 * Bug 1048: venue not initialised in shortcode u3agrouplist
 * Bug 1046: u3a group list properties panel does not initially show Sort Order option

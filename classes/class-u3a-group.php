@@ -2,8 +2,8 @@
 
 class U3aGroup
 {
-    use ModifyQuickEdit;
     use ChangePrompt;
+    use AddMetabox;
 
     /**
      * The post_type for this class
@@ -18,6 +18,13 @@ class U3aGroup
      * @var string 
      */
     public static $term_for_title = "name of the Group";
+
+    /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Group Information";
 
     // The names of the post metadata fields for this CPT
     // ..._ID means this field is the ID of the related post or term, or if not set the string ''
@@ -55,7 +62,7 @@ class U3aGroup
     public static $status_list_short = [
         1 => 'Active',
         2 => 'Full',
-        3 => 'Wait list only',
+        3 => 'Waiting list',
         4 => 'Dormant',
         5 => 'Closed'
     ];
@@ -114,8 +121,8 @@ class U3aGroup
         // Set up the custom fields in a metabox (using free plugin from on metabox.io)
         add_filter('rwmb_meta_boxes', [self::class, 'add_metabox'], 10, 1);
 
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
+        // Alter the columns that are displayed in the Posts list admin page
+        add_filter('manage_' . U3A_GROUP_CPT . '_posts_columns', array(self::class, 'change_columns'));
 
         // Add custom filters to the admin posts list
         add_action('restrict_manage_posts', array(self::class, 'add_admin_filters'));
@@ -173,7 +180,7 @@ class U3aGroup
         $args = array(
             'public' => true,
             'show_in_rest' => true,
-            'supports' => array('title', 'editor', 'author', 'thumbnail', 'color'),
+            'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'color'),
             'rewrite' => array('slug' => sanitize_title(U3A_GROUP_CPT . 's')),
             'has_archive' => false,
             'menu_icon' => U3A_GROUP_ICON,
@@ -275,7 +282,7 @@ class U3aGroup
         wp_register_script(
             'u3agroupblocks',
             plugins_url('js/u3a-group-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element','wp-components','wp-editor'),
+            array('wp-blocks', 'wp-element','wp-components','wp-block-editor','wp-data'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
@@ -308,30 +315,6 @@ class U3aGroup
             return $content;
         }
         return $content;
-    }
-
-    /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     * @usedby filter 'rwmb_meta_boxes'
-     */
-    public static function add_metabox($metaboxes)
-    {
-        $metabox = [
-            'title'    => 'Group Information',
-            'id'       => U3A_GROUP_CPT,
-            'post_types' => [U3A_GROUP_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
     }
 
     /*
@@ -521,6 +504,18 @@ class U3aGroup
     }
 
     /**
+     * Alter the columns that are displayed in the Groups posts list admin page.
+     * @param array $columns
+     * @return modified columns
+     * @usedby filter 'manage_' . U3A_GROUP_CPT . '_posts_columns'
+     */
+    public static function change_columns($columns)
+    {
+        unset($columns['date']);
+        return $columns;
+    }
+
+    /**
      * Add filter by group category to "all Groups" posts list
      * @param $post_type
      * @usedby action 'restrict_manage_posts'
@@ -604,11 +599,11 @@ class U3aGroup
         global $wp;
         // valid display_args names and default values
         $display_args = [
-            'cat'  => 'all',
+            'group_cat'  => 'all',
             'sort' => 'alpha',
             'flow' => 'column',
-            'status' => 'y',
-            'when' => 'y',
+            'group_status' => 'y',
+           'when' => 'y',
             'venue' => 'n',
         ];
         // set from page query or from call attributes
@@ -621,8 +616,10 @@ class U3aGroup
                 $display_args[$name] = $atts[$name];
             }
         }
+
         $list_type = $display_args['sort'];
-        $cat = $display_args['cat'];
+        $cat = $display_args['group_cat'];
+
         $category_singular_term = get_option('u3a_catsingular_term', 'category');
         $html = '';
 
@@ -631,22 +628,28 @@ class U3aGroup
         if ('all' == $cat) {
             $thispage = untrailingslashit(home_url($wp->request));
             $button_identifier = "list_button_anchor";
+            $button_anchor = "#$button_identifier";
+            // if disabled don't use the anchor.
+            if ('disabled' == get_option('u3a_groups_list_scroll', 'enabled')) {
+                $button_anchor = '';
+            }
             $html = <<<END
             <div id=$button_identifier class="u3agroupbuttons">
-                <a class="wp-element-button" href="$thispage?sort=alpha#$button_identifier">Alphabetical</a>
-                <a class="wp-element-button" href="$thispage?sort=cat#$button_identifier">By $category_singular_term</a>
-                <a class="wp-element-button" href="$thispage?sort=day#$button_identifier">By meeting day</a>
-                <a class="wp-element-button" href="$thispage?sort=venue#$button_identifier">By venue</a>
+                <a class="wp-element-button" href="$thispage?sort=alpha$button_anchor">Alphabetical</a>
+                <a class="wp-element-button" href="$thispage?sort=cat$button_anchor">By $category_singular_term</a>
+                <a class="wp-element-button" href="$thispage?sort=day$button_anchor">By meeting day</a>
+                <a class="wp-element-button" href="$thispage?sort=venue$button_anchor">By venue</a>
             </div>
             END;
         }
 
         $list_flow = $display_args['flow'];
         if ('row' == $list_flow) {
-            $html .= '<div class="u3agrouplist-row-first-flow">';
+            $blockattrs = wp_kses_data(get_block_wrapper_attributes(['class' => 'u3agrouplist-row-first-flow']));
         } else {
-            $html .= '<div class="u3agrouplist-column-first-flow">';
+            $blockattrs = wp_kses_data(get_block_wrapper_attributes(['class' => 'u3agrouplist-column-first-flow']));
         }
+        $html .= "<div $blockattrs >\n";
         // we will close the <div> before returning!
 
         // set up basic query args
@@ -806,13 +809,13 @@ class U3aGroup
     {
         global $wp;
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $list_type = (isset($_GET['type'])) ? sanitize_text_field($_GET['type']) : "";
+        $list_type = (isset($_GET['list_type'])) ? sanitize_text_field($_GET['list_type']) : "";
         $get_group_listing = false;
         // valid display_args names and default values
         $display_args = [
             'flow' => 'column',
-            'status' => 'y',
-            'when' => 'n',
+            'group_status' => 'y',
+            'when' => 'y',
             'venue' => 'n',
         ];
         // set from page query or from call attributes
@@ -825,7 +828,8 @@ class U3aGroup
                 $display_args[$name] = $atts[$name];
             }
         }
-        // Add back to list
+
+        // Add a link back to full group list
         $url = untrailingslashit(home_url($wp->request));
         $para_with_back_link = "<p><br><a class=\"wp-element-button\" href=\"$url\">Back to full group list</a></p>";
         $query_args = array(
@@ -853,7 +857,7 @@ class U3aGroup
 
             case 'day':
                 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                $day = (isset($_GET['day'])) ? sanitize_text_field($_GET['day']) : '';
+                $day = (isset($_GET['weekday'])) ? sanitize_text_field($_GET['weekday']) : '';
                 $none_msg = "<p>No groups found that meet on $day</p>";
                 if (!empty($day)) {
                     // $day_NUM = date("N", strtotime($day)) - 1;
@@ -945,7 +949,7 @@ class U3aGroup
      * @param array $posts all published group posts.
      *
      * @return HTML <div> with a set of links to current page with added query parameter,
-     *              specifying a letter, e,g ?type=letter&letter=b
+     *              specifying a letter, e,g ?list_type=letter&letter=b
      */
     public static function get_letter_list($posts)
     {
@@ -957,7 +961,7 @@ class U3aGroup
         $html = "<div class=\"u3agroupselector\">\n";
         foreach (range('A', 'Z') as $let) {
             if (strpos($letters_used, $let) === false) continue;
-            $url = untrailingslashit(home_url($wp->request)) . "?type=letter&letter=" . $let;
+            $url = untrailingslashit(home_url($wp->request)) . "?list_type=letter&letter=" . $let;
             $html .= "<a class='wp-element-button' href='" . $url . "' style='text-align: center; display:inline-block;'>" . $let . "</a>\n";
         }
         $html .= "</div>\n";
@@ -970,7 +974,7 @@ class U3aGroup
      * @param array $posts all published group posts.
      *
      * @return HTML <div> with a set of links to current page with added query parameter,
-     *              specifying a category, e,g ?type=par&par=Arts
+     *              specifying a category, e,g ?list_type=par&par=Arts
      */
     public static function get_parent_list($posts)
     {
@@ -986,7 +990,7 @@ class U3aGroup
         }
         $uniqueCats = array_unique($catsUsed);
         $html = "<div class=\"u3agroupselector\">\n";
-        $url = untrailingslashit(home_url($wp->request)) . "?type=par&par=";
+        $url = untrailingslashit(home_url($wp->request)) . "?list_type=par&par=";
         foreach ($uniqueCats as $catName) {
             $html .= "<a class='wp-element-button' href='" . $url . $catName . "' style='display:inline-block;'>" . $catName . "</a>";
         }
@@ -1001,7 +1005,7 @@ class U3aGroup
      * @param array $posts all published group posts.
      *
      * @return HTML <div> with a set of links to current page with added query parameter,
-     *              specifying a category, e,g ?type=day&day=Tuesday
+     *              specifying a category, e,g ?list_type=day&weekdayday=Tuesday
      */
     public static function get_day_list($posts)
     {
@@ -1013,7 +1017,7 @@ class U3aGroup
         }
         $uniqueDays = array_unique($daysUsed);
         asort($uniqueDays);
-        $url = untrailingslashit(home_url($wp->request)) . "?type=day&day=";
+        $url = untrailingslashit(home_url($wp->request)) . "?list_type=day&weekday=";
         $html = "<div class=\"u3agroupselector\">";
         foreach ($uniqueDays as $day_NUM) {
             $html .= "<a class='wp-element-button' style='display:inline-block;' href='" . $url . self::$day_list[$day_NUM] . "'>" . self::$day_list[$day_NUM] . "</a>";
@@ -1028,15 +1032,16 @@ class U3aGroup
      *
      * @param array $query_args parameters for WP_Query
      * @param array $display_args options for what info is displayed for each group
-     *        possble args:
-     *        'status' = y
-     *        'when' = y
+     *        possible args:
+     *        'group_status' = y/n
+     *        'when' = y/n
+     *        'venue' = y/n
      * @param str $none_msg output if no matching groups found.
      * @return HTML <ul> with a list item for each group found.     
      */
     public static function display_selected_groups($query_args, $display_args, $none_msg = 'No groups.')
     {
-        $show_status = $display_args['status'];
+        $show_status = $display_args['group_status'];
         $show_when = $display_args['when'];
         $show_venue = $display_args['venue'];
 
@@ -1134,8 +1139,10 @@ class U3aGroup
         $cost_row = (!empty($cost)) ? "<tr><td>Cost:</td> <td>$cost</td></tr>" : '';
 
         // compose output
+        $blockattrs = wp_kses_data(get_block_wrapper_attributes());
         $html = <<< END
         <!-- Custom Single Group View -->
+        <div $blockattrs >
         <table class="u3a_group_table">
             <tr><td>Status:</td><td>$status</td></tr>
             $contacttext
@@ -1144,6 +1151,7 @@ class U3aGroup
             $venue_row
             $cost_row
         </table>
+        </div>
         END;
         return $html;
     }

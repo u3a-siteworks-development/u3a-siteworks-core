@@ -1,8 +1,8 @@
 <?php
 class U3aContact
 {
-    use ModifyQuickEdit;
     use ChangePrompt;
+    use AddMetabox;
     use ManageCrossRefs;
 
     /**
@@ -25,6 +25,13 @@ class U3aContact
      * @var string 
      */
     public static $term_for_title = "contact's display name";
+
+    /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Contact Information";
 
     /**
      * The meta keys that contain xrefs to this type of post
@@ -90,9 +97,6 @@ class U3aContact
         // Alter the columns that are displayed in the Posts list admin page
         add_filter('manage_' . U3A_CONTACT_CPT . '_posts_columns', array(self::class, 'change_columns'));
         add_action('manage_' . U3A_CONTACT_CPT . '_posts_custom_column', array(self::class, 'show_column_data'), 10, 2);
-
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
 
         // Prevent trashing when there there xrefs to this post in other posts.
         add_action('wp_trash_post', array(self::class, 'restrict_post_deletion'));
@@ -187,29 +191,6 @@ class U3aContact
     }
 
     /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     */
-    public static function add_metabox( $metaboxes )
-    {
-        $metabox = [
-            'title'    => 'Contact Information',
-            'id'       => U3A_CONTACT_CPT,
-            'post_types' => [U3A_CONTACT_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
-    }
-
-    /**
      * Defines the fields for this class.
      *
      * @return array
@@ -278,12 +259,11 @@ class U3aContact
      */
     public static function change_columns($columns)
     {
-        $ncolumns=array();
-        $ncolumns['cb'] = $columns['cb'];
-        $ncolumns['title'] = 'Contact Name';
-        $ncolumns['email'] = 'Email';
-        $ncolumns['author'] = 'Author';
-        return $ncolumns;
+        unset($columns['date']);
+
+        $columns['title'] = 'Contact Name'; // just changing the displayed name of this column.
+        $columns['email'] = 'Email';
+        return $columns;
     }
 
     /**

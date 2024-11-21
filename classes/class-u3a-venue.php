@@ -2,8 +2,8 @@
 
 class U3aVenue
 {
-    use ModifyQuickEdit;
     use ChangePrompt;
+    use AddMetabox;
     use ManageCrossRefs;
 
     /**
@@ -26,6 +26,13 @@ class U3aVenue
      * @var string 
      */
     public static $term_for_title = "venue name";
+
+    /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Venue Information";
 
     /**
      * The meta keys that contain xrefs to this type of post
@@ -106,9 +113,9 @@ class U3aVenue
         // Set up the custom fields in a metabox (using free plugin from on metabox.io)
         add_filter( 'rwmb_meta_boxes', [self::class, 'add_metabox'] , 10, 1 );
 
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
- 
+        // Alter the columns that are displayed in the Posts list admin page
+        add_filter('manage_' . U3A_VENUE_CPT . '_posts_columns', array(self::class, 'change_columns'));
+
         // Prevent trashing when there there xrefs to this post in other posts.
         add_action('wp_trash_post', array(self::class, 'restrict_post_deletion'));
         
@@ -161,7 +168,7 @@ class U3aVenue
         $args = array(
             'public' => true,
             'show_in_rest' => true,
-            'supports' => array('title', 'editor', 'author', 'thumbnail'),
+            'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt'),
             'rewrite' => array('slug' => sanitize_title(U3A_VENUE_CPT . 's')),
             'has_archive' => false,
             'menu_icon' => U3A_VENUE_ICON,
@@ -213,29 +220,6 @@ class U3aVenue
             return $content;
         }
         return $content;
-    }
-
-    /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     */
-    public static function add_metabox( $metaboxes )
-    {
-        $metabox = [
-            'title'    => 'Venue Information',
-            'id'       => U3A_VENUE_CPT,
-            'post_types' => [U3A_VENUE_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
     }
 
     /**
@@ -330,6 +314,18 @@ class U3aVenue
     }
 
     /**
+     * Alter the columns that are displayed in the Venues posts list admin page.
+     * @param array $columns
+     * @return modified columns
+     * @usedby filter 'manage_' . U3A_VENUE_CPT . '_posts_columns'
+     */
+    public static function change_columns($columns)
+    {
+        unset($columns['date']);
+        return $columns;
+    }
+
+    /**
      * Registers the blocks u3a/venuedata and u3a/venuelist, and their render callbacks.
      *
      */
@@ -344,25 +340,18 @@ class U3aVenue
         );
         wp_enqueue_script('u3avenueblocks');
 
+/* NOT IMPLEMENTED
         register_block_type('u3a/venuelist', array(
             'editor_script' => 'u3avenueblocks',
             'render_callback' => array(self::class, 'venue_list_cb')
         ));
+*/
         register_block_type('u3a/venuedata', array(
             'editor_script' => 'u3avenueblocks',
             'render_callback' => array(self::class, 'display_cb')
         ));
     }
 
-    /**
-     * This is the callback function for block u3a/grouplist.
-     * Not yet implemented TBD
-     *
-     */
-    public static function venue_list_cb()
-    {
-        return "<h2>Venue list here</h2><p>To be implemented</p>";
-    }
     /**
      * Calls the display function for an object of this class
      * This code is common to all our custom post types, so don't edit it!
@@ -384,7 +373,8 @@ class U3aVenue
      */
     public function display($atts, $content)
     {
-        $html = "<table class=\"u3a_venue_table\">\n";
+        $blockattrs = wp_kses_data(get_block_wrapper_attributes());
+        $html = "<div $blockattrs ><table class=\"u3a_venue_table\">\n";
 
         // District
         // Check Settings
@@ -427,7 +417,7 @@ class U3aVenue
             $html .= "<tr><td>Accessibility:</td><td>$access</td></tr>\n";
         }
 
-        $html .= "</table>";
+        $html .= "</table></div>";
 
         return $html;
     }
