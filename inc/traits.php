@@ -63,10 +63,10 @@ trait ManageCrossRefs
             $name = self::$post_type_name;
             if (!empty($result)) {
                 if (!empty($result['groups'])) {
-                    $content .= "<p>This $name is referenced in the following groups:<br>" . implode("<br>", $result['groups']) . "</p>";
+                    $content .= "<p> This $name is referenced in the following groups:<br> " . implode("<br>", $result['groups']) . " </p>";
                 }
                 if (!empty($result['events'])) {
-                    $content .= "<p>This $name is referenced in the following events:<br>" . implode("<br>", $result['events']) . "</p>";
+                    $content .= "<p> This $name is referenced in the following events:<br> " . implode("<br>", $result['events']) . " </p>";
                 }
             }
         }
@@ -159,7 +159,7 @@ trait ManageCrossRefs
         if ($results) {
             foreach ($results as $result) {
                 $permalink = get_permalink($result->ID);
-                $linkHTML = "<a href=\"$permalink\">$result->post_title</a>";
+                $linkHTML = "<a href=\"$permalink\">\"$result->post_title\" </a>";
                 if ($result->post_type == 'u3a_group') {
                     $xrefs["groups"][] = $linkHTML;
                 } else {
@@ -173,7 +173,7 @@ trait ManageCrossRefs
                         if (!$date_filter || $user_is_admin || $eventdate >= $current_date){
                             $event = new stdClass();
                             $event->date = $eventdate;
-                            $event->link = "$linkHTML  on $formatted_date";
+                            $event->link = "$linkHTML  on $formatted_date ";
                             $eventdates[] = $event;
                         }
                     } else {
