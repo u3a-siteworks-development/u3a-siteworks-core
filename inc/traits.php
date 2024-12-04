@@ -159,7 +159,7 @@ trait ManageCrossRefs
         if ($results) {
             foreach ($results as $result) {
                 $permalink = get_permalink($result->ID);
-                $linkHTML = "<a href=\"$permalink\">\"$result->post_title\" </a>";
+                $linkHTML = (is_search()) ? "<a href=\"$permalink\">\"$result->post_title\" </a>" : "<a href=\"$permalink\">$result->post_title </a>";;
                 if ($result->post_type == 'u3a_group') {
                     $xrefs["groups"][] = $linkHTML;
                 } else {
