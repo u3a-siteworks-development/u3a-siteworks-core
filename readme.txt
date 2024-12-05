@@ -21,6 +21,7 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Bug 1119: Provide validation of date format for u3a Notice start or end date
 = 1.1.6 =
 * Added documentation u3a Siteworks Core structure.odt
 * Refactored code for ease of future maintenance
