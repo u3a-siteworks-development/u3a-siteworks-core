@@ -180,6 +180,7 @@ class U3aNotice
                 'desc'      => 'Date when this notice should start being displayed on the website',
                 'size'      => 15,
                 'std'       => date('Y-m-d'),
+                'pattern' => '[1-2][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]',
                 'required'  => true,
                 'maxlength' => self::MAX_DATE,
             ];
@@ -190,6 +191,8 @@ class U3aNotice
                 'id'        => 'notice_end_date',
                 'desc'      => 'Date when this notice should stop being displayed on the website',
                 'size'      => 15,
+                'std'       => date('Y-m-d'),
+                'pattern' => '[1-2][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]',
                 'required' => true,
                 'maxlength' => self::MAX_DATE,
             ];
