@@ -140,7 +140,7 @@ trait ManageCrossRefs
          // This query finds custom groups or events with a contact postmeta key whose value matches
         // the contact post_id.
         // Much simpler than using WP_Query to do this!
-        $query = "SELECT ID, post_title, post_name, post_type FROM $wpdb->posts AS p JOIN $wpdb->postmeta AS m ON p.ID = m.post_ID";
+        $query = "SELECT DISTINCT ID, post_title, post_name, post_type, m.meta_key FROM $wpdb->posts AS p JOIN $wpdb->postmeta AS m ON p.ID = m.post_ID";
         $query .= " WHERE p.post_status = 'publish'";
         $query .= " AND p.post_type IN ('u3a_group', 'u3a_event')";
         $query .= " AND m.meta_key IN ($meta_key_list)";
