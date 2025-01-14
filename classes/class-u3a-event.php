@@ -875,7 +875,7 @@ class U3aEvent
             $postarray[$sortablepost['date']][] = $sortablepost;
         }
         // sort each array
-        foreach ($postarray as $date => $posts) {
+        foreach (array_keys($postarray) as $date) {
             usort($postarray[$date], 'U3aEvent::timecompare');
         }
         // reassemble
