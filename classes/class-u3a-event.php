@@ -842,6 +842,51 @@ class U3aEvent
         else return '';
     }
 
+    private static function timecompare($a, $b){
+        if ($a['epochtime'] < $b['epochtime']) {
+            return -1;
+        }
+        if ($a['epochtime'] > $b['epochtime']) {
+            return 1;
+        }
+        if ($a['epochendtime'] < $b['epochendtime']) {
+            return -1;
+        }
+        if ($a['epochendtime'] > $b['epochendtime']) {
+            return 1;
+        }
+        return 0;
+    }
+
+    private static function sort_on_times($posts) {
+        $sortableposts = array();
+        foreach ($posts as $event) {
+            $my_event = new self($event->ID); // an object of this class
+            $date_time = $my_event->event_date_and_time();
+            $sortablepost = array('event' => $event, 'my_event' => $my_event,
+                'date' => $date_time['date'], 'time' => $date_time['time'],
+                'endtime' => $date_time['endtime'], 'epochtime' => $date_time['epochtime'],
+                'epochendtime' => $date_time['epochendtime']);
+            $sortableposts[] = $sortablepost;
+        }
+        // split into arrays by date.
+        $postarray = array();
+        foreach ($sortableposts as $sortablepost) {
+            $postarray[$sortablepost['date']][] = $sortablepost;
+        }
+        // sort each array
+        foreach ($postarray as $date => $posts) {
+            usort($postarray[$date], 'U3aEvent::timecompare');
+        }
+        // reassemble
+        $sortedposts = array();
+        foreach ($postarray as $date => $posts) {
+            foreach ($posts as $post) {
+                $sortedposts[] = $post;
+            }
+        }
+        return $sortedposts;
+    }
     /* Return the HTML code for selected events.
      *
      * @param array $posts the selected posts of type u3a_event
@@ -863,9 +908,13 @@ class U3aEvent
         if ($display_args['showtitle']) {
             $html .= "<h3>$when_text events</h3>\n";
         }
-        foreach ($posts as $event) {
-            $my_event = new self($event->ID); // an object of this class
-            list($date, $time, $endtime) = $my_event->event_date_and_time();
+        $sortedposts = U3aEvent::sort_on_times($posts);
+        foreach ($sortedposts as $sortedpost) {
+            $my_event = $sortedpost['my_event'];
+            $event = $sortedpost['event'];
+            $date = $sortedpost['date'];
+            $time = $sortedpost['time'];
+            $endtime = $sortedpost['endtime'];
             $title = $event->post_title;
             $permalink = get_the_permalink($event);
             $event_category = '';
@@ -1027,9 +1076,9 @@ class U3aEvent
         }
         // date, time, duration
         $date_time = $this->event_date_and_time();
-        $date = $date_time[0];
-        $time = $date_time[1];
-        $endtime = $date_time[2];
+        $date = $date_time['date'];
+        $time = $date_time['time'];
+        $endtime = $date_time['endtime'];
         if ('' != $endtime) {
             $endtime = '- ' . $endtime;
         }
@@ -1088,7 +1137,7 @@ class U3aEvent
     /** 
      * Formats the event date and time.
      * 
-     * @return array [formatted date, formatted time, formatted end time]
+     * @return array [formatted date, formatted time, formatted end time, epochtime, epochendtime]
      */
     public function event_date_and_time()
     {
@@ -1099,10 +1148,15 @@ class U3aEvent
         $time = get_post_meta($this->ID, 'eventTime', true);
         $time = (!empty($time)) ? $time : '';
         $tempstart = strtotime($date . ' ' . $time);
+        $epochtime = $tempstart;
+        $epochendtime = $tempstart;
 
         $endtime = get_post_meta($this->ID, 'eventEndTime', true);
         $endtime = (!empty($endtime)) ? $endtime : '';
         $tempend = strtotime($date . ' ' . $endtime);
+        if ($endtime != '') {
+            $epochendtime = $tempend;
+        }
 
         // Use the date and time format settings from Event tab on u3a Settings page
         $events_dateformat = get_option('events_dateformat', 'system');
@@ -1131,14 +1185,26 @@ class U3aEvent
         if ('' != $time) {
             if ('' != $endtime) {
                 // we have both start and end time
-                return [date($dateformat, $tempstart), date($timeformat, $tempstart), date($timeformat, $tempend)];
+                return ['date' => date($dateformat, $tempstart),
+                'time' => date($timeformat, $tempstart),
+                'endtime' => date($timeformat, $tempend),
+                'epochtime' => $epochtime,
+                'epochendtime' => $epochendtime];
             } else {
                 // we only have start time
-                return [date($dateformat, $tempstart), date($timeformat, $tempstart), ''];
+                return ['date' => date($dateformat, $tempstart),
+                'time' => date($timeformat, $tempstart),
+                'endtime' => '',
+                'epochtime' => $epochtime,
+                'epochendtime' => $epochendtime];
             }
         } else {
             // only event date
-            return [date($dateformat, $tempstart), '', ''];
+            return ['date' => date($dateformat, $tempstart),
+            'time' =>  '',
+            'endtime' => '',
+            'epochtime' => $epochtime,
+            'epochendtime' => $epochendtime];
         }
     }
 
