@@ -1,6 +1,7 @@
 <?php
 
-class U3aGroup
+// phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+class U3aGroup // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
 {
     use ChangePrompt;
     use AddMetabox;
@@ -8,21 +9,21 @@ class U3aGroup
     /**
      * The post_type for this class
      *
-     * @var string 
+     * @var string
      */
     public static $post_type = U3A_GROUP_CPT;
 
     /**
      * The term used for the title of these custom posts
      *
-     * @var string 
+     * @var string
      */
     public static $term_for_title = "name of the Group";
 
     /**
      * The metabox title of these custom posts
      *
-     * @var string 
+     * @var string
      */
     public static $metabox_title = "Group Information";
 
@@ -49,8 +50,10 @@ class U3aGroup
         'cost',
         // Term ID (group taxonomy)   Note we store this as a value in wp_term_relationships
     );
-    public static $day_list = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
-    public static $time_list = ['Morning' => 'Morning', 'Afternoon' => 'Afternoon', 'Evening' => 'Evening', 'All Day' => 'All day'];
+    public static $day_list = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday',
+                                5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
+    public static $time_list = ['Morning' => 'Morning', 'Afternoon' => 'Afternoon',
+                                'Evening' => 'Evening', 'All Day' => 'All day'];
     public static $frequency_list = ['Weekly' => 'Weekly', 'Fortnightly' => 'Fortnightly', 'Monthly' => 'Monthly'];
     public static $status_list = [
         1 => 'Active, open to new members',
@@ -71,13 +74,13 @@ class U3aGroup
     private static $plugin_file;
 
     /* Limits on the max size of data input */
-    const MAX_TIME = 9; // Afternoon - need to increase if longer keys are added to time_list
-    const MAX_FREQUENCY = 11; // fortnightly - need to increase if longer keys added to frequency_list
-    const MAX_WHEN = 1024; // free text field
-    const MAX_EMAIL = 320; // max_email is 64 chars plus @ plus 255S
-    const MAX_COST = 1024; // free text field
-    const MAX_DAY_NUM = 1; // should be single digit
-    const MAX_STATUS = 1; // increase if there are more than 9 statuses in status_list
+    private const MAX_TIME = 9; // Afternoon - need to increase if longer keys are added to time_list
+    private const MAX_FREQUENCY = 11; // fortnightly - need to increase if longer keys added to frequency_list
+    private const MAX_WHEN = 1024; // free text field
+    private const MAX_EMAIL = 320; // max_email is 64 chars plus @ plus 255S
+    private const MAX_COST = 1024; // free text field
+    private const MAX_DAY_NUM = 1; // should be single digit
+    private const MAX_STATUS = 1; // increase if there are more than 9 statuses in status_list
 
     /**
      * The id of this post
@@ -97,7 +100,7 @@ class U3aGroup
     /**
      * Set up the actions and filters used by this class.
      *
-     * @param $plugin_file the value of __FILE__ from the main plugin file 
+     * @param $plugin_file the value of __FILE__ from the main plugin file
      */
     public static function initialise($plugin_file)
     {
@@ -132,7 +135,6 @@ class U3aGroup
 
         // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
         add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
-
     }
 
     // validate the lengths of fields on save
@@ -156,7 +158,7 @@ class U3aGroup
         }
         $value = get_post_meta($post_id, 'when', true);
         if (strlen($value) > self::MAX_WHEN) {
-            update_post_meta($post_id, 'when', substr($value,0,self::MAX_WHEN));
+            update_post_meta($post_id, 'when', substr($value, 0, self::MAX_WHEN));
         }
         $value = get_post_meta($post_id, 'email', true);
         if (strlen($value) > self::MAX_EMAIL) {
@@ -168,7 +170,7 @@ class U3aGroup
         }
         $value = get_post_meta($post_id, 'cost', true);
         if (strlen($value) > self::MAX_COST) {
-            update_post_meta($post_id, 'cost', substr($value,0,self::MAX_COST));
+            update_post_meta($post_id, 'cost', substr($value, 0, self::MAX_COST));
         }
     }
 
@@ -311,7 +313,9 @@ class U3aGroup
     {
         if ($post->post_type == U3A_GROUP_CPT) {
             $content = '<!-- wp:u3a/groupdata /--><!-- wp:paragraph --><p></p><!-- /wp:paragraph --> ';
-            if (post_type_exists('u3a_event')) $content .= ' <!-- wp:u3a/eventlist /-->';
+            if (post_type_exists('u3a_event')) {
+                $content .= ' <!-- wp:u3a/eventlist /-->';
+            }
             return $content;
         }
         return $content;
@@ -418,7 +422,7 @@ class U3aGroup
             'post_type'  => U3A_VENUE_CPT,
             'query_args' => ['orderby' => 'title', 'order' => 'ASC'],
             'field_type' => 'select_advanced', // this is the default anyway
-            'ajax'       => false,  // this seems like a good choice, but try switching it on, when there a lots of venues??
+            'ajax'       => false,  // try switching it on when there a lots of venues
         ];
         $fields[] = [
             'type'    => 'heading',
@@ -432,7 +436,7 @@ class U3aGroup
             'name'       => 'Group ' . $coordinator_term,
             'id'         => 'coordinator_ID',
             'desc'       => "Select or leave blank",
-            'ajax'       => false,  // this seems like a good choice, but try switching it on, when there a lots of contacts??
+            'ajax'       => false,  // try switching it on when there a lots of contacts
             'required' => false,
         ];
         if (get_option('field_coord2', '1') == '1') {
@@ -443,7 +447,7 @@ class U3aGroup
                 'name'       => 'Group ' . $coordinator_term . ' 2',
                 'id'         => 'coordinator2_ID',
                 'desc'       => "Select or leave blank",
-                'ajax'       => false,  // this seems like a good choice, but try switching it on, when there a lots of contacts??
+                'ajax'       => false,  // try switching it on when there a lots of contacts
                 'required' => false,
             ];
         }
@@ -455,7 +459,7 @@ class U3aGroup
                 'name'       => 'Deputy',
                 'id'         => 'deputy_ID',
                 'desc'       => "Select or leave blank",
-                'ajax'       => false,  // this seems like a good choice, but try switching it on, when there a lots of contacts??
+                'ajax'       => false,  // try switching it on when there a lots of contacts
                 'required' => false,
             ];
         }
@@ -467,7 +471,7 @@ class U3aGroup
                 'name'       => 'Tutor',
                 'id'         => 'tutor_ID',
                 'desc'       => "Select or leave blank",
-                'ajax'       => false,  // this seems like a good choice, but try switching it on, when there a lots of contacts??
+                'ajax'       => false,  // try switching it on when there a lots of contacts
                 'required' => false,
             ];
         }
@@ -506,7 +510,7 @@ class U3aGroup
     /**
      * Alter the columns that are displayed in the Groups posts list admin page.
      * @param array $columns
-     * @return modified columns
+     * @return array
      * @usedby filter 'manage_' . U3A_GROUP_CPT . '_posts_columns'
      */
     public static function change_columns($columns)
@@ -539,7 +543,8 @@ class U3aGroup
             printf(
                 '<option value="%1$s" %2$s>%3$s (%4$s)</option>',
                 $term->slug,
-                ((isset($_GET[$taxonomy_slug]) && ($_GET[$taxonomy_slug] == $term->slug)) ? ' selected="selected"' : ''),
+                ((isset($_GET[$taxonomy_slug]) && ($_GET[$taxonomy_slug] == $term->slug))
+                    ? ' selected="selected"' : ''),
                 esc_html($term->name),
                 $term->count
             );
@@ -582,7 +587,7 @@ class U3aGroup
      * Can be called either as a shortcode or as a render callback of a block.
      * Attributes will also be taken from the page's URL query parameters.
      * If present these query parameters will override parameters passed as arguments
-     * 
+     *
      * @param arr $atts attributes with the following possible keys
      *  Attributes
      *  sort: either 'alpha' (default) for a listing in group name alphabet order
@@ -660,7 +665,7 @@ class U3aGroup
             'order' => 'ASC',
         );
 
-        // if only displaying groups for a selected category 
+        // if only displaying groups for a selected category
         if ('all' != $cat) {
             $term = get_term_by('slug', $cat, U3A_GROUP_TAXONOMY);
             if (empty($term)) {
@@ -678,7 +683,6 @@ class U3aGroup
         } elseif ('alpha' == $list_type) { // list all groups alphabetically
             $html .= '<h3>Groups listed alphabetically</h3>';
             $html .= self::display_selected_groups($query_args, $display_args);
-
         } elseif ('day' == $list_type) { // group the list by usual meeting day of week
             $html .= "<h3>Groups listed by meeting day</h3>\n";
 
@@ -715,7 +719,6 @@ class U3aGroup
                 }
             } // endfor
         } elseif ('venue' == $list_type) { // group the list by venue
-
             $display_args['venue'] = 'n'; // dont display venue if sorted by venue
             $html .= "<h3>Groups listed by venue</h3>\n";
             $venue_query_args = [
@@ -762,7 +765,6 @@ class U3aGroup
                     END;
                 }
             } // endfor
-
         } elseif ('cat' == $list_type) { // group the list by u3a_group_category
             $html  .= <<< END
             <h3>Groups listed by $category_singular_term</h3>
@@ -879,16 +881,18 @@ class U3aGroup
                     // first do preliminary query
                     $results = $wpdb->get_results(
                         $wpdb->prepare(
-                            "SELECT ID FROM %i WHERE post_type = %s AND SUBSTRING(post_title,1,1) = %s AND post_status = 'publish'; ",
-                            $wpdb->prefix.'posts',
+                            "SELECT ID FROM %i WHERE post_type = %s 
+                            AND SUBSTRING(post_title,1,1) = %s AND post_status = 'publish'; ",
+                            $wpdb->prefix . 'posts',
                             U3A_GROUP_CPT,
                             $letter,
-                            ),
+                        ),
                         ARRAY_A
                     );
                     $post_ids = array_column($results, 'ID');
                     $post_ids = count($post_ids) ? $post_ids : array(-1);
-                    //the above is a simple workaround as passing an empty array to post__in currently returns the most recent posts (see Ticket #28099).
+                    //the above is a simple workaround as passing an empty array
+                    //to post__in currently returns the most recent posts (see Ticket #28099).
                     $query_args['post__in'] = $post_ids;
                     $list_heading = "Groups starting with letter $letter";
                     $get_group_listing = true; // so will populate $html later
@@ -910,7 +914,8 @@ class U3aGroup
                     $html .= "<p>Find a group by its $category_singular_term</p>";
                     $html .= self::get_parent_list($all_group_posts);
 
-                    $html .= "<p>Find a group by day of the week it operates<br> Groups with unspecified day will be omitted.</p>";
+                    $html .= "<p>Find a group by day of the week it operates<br> 
+                            Groups with unspecified day will be omitted.</p>";
                     $html .= self::get_day_list($all_group_posts);
                 } else {
                     $none_msg = "<p>No groups found.</p>";
@@ -948,7 +953,7 @@ class U3aGroup
      ^
      * @param array $posts all published group posts.
      *
-     * @return HTML <div> with a set of links to current page with added query parameter,
+     * @return string <div> with a set of links to current page with added query parameter,
      *              specifying a letter, e,g ?list_type=letter&letter=b
      */
     public static function get_letter_list($posts)
@@ -960,9 +965,12 @@ class U3aGroup
         }
         $html = "<div class=\"u3agroupselector\">\n";
         foreach (range('A', 'Z') as $let) {
-            if (strpos($letters_used, $let) === false) continue;
+            if (strpos($letters_used, $let) === false) {
+                continue;
+            }
             $url = untrailingslashit(home_url($wp->request)) . "?list_type=letter&letter=" . $let;
-            $html .= "<a class='wp-element-button' href='" . $url . "' style='text-align: center; display:inline-block;'>" . $let . "</a>\n";
+            $html .= "<a class='wp-element-button' href='" . $url
+                    . "' style='text-align: center; display:inline-block;'>" . $let . "</a>\n";
         }
         $html .= "</div>\n";
         return $html;
@@ -973,7 +981,7 @@ class U3aGroup
      *
      * @param array $posts all published group posts.
      *
-     * @return HTML <div> with a set of links to current page with added query parameter,
+     * @return string <div> with a set of links to current page with added query parameter,
      *              specifying a category, e,g ?list_type=par&par=Arts
      */
     public static function get_parent_list($posts)
@@ -992,7 +1000,8 @@ class U3aGroup
         $html = "<div class=\"u3agroupselector\">\n";
         $url = untrailingslashit(home_url($wp->request)) . "?list_type=par&par=";
         foreach ($uniqueCats as $catName) {
-            $html .= "<a class='wp-element-button' href='" . $url . $catName . "' style='display:inline-block;'>" . $catName . "</a>";
+            $html .= "<a class='wp-element-button' href='" . $url
+                     . $catName . "' style='display:inline-block;'>" . $catName . "</a>";
         }
         $html .= "</div>\n";
 
@@ -1004,7 +1013,7 @@ class U3aGroup
      *
      * @param array $posts all published group posts.
      *
-     * @return HTML <div> with a set of links to current page with added query parameter,
+     * @return string <div> with a set of links to current page with added query parameter,
      *              specifying a category, e,g ?list_type=day&weekdayday=Tuesday
      */
     public static function get_day_list($posts)
@@ -1013,14 +1022,17 @@ class U3aGroup
         $daysUsed = array();
         foreach ($posts as $post) {
             $day_NUM = get_post_meta($post->ID, 'day_NUM', true);
-            if (!empty($day_NUM)) $daysUsed[] = $day_NUM;
+            if (!empty($day_NUM)) {
+                $daysUsed[] = $day_NUM;
+            }
         }
         $uniqueDays = array_unique($daysUsed);
         asort($uniqueDays);
         $url = untrailingslashit(home_url($wp->request)) . "?list_type=day&weekday=";
         $html = "<div class=\"u3agroupselector\">";
         foreach ($uniqueDays as $day_NUM) {
-            $html .= "<a class='wp-element-button' style='display:inline-block;' href='" . $url . self::$day_list[$day_NUM] . "'>" . self::$day_list[$day_NUM] . "</a>";
+            $html .= "<a class='wp-element-button' style='display:inline-block;' href='" . $url
+                     . self::$day_list[$day_NUM] . "'>" . self::$day_list[$day_NUM] . "</a>";
         }
         $html .= "</div>\n";
 
@@ -1036,8 +1048,8 @@ class U3aGroup
      *        'group_status' = y/n
      *        'when' = y/n
      *        'venue' = y/n
-     * @param str $none_msg output if no matching groups found.
-     * @return HTML <ul> with a list item for each group found.     
+     * @param string $none_msg output if no matching groups found.
+     * @return string <ul> with a list item for each group found.
      */
     public static function display_selected_groups($query_args, $display_args, $none_msg = 'No groups.')
     {
@@ -1049,7 +1061,8 @@ class U3aGroup
         if ($groups->have_posts()) :
             $html = "<ul>\n";
 
-            while ($groups->have_posts()) : $groups->the_post();
+            while ($groups->have_posts()) :
+                $groups->the_post();
                 $the_group = new U3aGroup(get_the_ID());
                 $permalink = get_the_permalink();
                 $title =  get_the_title();
@@ -1078,10 +1091,8 @@ class U3aGroup
             endwhile;
 
             $html .= "</ul>\n";
-
         else :
             $html = $none_msg;
-
         endif;
         wp_reset_postdata(); // ensures that the global $post has been restored to the current post in the main query
         return $html;
@@ -1158,7 +1169,7 @@ class U3aGroup
 
     /**
      * Returns the short text version of the group's status
-     * @return str
+     * @return string
      */
     public function status_text_short()
     {
@@ -1168,7 +1179,7 @@ class U3aGroup
 
     /**
      * Returns the venue text (or unspecified)
-     * @return str
+     * @return string
      */
     public function venue_text()
     {
@@ -1182,7 +1193,7 @@ class U3aGroup
 
     /**
      * Returns the long text version of the group's status
-     * @return str
+     * @return string
      */
     public function status_text()
     {
@@ -1196,11 +1207,11 @@ class U3aGroup
      * and, if present, a second line with free text.
      * The text is structured to be grammatical, even if some fields are missing.
      *
-     * @return str with <br> between the lines.
+     * @return string with <br> between the lines.
      */
     public function when_text()
     {
-        $timeformat = get_option('time_format', 'g:i a');  // use WordPress settings for time format 
+        $timeformat = get_option('time_format', 'g:i a');  // use WordPress settings for time format
         $day_NUM = get_post_meta($this->ID, 'day_NUM', true);
         // set valid weekday or empty string (use ?? operator)
         $weekday = (!empty($day_NUM)) ? (self::$day_list[$day_NUM] ?? '') : '';
@@ -1213,7 +1224,7 @@ class U3aGroup
         $timetext = ($time == '' || $time == 'all day') ? $time : $time . 's';  // usually add 's'!
 
         $start = get_post_meta($this->ID, 'startTime', true);  // in NN:NN format
-        $start = (!empty($start)) ? date($timeformat, strtotime($start)) : '';// e.g. convert to 3:30 
+        $start = (!empty($start)) ? date($timeformat, strtotime($start)) : '';// e.g. convert to 3:30
         $connector = '-';  // without spaces to enforce (simply) no break of line
         $end = get_post_meta($this->ID, 'endTime', true);
         $end = (!empty($end)) ? $connector . date($timeformat, strtotime($end)) : '';// e.g. convert to -5:30
@@ -1236,11 +1247,11 @@ class U3aGroup
 
     /**
      * Returns HTML table row with contact details.
-     * @param str $role_field the name of the post-meta field of a contact
-     * @param str $rolename the display name for this role
+     * @param string $role_field the name of the post-meta field of a contact
+     * @param string $rolename the display name for this role
      *
      *
-     * @return str HTML complete <tr> item.
+     * @return string HTML complete <tr> item.
      */
     public function contact_text($role_field, $rolename)
     {
@@ -1256,8 +1267,8 @@ class U3aGroup
     /**
      * Returns HTML table row with email details for one or two group email fields.
      * The email addresses may be cloaked, depending on option settings.
-     * 
-     * @return str HTML complete <tr> item.
+     *
+     * @return string HTML complete <tr> item.
      */
     public function extra_emailstext()
     {
@@ -1288,7 +1299,7 @@ class U3aGroup
         return $html;
     }
 
-    /** 
+    /**
      * Convert event metadata to displayable text when rendered by the third party Meta Field Block.
      * Ref https://wordpress.org/plugins/display-a-meta-field-as-block/
      * (WP won't have a problem if the block isn't present)
@@ -1298,7 +1309,7 @@ class U3aGroup
      */
     public static function modify_meta_data($content, $attributes)
     {
-        if ($content != '' ) {
+        if ($content != '') {
             switch ($attributes['fieldName']) {
                 case 'status_NUM':
                     $content = self::$status_list[$content];

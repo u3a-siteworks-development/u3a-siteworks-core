@@ -1,27 +1,29 @@
 <?php
-class U3aAdmin
+
+ // phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+class U3aAdmin // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
 {
     /**
      * Set up the actions and filters used by this class.
      *
-     * @param $plugin_file the value of __FILE__ from the main plugin file 
+     * @param $plugin_file the value of __FILE__ from the main plugin file
      */
     public static function initialise($plugin_file)
     {
         // Add the Settings menu to the dashboard
-        add_action('admin_menu', array(self::class, 'settings_menu'));
+        add_action('admin_menu', [self::class, 'settings_menu']);
 
         // Hook: functions to process the Settings tabs
-        add_action('admin_post_u3a_general_settings', array(self::class, 'save_general_settings'));
-        add_action('admin_post_u3a_group_settings', array(self::class, 'save_group_settings'));
-        add_action('admin_post_u3a_venue_settings', array(self::class, 'save_venue_settings'));
-        add_action('admin_post_u3a_event_settings', array(self::class, 'save_event_settings'));
-
+        add_action('admin_post_u3a_general_settings', [self::class, 'save_general_settings']);
+        add_action('admin_post_u3a_group_settings', [self::class, 'save_group_settings']);
+        add_action('admin_post_u3a_venue_settings', [self::class, 'save_venue_settings']);
+        add_action('admin_post_u3a_event_settings', [self::class, 'save_event_settings']);
     }
+    //end initialise()
+
 
     /**
      * Add menu for plugin settings.
-     *
      */
     public static function settings_menu()
     {
@@ -30,11 +32,16 @@ class U3aAdmin
             'u3a Settings',
             'manage_options',
             'u3a-settings',
-            array(self::class, 'render_settings_menu'),
+            [
+                self::class,
+                'render_settings_menu',
+            ],
             'dashicons-admin-generic',
             30
         );
     }
+    //end settings_menu()
+
 
     /**
      * Print menu page for customisable settings used in this plugin.
@@ -46,10 +53,9 @@ class U3aAdmin
         global $u3aMQDetect;
 
         // Check if there is a status returned from a save on one of the tabs
-
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $status_HTML = '';
-        $status = isset($_GET['status']) ? sanitize_text_field($_GET['status']) : "";
+        $status      = isset($_GET['status']) ? sanitize_text_field($_GET['status']) : "";
         $status_text = '';
         if ($status != "") {
             switch ($status) {
@@ -63,6 +69,7 @@ class U3aAdmin
                     $status_text = esc_HTML($status);
                     // add other case values as required
             }
+
             $status_HTML = "<div class='notice notice-error is-dismissible inline'><p>$status_text</p></div>";
         }
 
@@ -71,7 +78,12 @@ class U3aAdmin
         $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
 
         // Assemble the tab navigation menu
-        $tabs = array('General' => '', 'Groups' => 'groups', 'Venues' => 'venues', 'Events' => 'events');
+        $tabs       = [
+            'General' => '',
+            'Groups'  => 'groups',
+            'Venues'  => 'venues',
+            'Events'  => 'events',
+        ];
         $tab_navbar = '<nav class="nav-tab-wrapper">';
         foreach ($tabs as $tabText => $tabName) {
             $tab_navbar .= '<a href="?page=u3a-settings';
@@ -80,14 +92,16 @@ class U3aAdmin
             if ($tab == $tabName) {
                 $tab_navbar .= 'nav-tab-active';
             }
+
             $tab_navbar .= '">';
             $tab_navbar .= $tabText;
             $tab_navbar .= '</a>';
         }
+
         $tab_navbar .= "</nav>\n";
 
         // Content common to all tabs
-        $nonce_code =  wp_nonce_field('u3a_settings', 'u3a_nonce', true, false);
+        $nonce_code    = wp_nonce_field('u3a_settings', 'u3a_nonce', true, false);
         $submit_button = get_submit_button('Save Settings');
 
         // Get form for current tab
@@ -99,12 +113,13 @@ class U3aAdmin
                 $form = self::render_venues_tab($nonce_code, $submit_button);
                 break;
             case 'events':
-             $form = self::render_events_tab($nonce_code, $submit_button);
+                $form = self::render_events_tab($nonce_code, $submit_button);
                 break;
-            default:  //general 
+            default:
+                // general
                 $form = self::render_general_tab($nonce_code, $submit_button);
         }
-        
+
         // Output the page
         //phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
         print <<<END
@@ -117,18 +132,20 @@ class U3aAdmin
         END;
         //phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
     }
+    //end render_settings_menu()
+
 
     /**
      * Generate form for General tab.
-     * @return HTML $form.
+     *
+     * @return string $form.
      */
     public static function render_general_tab($nonce_code, $submit_button)
     {
         global $u3aMQDetect;
         // Content for General tab
-
-        $u3aname = get_option('blogname');
-        $enableToolbar = get_option('u3a_enable_toolbar', 1);
+        $u3aname           = get_option('blogname');
+        $enableToolbar     = get_option('u3a_enable_toolbar', 1);
         $enableToolbar_chk = ($enableToolbar == '1') ? ' checked' : '';
 
         // form for Events tab
@@ -157,9 +174,12 @@ class U3aAdmin
         END;
         return $form;
     }
+    //end render_general_tab()
+
 
     /**
      * Generate form for Groups tab.
+     *
      * @return $form.
      */
     public static function render_groups_tab($nonce_code, $submit_button)
@@ -167,33 +187,33 @@ class U3aAdmin
         global $u3aMQDetect;
 
         // content for Groups tab
-        $coordinator_term = esc_HTML(get_option('u3a_coord_term', 'coordinator'));
+        $coordinator_term       = esc_HTML(get_option('u3a_coord_term', 'coordinator'));
         $category_singular_term = esc_HTML(get_option('u3a_catsingular_term', 'category'));
-        $category_plural_term = esc_HTML(get_option('u3a_catplural_term', 'categories'));
+        $category_plural_term   = esc_HTML(get_option('u3a_catplural_term', 'categories'));
 
         $u3a_hide_email = get_option('u3a_hide_email', 'Yes');
-        $emailY = ($u3a_hide_email == 'Yes') ? ' checked' : '';
-        $emailN = ($u3a_hide_email == 'No') ? ' checked' : '';
+        $emailY         = ($u3a_hide_email == 'Yes') ? ' checked' : '';
+        $emailN         = ($u3a_hide_email == 'No') ? ' checked' : '';
 
         $u3a_grouplist_type = get_option('u3a_grouplist_type', 'sorted');
-        $list_sorted = ($u3a_grouplist_type == 'sorted') ? ' checked' : '';
-        $list_filtered = ($u3a_grouplist_type == 'filtered') ? ' checked' : '';
-        
-        $grouplist_scroll = get_option('u3a_groups_list_scroll', 'enabled');
+        $list_sorted        = ($u3a_grouplist_type == 'sorted') ? ' checked' : '';
+        $list_filtered      = ($u3a_grouplist_type == 'filtered') ? ' checked' : '';
+
+        $grouplist_scroll     = get_option('u3a_groups_list_scroll', 'enabled');
         $grouplist_scroll_chk = ('enabled' == $grouplist_scroll) ? ' checked' : '';
 
-        $field_coord2 = get_option('field_coord2', '1');
-        $field_coord2_chk = ($field_coord2 == '1') ? ' checked' : '';
-        $field_deputy = get_option('field_deputy', '1');
-        $field_deputy_chk = ($field_deputy == '1') ? ' checked' : '';
-        $field_tutor = get_option('field_tutor', '1');
-        $field_tutor_chk = ($field_tutor == '1') ? ' checked' : '';
-        $field_groupemail = get_option('field_groupemail', '1');
-        $field_groupemail_chk = ($field_groupemail == '1') ? ' checked' : '';
-        $field_groupemail2 = get_option('field_groupemail2', '1');
-        $field_groupemail2_chk = ($field_groupemail2   == '1') ? ' checked' : '';
-        $field_cost = get_option('field_cost', '1');
-        $field_cost_chk = ($field_cost == '1') ? ' checked' : '';
+        $field_coord2          = get_option('field_coord2', '1');
+        $field_coord2_chk      = ($field_coord2 == '1') ? ' checked' : '';
+        $field_deputy          = get_option('field_deputy', '1');
+        $field_deputy_chk      = ($field_deputy == '1') ? ' checked' : '';
+        $field_tutor           = get_option('field_tutor', '1');
+        $field_tutor_chk       = ($field_tutor == '1') ? ' checked' : '';
+        $field_groupemail      = get_option('field_groupemail', '1');
+        $field_groupemail_chk  = ($field_groupemail == '1') ? ' checked' : '';
+        $field_groupemail2     = get_option('field_groupemail2', '1');
+        $field_groupemail2_chk = ($field_groupemail2 == '1') ? ' checked' : '';
+        $field_cost            = get_option('field_cost', '1');
+        $field_cost_chk        = ($field_cost == '1') ? ' checked' : '';
 
         $grouplist_threshold = get_option('grouplist_threshold', 20);
 
@@ -211,7 +231,8 @@ class U3aAdmin
         <h3>Term for Group Categories</h3>
         <p>Your u3a may wish to use a different term for the group categories, such as "faculties"<br>
         You can change the terms used here.</p>
-        Singular: <input type="text" id="catsingleterm" name="catsingleterm" maxlength="20" value="$category_singular_term">
+        Singular: 
+        <input type="text" id="catsingleterm" name="catsingleterm" maxlength="20" value="$category_singular_term">
         Plural: <input type="text" id="catpluralterm" name="catpluralterm" maxlength="20" value="$category_plural_term">
 
         <h3>Fields to show when adding a new group</h3>
@@ -231,19 +252,26 @@ class U3aAdmin
 
         <h3>Group list display</h3>
         <p> Group lists can be shown either with sorting or filtering options. Choose which will be used.</p>
-        <label for="sorted"><input type="radio" id="sorted" name="u3a_grouplist_type" value="sorted" $list_sorted>sorted</label><br>
-        <label for="filtered"><input type="radio" id="filtered" name="u3a_grouplist_type" value="filtered" $list_filtered>filtered</label>
+        <label for="sorted"><input type="radio" id="sorted" name="u3a_grouplist_type"
+         value="sorted" $list_sorted>sorted</label><br>
+        <label for="filtered"><input type="radio" id="filtered" name="u3a_grouplist_type" 
+        value="filtered" $list_filtered>filtered</label>
 
-        <p>For the sorted option, a set of 'sort by' buttons appears above the list. When clicking one of these buttons the page refreshes and optionally scrolls the page down to these buttons.<br>
+        <p>For the sorted option, a set of 'sort by' buttons appears above the list. 
+        When clicking one of these buttons the page refreshes and optionally scrolls the page down to these buttons.<br>
         <label for="grouplist_scroll"> Enable auto-scrolling to sort buttons?</label>
         <input type="checkbox" id="grouplist_scroll" name="grouplist_scroll"  value="1" $grouplist_scroll_chk></p>
 
-        <p>For the filtered option, with a limited number of groups, the list will be shown in alphabetical order.  With more groups, the system will display options to filter the list before showing the selected groups.<br>
-        <label for="grouplistthreshold">Maximum size of group list before automatically filtering:</label> <input type="number" class="small-text" id="grouplistthreshold" name="grouplistthreshold" value="$grouplist_threshold" min="0" max="999"></p>
+        <p>For the filtered option, with a limited number of groups, the list will be shown in alphabetical order.  
+        With more groups, the system will display options to filter the list before showing the selected groups.<br>
+        <label for="grouplistthreshold">Maximum size of group list before automatically filtering:
+            </label> <input type="number" class="small-text" id="grouplistthreshold" 
+            name="grouplistthreshold" value="$grouplist_threshold" min="0" max="999"></p>
 
         <h3>Hide email addresses</h3>
         <p>Do you want the system to hide email addresses of group {$coordinator_term}s<br>
-        When you choose 'yes' the system will provide a link to a contact form for that person instead of a regular email link.</p>
+        When you choose 'yes' the system will provide a link to a contact form for that 
+        person instead of a regular email link.</p>
         <label for="y"><input type="radio" id="y" name="hideemail" value="Yes" $emailY>Yes</label><br>
         <label for="n"><input type="radio" id="n" name="hideemail" value="No" $emailN>No</label>
 
@@ -252,17 +280,19 @@ class U3aAdmin
         END;
         return $form;
     }
+    //end render_groups_tab()
+
 
     /**
      * Generate form for Venues tab.
+     *
      * @return $form.
      */
     public static function render_venues_tab($nonce_code, $submit_button)
     {
         global $u3aMQDetect;
         // Content for Venues tab
-
-        $field_v_district = get_option('field_v_district', '1');
+        $field_v_district     = get_option('field_v_district', '1');
         $field_v_district_chk = ($field_v_district == '1') ? ' checked' : '';
 
         // form for Venues tab
@@ -283,42 +313,63 @@ class U3aAdmin
         END;
         return $form;
     }
+    //end render_venues_tab()
+
 
     /**
      * Generate form for Events tab.
-     * @return HTML $form.
+     *
+     * @return string $form.
      */
     public static function render_events_tab($nonce_code, $submit_button)
     {
         global $u3aMQDetect;
 
         // Content for Events tab
-        $events_nogroups = get_option('events_nogroups', '1');
+        $events_nogroups     = get_option('events_nogroups', '1');
         $events_nogroups_chk = ($events_nogroups == '1') ? ' checked' : '';
 
-        $events_timeformat = get_option('events_timeformat', 'system');  // options are 'system', '12hr', '24hr'
+        $events_timeformat = get_option('events_timeformat', 'system');
+        // options are 'system', '12hr', '24hr'
         $events_timeformat_system = '';
-        $events_timeformat_24hr = '';
-        $events_timeformat_12hr = '';
+        $events_timeformat_24hr   = '';
+        $events_timeformat_12hr   = '';
         switch ($events_timeformat) {
-            case 'system': $events_timeformat_system = 'checked'; break;
-            case '12hr': $events_timeformat_12hr = 'checked'; break;
-            default: $events_timeformat_24hr = 'checked';
+            case 'system':
+                $events_timeformat_system = 'checked';
+
+                break;
+            case '12hr':
+                $events_timeformat_12hr = 'checked';
+
+                break;
+            default:
+                $events_timeformat_24hr = 'checked';
         }
+
         $system_time_example = date(get_option('time_format'), strtotime("14:30"));
 
-        $events_dateformat = get_option('events_dateformat', 'system');  // options are 'system', 'short', 'long'
+        $events_dateformat = get_option('events_dateformat', 'system');
+        // options are 'system', 'short', 'long'
         $events_dateformat_system = '';
-        $events_dateformat_short = '';
-        $events_dateformat_long = '';
+        $events_dateformat_short  = '';
+        $events_dateformat_long   = '';
         switch ($events_dateformat) {
-            case 'system': $events_dateformat_system = 'checked'; break;
-            case 'short': $events_dateformat_short = 'checked'; break;
-            default: $events_dateformat_long = 'checked';
+            case 'system':
+                $events_dateformat_system = 'checked';
+
+                break;
+            case 'short':
+                $events_dateformat_short = 'checked';
+
+                break;
+            default:
+                $events_dateformat_long = 'checked';
         }
+
         $system_date_example = date(get_option('date_format'));
-        $short_date_example = date('D M jS');
-        $long_date_example = date('l jS F Y');
+        $short_date_example  = date('D M jS');
+        $long_date_example   = date('l jS F Y');
 
         // form for Events tab
         $form = <<<END
@@ -359,6 +410,8 @@ class U3aAdmin
         END;
         return $form;
     }
+    //end render_events_tab()
+
 
     /**
      * Save General settings as WordPress options.
@@ -367,11 +420,14 @@ class U3aAdmin
     public static function save_general_settings()
     {
         // check nonce
-        if (check_admin_referer('u3a_settings', 'u3a_nonce') == false) wp_die('Invalid form submission');
-        // check for WP magic quotes
-        $u3aMQDetect = $_POST['u3aMQDetect'];
-        $needStripSlashes = (strlen($u3aMQDetect) > 5) ? true : false; // backslash added to apostrophe in test string?
+        if (check_admin_referer('u3a_settings', 'u3a_nonce') == false) {
+            wp_die('Invalid form submission');
+        }
 
+        // check for WP magic quotes
+        $u3aMQDetect      = $_POST['u3aMQDetect'];
+        $needStripSlashes = (strlen($u3aMQDetect) > 5) ? true : false;
+        // backslash added to apostrophe in test string?
         $u3aname = $needStripSlashes ? stripslashes($_POST['u3aname']) : $_POST['u3aname'];
         $u3aname = sanitize_text_field($u3aname);
         if (!empty($u3aname)) {
@@ -385,6 +441,8 @@ class U3aAdmin
         wp_safe_redirect(admin_url('admin.php?page=u3a-settings&status=1'));
         exit();
     }
+    //end save_general_settings()
+
 
     /**
      * Save group-related settings as WordPress options.
@@ -393,54 +451,62 @@ class U3aAdmin
     public static function save_group_settings()
     {
         // check nonce
-        if (check_admin_referer('u3a_settings', 'u3a_nonce') == false) wp_die('Invalid form submission');
-        // check for WP magic quotes
-        $u3aMQDetect = $_POST['u3aMQDetect'];
-        $needStripSlashes = (strlen($u3aMQDetect) > 5) ? true : false; // backslash added to apostrophe in test string?
+        if (check_admin_referer('u3a_settings', 'u3a_nonce') == false) {
+            wp_die('Invalid form submission');
+        }
 
-        $cterm = $needStripSlashes ? stripslashes($_POST['cterm']) : $_POST['cterm'];
+        // check for WP magic quotes
+        $u3aMQDetect      = $_POST['u3aMQDetect'];
+        $needStripSlashes = (strlen($u3aMQDetect) > 5) ? true : false;
+        // backslash added to apostrophe in test string?
+        $cterm            = $needStripSlashes ? stripslashes($_POST['cterm']) : $_POST['cterm'];
         $coordinator_term = trim(strtolower($cterm));
         $coordinator_term = ($coordinator_term == '') ? 'coordinator' : $coordinator_term;
 
-        $catsingleterm = $needStripSlashes ? stripslashes($_POST['catsingleterm']) : $_POST['catsingleterm'];
+        $catsingleterm          = $needStripSlashes ? stripslashes($_POST['catsingleterm']) : $_POST['catsingleterm'];
         $category_singular_term = trim(strtolower($catsingleterm));
         $category_singular_term = ($category_singular_term == '') ? 'category' : $category_singular_term;
-        $catpluralterm = $needStripSlashes ? stripslashes($_POST['catpluralterm']) : $_POST['catpluralterm'];
-        $category_plural_term = trim(strtolower($catpluralterm));
-        $category_plural_term = ($category_plural_term == '') ? 'categories' : $category_plural_term;
+        $catpluralterm          = $needStripSlashes ? stripslashes($_POST['catpluralterm']) : $_POST['catpluralterm'];
+        $category_plural_term   = trim(strtolower($catpluralterm));
+        $category_plural_term   = ($category_plural_term == '') ? 'categories' : $category_plural_term;
 
-        $field_coord2 = isset($_POST['coord2']) ? '1' : '9';
-        $field_deputy = isset($_POST['deputy']) ? '1' : '9';
-        $field_tutor = isset($_POST['tutor']) ? '1' : '9';
-        $field_groupemail = isset($_POST['groupemail']) ? '1' : '9';
+        $field_coord2      = isset($_POST['coord2']) ? '1' : '9';
+        $field_deputy      = isset($_POST['deputy']) ? '1' : '9';
+        $field_tutor       = isset($_POST['tutor']) ? '1' : '9';
+        $field_groupemail  = isset($_POST['groupemail']) ? '1' : '9';
         $field_groupemail2 = isset($_POST['groupemail2']) ? '1' : '9';
-        $field_cost = isset($_POST['cost']) ? '1' : '9';
+        $field_cost        = isset($_POST['cost']) ? '1' : '9';
 
         if (get_option('field_coord2')) {
             update_option('field_coord2', $field_coord2);
         } else {
             add_option('field_coord2', $field_coord2);
         }
+
         if (get_option('field_deputy')) {
             update_option('field_deputy', $field_deputy);
         } else {
             add_option('field_deputy', $field_deputy);
         }
+
         if (get_option('field_tutor')) {
             update_option('field_tutor', $field_tutor);
         } else {
             add_option('field_tutor', $field_tutor);
         }
+
         if (get_option('field_groupemail')) {
             update_option('field_groupemail', $field_groupemail);
         } else {
             add_option('field_groupemail', $field_groupemail);
         }
+
         if (get_option('field_groupemail2')) {
             update_option('field_groupemail2', $field_groupemail2);
         } else {
             add_option('field_groupemail2', $field_groupemail2);
         }
+
         if (get_option('field_cost')) {
             update_option('field_cost', $field_cost);
         } else {
@@ -455,8 +521,8 @@ class U3aAdmin
         }
 
         $grouplist_scroll = isset($_POST['grouplist_scroll']) ? 'enabled' : 'disabled';
-        update_option('u3a_groups_list_scroll', $grouplist_scroll); // will add if not present!
-
+        update_option('u3a_groups_list_scroll', $grouplist_scroll);
+        // will add if not present!
         $grouplist_threshold = $_POST['grouplistthreshold'];
         if (get_option('grouplist_threshold') !== false) {
             update_option('grouplist_threshold', $grouplist_threshold);
@@ -493,6 +559,8 @@ class U3aAdmin
         wp_safe_redirect(admin_url('admin.php?page=u3a-settings&tab=groups&status=1'));
         exit();
     }
+    //end save_group_settings()
+
 
     /**
      * Save venue-related settings as WordPress options.
@@ -501,11 +569,14 @@ class U3aAdmin
     public static function save_venue_settings()
     {
         // check nonce
-        if (check_admin_referer('u3a_settings', 'u3a_nonce') == false) wp_die('Invalid form submission');
-        // check for WP magic quotes
-        $u3aMQDetect = $_POST['u3aMQDetect'];
-        $needStripSlashes = (strlen($u3aMQDetect) > 5) ? true : false; // backslash added to apostrophe in test string?
+        if (check_admin_referer('u3a_settings', 'u3a_nonce') == false) {
+            wp_die('Invalid form submission');
+        }
 
+        // check for WP magic quotes
+        $u3aMQDetect      = $_POST['u3aMQDetect'];
+        $needStripSlashes = (strlen($u3aMQDetect) > 5) ? true : false;
+        // backslash added to apostrophe in test string?
         $field_v_district = isset($_POST['vdistrict']) ? '1' : '9';
         update_option('field_v_district', $field_v_district);
 
@@ -513,6 +584,8 @@ class U3aAdmin
         wp_safe_redirect(admin_url('admin.php?page=u3a-settings&tab=venues&status=1'));
         exit();
     }
+    //end save_venue_settings()
+
 
     /**
      * Save event-related settings as WordPress options.
@@ -521,11 +594,14 @@ class U3aAdmin
     public static function save_event_settings()
     {
         // check nonce
-        if (check_admin_referer('u3a_settings', 'u3a_nonce') == false) wp_die('Invalid form submission');
-        // check for WP magic quotes
-        $u3aMQDetect = $_POST['u3aMQDetect'];
-        $needStripSlashes = (strlen($u3aMQDetect) > 5) ? true : false; // backslash added to apostrophe in test string?
+        if (check_admin_referer('u3a_settings', 'u3a_nonce') == false) {
+            wp_die('Invalid form submission');
+        }
 
+        // check for WP magic quotes
+        $u3aMQDetect      = $_POST['u3aMQDetect'];
+        $needStripSlashes = (strlen($u3aMQDetect) > 5) ? true : false;
+        // backslash added to apostrophe in test string?
         $events_nogroups = isset($_POST['events_nogroups']) ? '1' : '9';
         update_option('events_nogroups', $events_nogroups);
 
@@ -539,4 +615,6 @@ class U3aAdmin
         wp_safe_redirect(admin_url('admin.php?page=u3a-settings&tab=events&status=1'));
         exit();
     }
+    //end save_event_settings()
 }
+//end class

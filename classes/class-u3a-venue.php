@@ -1,6 +1,8 @@
 <?php
 
-class U3aVenue
+// phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+
+class U3aVenue // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
 {
     use ChangePrompt;
     use AddMetabox;
@@ -9,49 +11,51 @@ class U3aVenue
     /**
      * The post_type for this class
      *
-     * @var string 
+     * @var string
      */
     public static $post_type = U3A_VENUE_CPT;
 
     /**
      * The short name for this class
      *
-     * @var string 
+     * @var string
      */
     public static $post_type_name = 'venue';
 
     /**
      * The term used for the title of these custom posts
      *
-     * @var string 
+     * @var string
      */
     public static $term_for_title = "venue name";
 
     /**
      * The metabox title of these custom posts
      *
-     * @var string 
+     * @var string
      */
     public static $metabox_title = "Venue Information";
 
     /**
      * The meta keys that contain xrefs to this type of post
      *
-     * @var string of keys within single quotes 
+     * @var string of keys within single quotes
      */
     public static $xref_meta_key_list = "'venue_ID', 'eventVenue_ID'";
 
     // $plugin_file is the value of __FILE__ from the main plugin file
     private static $plugin_file;
 
-    /* Limits on the max size of data input */
-    const MAX_DISTRICT = 255;
-    const MAX_ADDRESS_LINE = 255;
-    const MAX_TOWN = 255; // its 58 really - but might add extra details.
-    const MAX_POSTCODE = 60;
-    const MAX_ACCESSIBILITY = 1024;
-    const MAX_URL = 2000; // for all browsers
-    const MAX_PHONE = 60;
+    // Limits on the max size of data input
+    private const MAX_DISTRICT     = 255;
+    private const MAX_ADDRESS_LINE = 255;
+    private const MAX_TOWN         = 255;
+    // its 58 really - but might add extra details.
+    private const MAX_POSTCODE      = 60;
+    private const MAX_ACCESSIBILITY = 1024;
+    private const MAX_URL           = 2000;
+    // for all browsers
+    private const MAX_PHONE = 60;
 
     /**
      * The ID of this post
@@ -67,61 +71,66 @@ class U3aVenue
      */
     public $exists;
 
+
     /**
      * Construct a new object for a u3a_group post.
-     *
      */
     public function __construct($ID)
     {
-        $ID = (int) $ID;
-        $this->ID = $ID;
+        $ID           = (int) $ID;
+        $this->ID     = $ID;
         $this->exists = false;
         if (is_int($ID) && $ID > 0) {
-            if (get_post($ID) !== null) { // so a post with this ID exists
+            if (get_post($ID) !== null) {
+                // so a post with this ID exists
                 $this->exists = true;
             }
         }
     }
+    //end __construct()
+
 
     /**
      * Set up the actions and filters used by this class.
      *
-     * @param $plugin_file the value of __FILE__ from the main plugin file 
+     * @param $plugin_file the value of __FILE__ from the main plugin file
      */
     public static function initialise($plugin_file)
     {
         self::$plugin_file = $plugin_file;
 
         // Register Venue CPT
-        add_action('init', array(self::class, 'register_venues'));
+        add_action('init', [self::class, 'register_venues']);
 
         // Routine to run on plugin activation
-        register_activation_hook($plugin_file, array(self::class, 'on_activation'));
+        register_activation_hook($plugin_file, [self::class, 'on_activation']);
 
         // Register the blocks
-        add_action('init', array(self::class, 'register_blocks'));
+        add_action('init', [self::class, 'register_blocks']);
 
         // Add action to restrict database field lengths
         add_action('save_post_u3a_venue', [self::class, 'validate_venue_fields'], 30, 2);
 
         // Add default content to new posts of this type
-        add_filter('default_content', array(self::class, 'add_default_content'), 10, 2);
+        add_filter('default_content', [self::class, 'add_default_content'], 10, 2);
 
         // Change prompt shown for post title
-        add_filter('enter_title_here', array(self::class, 'change_prompt'));
+        add_filter('enter_title_here', [self::class, 'change_prompt']);
 
         // Set up the custom fields in a metabox (using free plugin from on metabox.io)
-        add_filter( 'rwmb_meta_boxes', [self::class, 'add_metabox'] , 10, 1 );
+        add_filter('rwmb_meta_boxes', [self::class, 'add_metabox'], 10, 1);
 
         // Alter the columns that are displayed in the Posts list admin page
-        add_filter('manage_' . U3A_VENUE_CPT . '_posts_columns', array(self::class, 'change_columns'));
+        add_filter('manage_' . U3A_VENUE_CPT . '_posts_columns', [self::class, 'change_columns']);
 
         // Prevent trashing when there there xrefs to this post in other posts.
-        add_action('wp_trash_post', array(self::class, 'restrict_post_deletion'));
-        
-        //Add display of all xrefs to this post in other posts.
-        add_filter('the_content', array(self::class, 'display_xrefs'), 20, 1);
-   }
+        add_action('wp_trash_post', [self::class, 'restrict_post_deletion']);
+
+        // Add display of all xrefs to this post in other posts.
+        add_filter('the_content', [self::class, 'display_xrefs'], 20, 1);
+    }
+    //end initialise()
+
 
     // validate the lengths of fields on save
     public static function validate_venue_fields($post_id, $post)
@@ -130,70 +139,86 @@ class U3aVenue
         if (strlen($value) > self::MAX_DISTRICT) {
             update_post_meta($post_id, 'district', '');
         }
+
         $value = get_post_meta($post_id, 'address1', true);
         if (strlen($value) > self::MAX_ADDRESS_LINE) {
             update_post_meta($post_id, 'address1', '');
         }
+
         $value = get_post_meta($post_id, 'address2', true);
         if (strlen($value) > self::MAX_ADDRESS_LINE) {
             update_post_meta($post_id, 'address2', '');
         }
+
         $value = get_post_meta($post_id, 'town', true);
         if (strlen($value) > self::MAX_TOWN) {
             update_post_meta($post_id, 'town', '');
         }
+
         $value = get_post_meta($post_id, 'postcode', true);
         if (strlen($value) > self::MAX_POSTCODE) {
             update_post_meta($post_id, 'postcode', '');
         }
+
         $value = get_post_meta($post_id, 'access', true);
         if (strlen($value) > self::MAX_ACCESSIBILITY) {
             update_post_meta($post_id, 'access', '');
         }
+
         $value = get_post_meta($post_id, 'url', true);
         if (strlen($value) > self::MAX_URL) {
             update_post_meta($post_id, 'url', '');
         }
+
         $value = get_post_meta($post_id, 'phone', true);
         if (strlen($value) > self::MAX_PHONE) {
             update_post_meta($post_id, 'phone', '');
         }
     }
+    //end validate_venue_fields()
+
 
     /**
      * Registers the custom post type for this class.
      */
     public static function register_venues()
     {
-        $args = array(
-            'public' => true,
+        $args = [
+            'public'       => true,
             'show_in_rest' => true,
-            'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt'),
-            'rewrite' => array('slug' => sanitize_title(U3A_VENUE_CPT . 's')),
-            'has_archive' => false,
-            'menu_icon' => U3A_VENUE_ICON,
-            'labels' => array(
-                'name' => 'u3a Venues',
+            'supports'     => [
+                'title',
+                'editor',
+                'author',
+                'thumbnail',
+                'excerpt',
+            ],
+            'rewrite'      => ['slug' => sanitize_title(U3A_VENUE_CPT . 's')],
+            'has_archive'  => false,
+            'menu_icon'    => U3A_VENUE_ICON,
+            'labels'       => [
+                'name'          => 'u3a Venues',
                 'singular_name' => 'Venue',
-                'add_new_item' => 'Add Venue',
-                'add_new' => 'Add New Venue',
-                'edit_item' => 'Edit Venue',
-                'all_items' => 'All Venues',
-                'view_item' => 'View Venue',
-                'update_item' => 'Update Venue',
-                'search_items' => 'Search Venues'
-            )
-        );
+                'add_new_item'  => 'Add Venue',
+                'add_new'       => 'Add New Venue',
+                'edit_item'     => 'Edit Venue',
+                'all_items'     => 'All Venues',
+                'view_item'     => 'View Venue',
+                'update_item'   => 'Update Venue',
+                'search_items'  => 'Search Venues',
+            ],
+        ];
         if (!(current_user_can('edit_others_pages'))) {
-            $args += array(
-                'capabilities' => array(
-                    'create_posts' => 'do_not_allow'
-                ),
-                'map_meta_cap' => true
-            );
+            $args += [
+                'capabilities' => ['create_posts' => 'do_not_allow'],
+                'map_meta_cap' => true,
+            ];
         }
-        register_post_type(U3A_VENUE_CPT,$args);
+
+        register_post_type(U3A_VENUE_CPT, $args);
     }
+    //end register_venues()
+
 
     /**
      * Do tasks that should only be done on activation.
@@ -205,12 +230,14 @@ class U3aVenue
         self::register_venues();
         delete_option('rewrite_rules');
     }
+    //end on_activation()
+
 
     /**
      * Add default content to new posts of this type.
      *
-     * @param $post the new post
-     * @param $content ignored
+     * @param  $post    the new post
+     * @param  $content ignored
      * @usedby filter 'default_content'
      */
     public static function add_default_content($content, $post)
@@ -219,8 +246,11 @@ class U3aVenue
             $content = '<!-- wp:u3a/venuedata /--><!-- wp:paragraph --><p></p><!-- /wp:paragraph -->';
             return $content;
         }
+
         return $content;
     }
+    //end add_default_content()
+
 
     /**
      * Defines the fields for this class.
@@ -234,88 +264,82 @@ class U3aVenue
         // see https://docs.metabox.io/fields/
         // and https://docs.metabox.io/field-settings/ for details.
         if (get_option('field_v_district', '1') == '1') {
-            $fields[] =
-                [
-                'type'    => 'text',
-                'name'    => 'District',
-                'id'      => 'district',
-                'desc'    => '',
+            $fields[] = [
+                'type'      => 'text',
+                'name'      => 'District',
+                'id'        => 'district',
+                'desc'      => '',
                 'maxlength' => self::MAX_DISTRICT,
-                ];
+            ];
         }
-        $fields[] =
-            [
-            'type'    => 'heading',
-            'name'    => 'Address',
-            ];
-        $fields[] =
-            [
-            'type'    => 'text',
-            'name'    => 'Address Line 1',
-            'id'      => 'address1',
-            'desc'    => '',
+
+        $fields[] = [
+            'type' => 'heading',
+            'name' => 'Address',
+        ];
+        $fields[] = [
+            'type'      => 'text',
+            'name'      => 'Address Line 1',
+            'id'        => 'address1',
+            'desc'      => '',
             'maxlength' => self::MAX_ADDRESS_LINE,
-            ];
-        $fields[] =
-            [
-            'type'    => 'text',
-            'name'    => 'Address Line 2',
-            'id'      => 'address2',
-            'desc'    => '',
+        ];
+        $fields[] = [
+            'type'      => 'text',
+            'name'      => 'Address Line 2',
+            'id'        => 'address2',
+            'desc'      => '',
             'maxlength' => self::MAX_ADDRESS_LINE,
-            ];
-        $fields[] =
-            [
-            'type'    => 'text',
-            'name'    => 'Town',
-            'id'      => 'town',
-            'desc'    => '',
+        ];
+        $fields[] = [
+            'type'      => 'text',
+            'name'      => 'Town',
+            'id'        => 'town',
+            'desc'      => '',
             'maxlength' => self::MAX_TOWN,
-            ];
-        $fields[] =
-            [
-            'type'    => 'text',
-            'name'    => 'Postcode',
-            'id'      => 'postcode',
-            'size'    => '30px',
-            'desc'    => '',
+        ];
+        $fields[] = [
+            'type'      => 'text',
+            'name'      => 'Postcode',
+            'id'        => 'postcode',
+            'size'      => '30px',
+            'desc'      => '',
             'maxlength' => self::MAX_POSTCODE,
-            ];
-        $fields[] =
-            [
-            'type'    => 'heading',
-            'name'    => 'Other Information',
-            ];
-        $fields[] =
-            [
-            'type'    => 'text',
-            'name'    => 'Accessibility',
-            'id'      => 'access',
-            'desc'    => 'Enter any accessibility limitations',
+        ];
+        $fields[] = [
+            'type' => 'heading',
+            'name' => 'Other Information',
+        ];
+        $fields[] = [
+            'type'      => 'text',
+            'name'      => 'Accessibility',
+            'id'        => 'access',
+            'desc'      => 'Enter any accessibility limitations',
             'maxlength' => self::MAX_ACCESSIBILITY,
-            ];
-        $fields[] =
-            [
-            'type'    => 'text',
-            'name'    => 'Phone number',
-            'id'      => 'phone',
-            'desc'    => '',
+        ];
+        $fields[] = [
+            'type'      => 'text',
+            'name'      => 'Phone number',
+            'id'        => 'phone',
+            'desc'      => '',
             'maxlength' => self::MAX_PHONE,
-            ];
-        $fields[] =
-            [
-            'type'    => 'url',
-            'name'    => 'Venue\'s website URL',
-            'id'      => 'url',
-            'desc' => 'The URL should start with https://, or http:// for an unsecured website link.',
+        ];
+        $fields[] = [
+            'type'      => 'url',
+            'name'      => 'Venue\'s website URL',
+            'id'        => 'url',
+            'desc'      => 'The URL should start with https://, or http:// for an unsecured website link.',
             'maxlength' => self::MAX_URL,
-            ];
+        ];
         return $fields;
     }
+    //end field_descriptions()
+
 
     /**
      * Alter the columns that are displayed in the Venues posts list admin page.
-     * @param array $columns
+     *
+     * @param  array $columns
      * @return modified columns
      * @usedby filter 'manage_' . U3A_VENUE_CPT . '_posts_columns'
      */
@@ -324,47 +348,68 @@ class U3aVenue
         unset($columns['date']);
         return $columns;
     }
+    //end change_columns()
+
 
     /**
      * Registers the blocks u3a/venuedata and u3a/venuelist, and their render callbacks.
-     *
      */
     public static function register_blocks()
     {
         wp_register_script(
             'u3avenueblocks',
-            plugins_url('js/u3a-venue-blocks.js',
-            self::$plugin_file), array('wp-blocks', 'wp-element'),
+            plugins_url(
+                'js/u3a-venue-blocks.js',
+                self::$plugin_file
+            ),
+            [
+                'wp-blocks',
+                'wp-element',
+            ],
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
         wp_enqueue_script('u3avenueblocks');
 
-/* NOT IMPLEMENTED
-        register_block_type('u3a/venuelist', array(
+        /*
+            NOT IMPLEMENTED
+            register_block_type('u3a/venuelist', array(
             'editor_script' => 'u3avenueblocks',
             'render_callback' => array(self::class, 'venue_list_cb')
-        ));
-*/
-        register_block_type('u3a/venuedata', array(
-            'editor_script' => 'u3avenueblocks',
-            'render_callback' => array(self::class, 'display_cb')
-        ));
+            ));
+        */
+        register_block_type(
+            'u3a/venuedata',
+            [
+                'editor_script'   => 'u3avenueblocks',
+                'render_callback' => [
+                    self::class,
+                    'display_cb',
+                ],
+            ]
+        );
     }
+    //end register_blocks()
+
 
     /**
      * Calls the display function for an object of this class
      * This code is common to all our custom post types, so don't edit it!
      */
-    public static function display_cb($atts, $content='')
+    public static function display_cb($atts, $content = '')
     {
         global $post;
-        if ( U3A_VENUE_CPT != $post->post_type ) { // oops shouldn't be here
+        if (U3A_VENUE_CPT != $post->post_type) {
+            // oops shouldn't be here
             return 'Error: only for use with items of type ' . U3A_VENUE_CPT;
         }
-        $my_object = new self($post->ID); // an object of this class
+
+        $my_object = new self($post->ID);
+        // an object of this class
         return $my_object->display($atts, $content);
     }
+    //end display_cb()
+
 
     /**
      * Returns the HTML for this object's custom data.
@@ -374,7 +419,7 @@ class U3aVenue
     public function display($atts, $content)
     {
         $blockattrs = wp_kses_data(get_block_wrapper_attributes());
-        $html = "<div $blockattrs ><table class=\"u3a_venue_table\">\n";
+        $html       = "<div $blockattrs ><table class=\"u3a_venue_table\">\n";
 
         // District
         // Check Settings
@@ -387,15 +432,27 @@ class U3aVenue
         }
 
         // Address
-        $ad1 = get_post_meta($this->ID, 'address1', true);
-        $ad2 = get_post_meta($this->ID, 'address2', true);
-        $town = get_post_meta($this->ID, 'town', true);
+        $ad1      = get_post_meta($this->ID, 'address1', true);
+        $ad2      = get_post_meta($this->ID, 'address2', true);
+        $town     = get_post_meta($this->ID, 'town', true);
         $postcode = get_post_meta($this->ID, 'postcode', true);
-        $address = '';
-        if (!empty($ad1)) $address .= $ad1;
-        if (!empty($ad2)) $address .= "<br>$ad2";
-        if (!empty($town)) $address .= "<br>$town";
-        if (!empty($postcode)) $address .= "<br>$postcode";
+        $address  = '';
+        if (!empty($ad1)) {
+            $address .= $ad1;
+        }
+
+        if (!empty($ad2)) {
+            $address .= "<br>$ad2";
+        }
+
+        if (!empty($town)) {
+            $address .= "<br>$town";
+        }
+
+        if (!empty($postcode)) {
+            $address .= "<br>$postcode";
+        }
+
         if (!empty($address)) {
             $html .= "<tr><td>Address:</td><td>$address</td></tr>\n";
         }
@@ -411,6 +468,7 @@ class U3aVenue
         if (!empty($website)) {
             $html .= "<tr><td>Website:</td><td><a target=\"_blank\" href=\"$website\">$website</a></div>\n";
         }
+
         // Access
         $access = get_post_meta($this->ID, 'access', true);
         if (!empty($access)) {
@@ -421,20 +479,24 @@ class U3aVenue
 
         return $html;
     }
+    //end display()
+
 
     /**
      * Gets the title and permalink of for this venue.
      *
-     * @return HTML as <a> link
+     * @return string as <a> link
      */
     public function venue_name_with_link()
     {
-        if ( $this->exists ) {
+        if ($this->exists) {
             $venue_name = get_post($this->ID)->post_title;
-            $permalink = get_permalink($this->ID);
+            $permalink  = get_permalink($this->ID);
             return "<a href='$permalink'>$venue_name</a>";
         } else {
             return '';
         }
     }
+    //end venue_name_with_link()
 }
+//end class

@@ -1,14 +1,16 @@
-<?php
+<?php // phpcs:ignore PSR1.Files.SideEffects.FoundWithSymbols
 
 // exit if uninstall constant is not defined
-if (!defined('WP_UNINSTALL_PLUGIN')) exit;
+if (!defined('WP_UNINSTALL_PLUGIN')) {
+    exit;
+}
 require 'inc/definitions.php';
 
 // Delete u3a CPT posts and metadata
-u3a_delete_CPT_posts( U3A_GROUP_CPT );
-u3a_delete_CPT_posts( U3A_EVENT_CPT );
-u3a_delete_CPT_posts( U3A_VENUE_CPT );
-u3a_delete_CPT_posts( U3A_CONTACT_CPT );
+u3a_delete_CPT_posts(U3A_GROUP_CPT);
+u3a_delete_CPT_posts(U3A_EVENT_CPT);
+u3a_delete_CPT_posts(U3A_VENUE_CPT);
+u3a_delete_CPT_posts(U3A_CONTACT_CPT);
 
 // Delete u3a taxonomy terms
 u3a_delete_taxonomy_and_its_terms(U3A_GROUP_TAXONOMY);
@@ -23,7 +25,7 @@ $u3a_settings = array(
     'field_v_district', 'events_nogroups',
 );
 foreach ($u3a_settings as $setting) {
-    delete_option( $setting );
+    delete_option($setting);
 }
 
 // function definitions
@@ -44,8 +46,10 @@ function u3a_delete_CPT_posts($CPT_post_type)
 
 /*
  *  ** METHOD 1 ** This does not work!
- *  Note:  As plugin is no longer active, it's not possible to use WP get_terms() to get terms to delete as the taxonomy is not registered
- *  // Ref https://wordpress.stackexchange.com/questions/119229/how-to-delete-custom-taxonomy-terms-in-plugins-uninstall-php
+ *  Note:  As plugin is no longer active, it's not possible to use WP get_terms()
+ * to get terms to delete as the taxonomy is not registered
+ *  // Ref https://wordpress.stackexchange.com/questions/119229/
+ * how-to-delete-custom-taxonomy-terms-in-plugins-uninstall-php
  *
  *  ** Method 2  **  This does not work either!
  *  Ref: https://wordpress.org/support/topic/delete-terms-from-database/
@@ -54,20 +58,22 @@ function u3a_delete_CPT_posts($CPT_post_type)
  *  Ref https://wordpress.org/support/topic/how-to-delete-plugin-data-completely/
  *
  */
-function u3a_delete_taxonomy_and_its_terms( $taxonomy )
+function u3a_delete_taxonomy_and_its_terms($taxonomy)
 {
     global $wpdb;
     // Remove term meta
     $wpdb->query(
         $wpdb->prepare(
-            "DELETE FROM $wpdb->termmeta WHERE term_id IN ( SELECT term_id FROM $wpdb->term_taxonomy WHERE taxonomy = %s)",
+            "DELETE FROM $wpdb->termmeta WHERE term_id IN
+             ( SELECT term_id FROM $wpdb->term_taxonomy WHERE taxonomy = %s)",
             $taxonomy
         )
     );
     // Remove term relations
     $wpdb->query(
         $wpdb->prepare(
-            "DELETE FROM $wpdb->term_relationships WHERE term_taxonomy_id IN ( SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE taxonomy = %s)",
+            "DELETE FROM $wpdb->term_relationships WHERE term_taxonomy_id IN
+             ( SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE taxonomy = %s)",
             $taxonomy
         )
     );

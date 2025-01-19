@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+
 /**
  * This class manages these metadata fields:
  * eventDate        event date YYYY-MM-DD
@@ -11,7 +13,7 @@
  * eventOrganiser_ID  ID of contact
  *  also each event is assigned to an event category.
  */
-class U3aEvent
+class U3aEvent // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
 {
     use ChangePrompt;
     use AddMetabox;
@@ -19,21 +21,21 @@ class U3aEvent
     /**
      * The post_type for this class
      *
-     * @var string 
+     * @var string
      */
     public static $post_type = U3A_EVENT_CPT;
 
     /**
      * The term used for the title of these custom posts
      *
-     * @var string 
+     * @var string
      */
     public static $term_for_title = "title for event";
 
     /**
      * The metabox title of these custom posts
      *
-     * @var string 
+     * @var string
      */
     public static $metabox_title = "Event Information";
 
@@ -48,9 +50,9 @@ class U3aEvent
     public $ID;
 
     /* Limits on the max size of data input */
-    const MAX_COST = 1024;
-    const MAX_DATE = 10; // yyyy-mm-dd
-    const MAX_TIME = 5; // hh:mm
+    private const MAX_COST = 1024;
+    private const MAX_DATE = 10; // yyyy-mm-dd
+    private const MAX_TIME = 5; // hh:mm
 
     /*
      * Construct a new object for a u3a_group post.
@@ -64,7 +66,7 @@ class U3aEvent
     /**
      * Set up the actions and filters used by this class.
      *
-     * @param $plugin_file the value of __FILE__ from the main plugin file 
+     * @param $plugin_file the value of __FILE__ from the main plugin file
      */
     public static function initialise($plugin_file)
     {
@@ -87,7 +89,7 @@ class U3aEvent
 
         // Add action to restrict database field lengths
         add_action('save_post_u3a_event', [self::class, 'validate_event_fields'], 30, 2);
-    
+
         // Add default content to new posts of this type
         add_filter('default_content', array(self::class, 'add_default_content'), 10, 2);
 
@@ -110,10 +112,9 @@ class U3aEvent
 
         // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
         add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
-    
     }
 
-        // validate the lengths of fields on save
+    // validate the lengths of fields on save
     public static function validate_event_fields($post_id, $post)
     {
         // shorten values if they did not come in from the client.
@@ -121,7 +122,7 @@ class U3aEvent
         // Still have to protect the ones which are formatted by pattern.
         $value = get_post_meta($post_id, 'cost', true);
         if (strlen($value) > self::MAX_COST) {
-            update_post_meta($post_id, 'cost', substr($value, 0 , self::MAX_COST));
+            update_post_meta($post_id, 'cost', substr($value, 0, self::MAX_COST));
         }
         $value = get_post_meta($post_id, 'eventDate', true);
         if (strlen($value) > self::MAX_DATE) {
@@ -136,7 +137,7 @@ class U3aEvent
             update_post_meta($post_id, 'eventEndTime', 0);
         }
     }
-    
+
     /**
      * Registers the custom post type and taxonomy for this class.
      */
@@ -283,7 +284,7 @@ class U3aEvent
             'post_type'  => U3A_GROUP_CPT,
             'query_args' => $group_post_query_args,
             'field_type' => 'select_advanced', // this is the default anyway
-            'ajax'       => false,  // this seems like a good choice, but try switching it on, when there a lots of groups??
+            'ajax'       => false,  // try switching it on when there a lots of groups
             'required' => current_user_can('edit_others_posts') ? false : true,  // 'Author' must select a group
         ];
         $fields[] = [
@@ -294,7 +295,7 @@ class U3aEvent
             'post_type'  => U3A_VENUE_CPT,
             'query_args' => ['orderby' => 'title', 'order' => 'ASC'],
             'field_type' => 'select_advanced',
-            'ajax'       => false,  // this seems like a good choice, but try switching it on, when there a lots of venues??
+            'ajax'       => false,  // try switching it on when there a lots of venues
         ];
         $fields[] = [
             'type'       => 'post',
@@ -303,7 +304,7 @@ class U3aEvent
             'name'       => 'Organiser',
             'id'         => 'eventOrganiser_ID',
             'desc'       => "Select or leave blank",
-            'ajax'       => false,  // this seems like a good choice, but try switching it on, when there a lots of contacts??
+            'ajax'       => false,  // try switching it on when there a lots of contacts
             'required' => false,
         ];
         $fields[] = [
@@ -333,7 +334,7 @@ class U3aEvent
         wp_register_script(
             'u3aeventblocks',
             plugins_url('js/u3a-event-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element','wp-components','wp-block-editor','wp-data'),
+            array('wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-data'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
@@ -375,7 +376,7 @@ class U3aEvent
     /**
      * Alter the columns that are displayed in the events posts list admin page.
      * @param array $columns
-     * @return modified columns
+     * @return array
      * @usedby filter 'manage_' . U3A_EVENT_CPT . '_posts_columns'
      */
     public static function change_columns($columns)
@@ -390,8 +391,8 @@ class U3aEvent
 
     /**
      * Alter what is shown fo one row in the columns that are displayed in the events posts list admin page.
-     * @param str $column
-     * @param int $post_id  the id of the post for the row 
+     * @param string $column
+     * @param int $post_id  the id of the post for the row
      * @usedby action 'manage_' . U3A_EVENT_CPT . '_posts_custom_column'
      */
     public static function show_column_data($column, $post_id)
@@ -408,15 +409,21 @@ class U3aEvent
                 break;
             case 'eventGroup':
                 $eventGroup_ID = get_post_meta($post_id, 'eventGroup_ID', true);
-                if (is_numeric($eventGroup_ID)) print esc_HTML(get_the_title($eventGroup_ID));
+                if (is_numeric($eventGroup_ID)) {
+                    print esc_HTML(get_the_title($eventGroup_ID));
+                }
                 break;
             case 'eventVenue':
                 $eventVenue_ID = get_post_meta($post_id, 'eventVenue_ID', true);
-                if (is_numeric($eventVenue_ID)) print esc_HTML(get_the_title($eventVenue_ID));
+                if (is_numeric($eventVenue_ID)) {
+                    print esc_HTML(get_the_title($eventVenue_ID));
+                }
                 break;
             case 'eventOrganiser':
                 $eventOrganiser_ID = get_post_meta($post_id, 'eventOrganiser_ID', true);
-                if (is_numeric($eventOrganiser_ID)) print esc_HTML(get_the_title($eventOrganiser_ID));
+                if (is_numeric($eventOrganiser_ID)) {
+                    print esc_HTML(get_the_title($eventOrganiser_ID));
+                }
                 break;
         }
     }
@@ -424,22 +431,24 @@ class U3aEvent
     /**
      * Provide sorting mechanism for the event date column.
      *
-     * @param obj $query attributes of query, passed by ref
+     * @param object $query attributes of query, passed by ref
      * @usedby action 'pre_get_posts'
      */
     public static function sort_column_data($query)
     {
         // This is a very general purpose hook, so ...
         // query must be main query for an admin page with a query for u3a_event post-type
-        if (!( is_admin()
-               && ($query->is_main_query())
-               && ('u3a_event' == $query->get('post_type'))
-             )){
+        if (
+            !(is_admin()
+                && ($query->is_main_query())
+                && ('u3a_event' == $query->get('post_type'))
+            )
+        ) {
             return;
         }
         // also check that we are on the All Events page
-        // Note: get_current_screen() may not exist at the start of this function 
-        $screen = get_current_screen(); 
+        // Note: get_current_screen() may not exist at the start of this function
+        $screen = get_current_screen();
         if ('edit-u3a_event' !== $screen->id) {
             return;
         }
@@ -451,9 +460,9 @@ class U3aEvent
 
     /**
      * Makes event date column sortable.
-     * 
+     *
      * @param array $columns
-     * @return modified array $columns
+     * @return array $columns
      * @usedby filter 'manage_edit-' . U3A_EVENT_CPT . '_sortable_columns'
      */
     public static function make_column_sortable($columns)
@@ -498,50 +507,58 @@ class U3aEvent
 
         // Selector for group
         $name = 'groupID'; // used to identify this filter when adding criterion to query.
-        $groups = get_posts(array('post_type' => 'u3a_group', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC'));
+        $groups = get_posts(array(
+            'post_type' => 'u3a_group',
+            'post_status' => 'publish',
+            'numberposts' => -1,
+            'orderby' => 'title',
+            'order' => 'ASC'
+        ));
         if ($groups) {
             $selected = isset($_GET[$name]) ? $_GET[$name] : '';
             print "<select name='$name'><option value=''>All groups</option>";
-             foreach ($groups as $group) {
-                 $id = $group->ID;
-                 $sel = ($id == $selected) ? ' selected' : '';
-                 printf(
+            foreach ($groups as $group) {
+                $id = $group->ID;
+                $sel = ($id == $selected) ? ' selected' : '';
+                printf(
                     '<option value="%1$s" %2$s>%3$s </option>',
                     $id,
                     $sel,
                     esc_HTML($group->post_title)
-                 );
+                );
             }
             print "</select>\n";
         }
         //phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped,WordPress.Security.NonceVerification.Recommended
     }
 
-    /** 
+    /**
      * Adds filtering of posts by eventGroup_ID.
-     * 
+     *
      * This filtering is an option on the admin page listing u3a Events,
      * as set up by the function add_admin_filters().
      * If in use, this function alters the main query so that only events for the chosen group are shown.
-     * @param object $query 
-     * @return object modified query 
+     * @param object $query
+     * @return object modified query
      * @usedby filter 'pre_get_posts'
      */
     public static function add_groupID_to_query($query)
     {
         // This is a very general purpose hook, so ...
         // query must be main query for an admin page with a query for u3a_event post-type
-        if (!( is_admin()
-               && ($query->is_main_query())
-               && ('u3a_event' == $query->get('post_type'))
-             )){
-            return;
+        if (
+            !(is_admin()
+                && ($query->is_main_query())
+                && ('u3a_event' == $query->get('post_type'))
+            )
+        ) {
+            return $query;
         }
         // also check that we are on the All Events page
-        // Note: get_current_screen() may not exist at the start of this function 
-        $screen = get_current_screen(); 
+        // Note: get_current_screen() may not exist at the start of this function
+        $screen = get_current_screen();
         if ('edit-u3a_event' !== $screen->id) {
-            return;
+            return $query;
         }
         //only modify query if filtering for groupID is set
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -550,18 +567,18 @@ class U3aEvent
         }
         // add a meta_query for group selection
         $meta_query[] = array(
-                'key' => 'eventGroup_ID',
-                // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                'value' => sanitize_text_field($_GET['groupID']),
-                'compare' => '=',
-                'type' => '',
+            'key' => 'eventGroup_ID',
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            'value' => sanitize_text_field($_GET['groupID']),
+            'compare' => '=',
+            'type' => '',
         );
         $query->set('meta_query', $meta_query);
 
         return $query;
     }
 
-    /** 
+    /**
      * Modify the query when a Query Block is used to display posts of this type.
      * @param array $query
      * @used by filter 'query_loop_block_query_vars'
@@ -570,7 +587,9 @@ class U3aEvent
     public static function filter_events_query($query)
     {
         // ignore if the query block is not using this post type
-        if ($query['post_type'] != U3A_EVENT_CPT) return $query;
+        if ($query['post_type'] != U3A_EVENT_CPT) {
+            return $query;
+        }
 
         // always exclude events with dates in the past
         $query['meta_key'] = 'eventDate';
@@ -578,17 +597,19 @@ class U3aEvent
         $query['meta_compare'] = '>=';
 
         // If date order is chosen in the block settings, change to use the Event date instead of Post date
-        if ($query['orderby'] == 'date') $query['orderby'] = 'meta_value';
+        if ($query['orderby'] == 'date') {
+            $query['orderby'] = 'meta_value';
+        }
 
         return $query;
     }
 
-    /** 
+    /**
      * Convert event metadata to displayable text when rendered by the third party Meta Field Block.
      * Ref https://wordpress.org/plugins/display-a-meta-field-as-block/
      * (WP won't have a problem if the block isn't present)
      * Where metadata is stored as references/codes return the associated text string
-     * Where metadata is already in text form leave alone. 
+     * Where metadata is already in text form leave alone.
      * @usedby filter 'meta_field_block_get_block_content'
      */
     public static function modify_meta_data($content, $attributes)
@@ -610,14 +631,20 @@ class U3aEvent
         return $content;
     }
 
-    /** 
+    /**
      * Update all events so they have an eventEndDate.
      * @usedby 'u3a_core_update_storage_2_to_3'
      * There is no error returned here, so a failed setEventEndDate is potentially ignored.
      */
     public static function update_allEventsEndDate()
     {
-        $all_posts = get_posts(array('post_type' => 'u3a_event', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC'));
+        $all_posts = get_posts(array(
+            'post_type' => 'u3a_event',
+            'post_status' => 'publish',
+            'numberposts' => -1,
+            'orderby' => 'title',
+            'order' => 'ASC'
+        ));
         if ($all_posts) {
             foreach ($all_posts as $cur_post) {
                 self::set_eventEndDate($cur_post->ID, $cur_post);
@@ -661,7 +688,7 @@ class U3aEvent
      *    layout = 'list' or 'grid' at present. Other layouts may be added
      *    bgcolor = colour of background in layout grid
      *
-     * @return HTML
+     * @return string
      */
     public static function display_eventlist($atts, $content = '')
     {
@@ -684,7 +711,7 @@ class U3aEvent
             // phpcs:disable WordPress.Security.NonceVerification.Recommended
             if (isset($_GET[$name])) {
                 $display_args[$name] = strtolower(sanitize_text_field($_GET[$name]));
-            // phpcs:enable WordPress.Security.NonceVerification.Recommended
+                // phpcs:enable WordPress.Security.NonceVerification.Recommended
             } elseif (isset($atts[$name])) {
                 $display_args[$name] = strtolower($atts[$name]);
             }
@@ -766,13 +793,15 @@ class U3aEvent
                 $limitdays = -$limitdays;
                 $limit_date = date("Y-m-d", time() + 86400 * $limitdays);
                 $date_query = [
-                    'relation' => 'AND', ['key' => 'eventDate', 'value' => $now, 'compare' => '<'],
+                    'relation' => 'AND',
+                    ['key' => 'eventDate', 'value' => $now, 'compare' => '<'],
                     ['key' => 'eventEndDate', 'value' => $limit_date, 'compare' => '>=']
                 ];
             } else {
                 $limit_date = date("Y-m-d", time() + 86400 * $limitdays);
                 $date_query = [
-                    'relation' => 'AND', ['key' => 'eventEndDate', 'value' => $now, 'compare' => '>='],
+                    'relation' => 'AND',
+                    ['key' => 'eventEndDate', 'value' => $now, 'compare' => '>='],
                     ['key' => 'eventDate', 'value' => $limit_date, 'compare' => '<']
                 ];
             }
@@ -837,9 +866,12 @@ class U3aEvent
         } else {
             $valid_posts = $posts;
         }
-        $display_args = ['showtitle' => $showtitle, 'layout' => $layout,'crop' => $crop,'bgcolor' => $bgcolor];
-        if ($valid_posts)  return self::display_event_listing($valid_posts, $when, $show_group_info, $display_args);
-        else return '';
+        $display_args = ['showtitle' => $showtitle, 'layout' => $layout, 'crop' => $crop, 'bgcolor' => $bgcolor];
+        if ($valid_posts) {
+            return self::display_event_listing($valid_posts, $when, $show_group_info, $display_args);
+        } else {
+            return '';
+        }
     }
 
     /* Return the HTML code for selected events.
@@ -848,14 +880,17 @@ class U3aEvent
      * @param str $when 'past' / 'future'
      * @param boolean $show_group to display the group with which the event is associated.
      * @param array $display_args how and what fields to display ...
-     * NOTE: This function MUST ONLY be called from display_eventlist(), which ensures that all arguments are validly set.
+     * NOTE: This function MUST ONLY be called from display_eventlist(),
+     * which ensures that all arguments are validly set.
      *
      * @return HTML <div> with a <h3> and a div and sub-divs for each event </div>
      *              or empty string ''
      */
     public static function display_event_listing($posts, $when, $show_group, $display_args)
     {
-        if (!$posts) return '';
+        if (!$posts) {
+            return '';
+        }
 
         $when_text = ('past' == $when) ? 'Previous' : 'Forthcoming';
         $blockattrs = wp_kses_data(get_block_wrapper_attributes(['class' => 'u3aeventlist']));
@@ -875,13 +910,15 @@ class U3aEvent
                 $term = $terms[0];
                 $event_category = $term->name;
             }
-            $event_category_line = "<br>".$event_category;
+            $event_category_line = "<br>" . $event_category;
             $group_line = '';
             if ($show_group) {
                 $group_text = $my_event->event_group_name_with_link();
                 $group_line = ($group_text) ? "<p>$group_text</p>" : '';
             }
-            add_filter( 'excerpt_length', function ($length ) { return 30; } );
+            add_filter('excerpt_length', function ($length) {
+                return 30;
+            });
             $extract = get_the_excerpt($event->ID);
             // $extract = wp_strip_all_tags($event->post_content, true);
             // if (strlen($extract) > 100) $extract = substr($extract, 0, 96) . ' ...';
@@ -1085,9 +1122,9 @@ class U3aEvent
         return $html;
     }
 
-    /** 
+    /**
      * Formats the event date and time.
-     * 
+     *
      * @return array [formatted date, formatted time, formatted end time]
      */
     public function event_date_and_time()
@@ -1171,7 +1208,7 @@ class U3aEvent
     /**
      * Gets the title and permalink of the group related to this event.
      *
-     * @return HTML as <a> link
+     * @return string as <a> link
      */
     public function event_group_name_with_link()
     {

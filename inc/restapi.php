@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore PSR1.Files.SideEffects.FoundWithSymbols
 
 /**
  * Make some custom post data for Groups and Events available via the REST API
@@ -92,7 +92,7 @@ function u3a_setup_rest_meta_data()
 /**
  * Make u3a group metadata field status_NUM available as 'groupstatus'
  *
- * @param WP $object
+ * @param object $object
  * @return (int) group status code
  */
 function rest_get_u3a_groupstatus($object)
@@ -105,9 +105,9 @@ function rest_get_u3a_groupstatus($object)
 /**
  * Make u3a group category available as 'groupcategory' (string array)
  *
- * @param WP $object
- * 
- * @return (string array) group category text 
+ * @param object $object
+ *
+ * @return (string array) group category text
  */
 function rest_get_u3a_groupcategory($object)
 {
@@ -126,7 +126,7 @@ function rest_get_u3a_groupcategory($object)
 /**
  * Make u3a event category available as 'eventcategory' (string)
  *
- * @param WP $object
+ * @param object $object
  * @return (string) event category text (first category only if more than one)
  */
 function rest_get_u3a_eventcategory($object)
@@ -140,7 +140,7 @@ function rest_get_u3a_eventcategory($object)
 /**
  * Make u3a event date available as 'eventdate' (string YYYY-MM-DD)
  *
- * @param WP $object
+ * @param object $object
  * @return (string) event date
  */
 function rest_get_u3a_eventdate($object)
@@ -153,7 +153,7 @@ function rest_get_u3a_eventdate($object)
 /**
  * Make u3a event start time available as 'eventstarttime' (string HH:MM)
  *
- * @param WP $object
+ * @param object $object
  * @return (string) event date
  */
 function rest_get_u3a_eventstarttime($object)
@@ -166,7 +166,7 @@ function rest_get_u3a_eventstarttime($object)
 /**
  * Make u3a event start time available as 'eventendtime' (string HH:MM)
  *
- * @param WP $object
+ * @param object $object
  * @return (string) event date
  */
 function rest_get_u3a_eventendtime($object)
@@ -180,7 +180,7 @@ function rest_get_u3a_eventendtime($object)
 /**
  * Make u3a event duration in days available as 'eventduration' (int, default 1)
  *
- * @param WP $object
+ * @param object $object
  * @return (int) event duration in days
  */
 function rest_get_u3a_eventduration($object)
@@ -196,7 +196,7 @@ function rest_get_u3a_eventduration($object)
 /**
  * Make group associated with u3a event available as 'eventgroup' (string, default null)
  *
- * @param WP $object
+ * @param object $object
  * @return (string) name of group associated with event or null string
  */
 function rest_get_u3a_eventgroup($object)

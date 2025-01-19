@@ -1,4 +1,8 @@
 <?php
+
+// phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+// phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
+// phpcs:disable PSR1.Classes.ClassDeclaration.MultipleClasses
 trait AddMetabox
 {
     /**
@@ -13,6 +17,7 @@ trait AddMetabox
      */
     public static function add_metabox($metaboxes)
     {
+
         $metabox = [
             'title'    => self::$metabox_title,
             'id'       => self::$post_type,
@@ -27,7 +32,7 @@ trait AddMetabox
     }
 }
 
-trait ChangePrompt
+trait ChangePrompt // phpcs:ignore PSR1.Classes.ClassDeclaration.MultipleClasses
 {
     /**
      * Alter the "Add title" text when adding a custom post in the editor.
@@ -37,6 +42,7 @@ trait ChangePrompt
      */
     public static function change_prompt($title)
     {
+
         $screen = get_current_screen();
         if (self::$post_type == $screen->post_type) {
             $title = 'Enter ' . self::$term_for_title;
@@ -57,16 +63,19 @@ trait ManageCrossRefs
      */
     public static function display_xrefs($content)
     {
+
         global $post;
         if (self::$post_type == $post->post_type) {
             $result = self::find_xrefs($post->ID, true);
             $name = self::$post_type_name;
             if (!empty($result)) {
                 if (!empty($result['groups'])) {
-                    $content .= "<p> This $name is referenced in the following groups:<br> " . implode("<br>", $result['groups']) . " </p>";
+                    $content .= "<p> This $name is referenced in the following groups:<br> " .
+                        implode("<br>", $result['groups']) . " </p>";
                 }
                 if (!empty($result['events'])) {
-                    $content .= "<p> This $name is referenced in the following events:<br> " . implode("<br>", $result['events']) . " </p>";
+                    $content .= "<p> This $name is referenced in the following events:<br> " .
+                        implode("<br>", $result['events']) . " </p>";
                 }
             }
         }
@@ -84,6 +93,7 @@ trait ManageCrossRefs
      */
     public static function restrict_post_deletion($post_id)
     {
+
         if (self::$post_type == get_post_type($post_id)) {
             $result = self::find_xrefs($post_id, false);
             if (empty($result)) {
@@ -113,7 +123,7 @@ trait ManageCrossRefs
                     $message .= "<br>'" . implode("'<br>'", $result['events']) . "'";
                 }
                 $message .= "<br><br><a href=" . get_bloginfo('url') .
-                "/wp-admin/edit.php?post_type=" . self::$post_type . ">Return to previous page</a>";
+                    "/wp-admin/edit.php?post_type=" . self::$post_type . ">Return to previous page</a>";
             }
             //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- only title and slug of various posts.
             wp_die($message);
@@ -125,7 +135,7 @@ trait ManageCrossRefs
      * Only relevent to a post in CPTs u3a_contact and u3a_venue)
      * If the user is not an administrator then past events will not be returned.
      *
-     * @param int   $post_id id of this post 
+     * @param int   $post_id id of this post
      * @param bool   $date_filter whether to only return events yet to happen.
      * @uses string self::$xref_meta_key_list Keys that contain xrefs to this type of post
      *
@@ -135,14 +145,16 @@ trait ManageCrossRefs
      */
     public static function find_xrefs($post_id, $date_filter)
     {
+
         $meta_key_list = self::$xref_meta_key_list;
         global $wpdb;
-         // This query finds custom groups or events with a contact postmeta key whose value matches
+        // This query finds custom groups or events with a contact postmeta key whose value matches
         // the contact post_id.
         // Much simpler than using WP_Query to do this!
         // The DISTINCT is used because it is possible that some metadata can get duplicated
         // by faulty inserts, and this would produce mutliple references to the same item.
-        $query = "SELECT DISTINCT ID, post_title, post_name, post_type FROM $wpdb->posts AS p JOIN $wpdb->postmeta AS m ON p.ID = m.post_ID";
+        $query = "SELECT DISTINCT ID, post_title, post_name, post_type FROM $wpdb->posts AS p
+         JOIN $wpdb->postmeta AS m ON p.ID = m.post_ID";
         $query .= " WHERE p.post_status = 'publish'";
         $query .= " AND p.post_type IN ('u3a_group', 'u3a_event')";
         $query .= " AND m.meta_key IN ($meta_key_list)";
@@ -161,7 +173,8 @@ trait ManageCrossRefs
         if ($results) {
             foreach ($results as $result) {
                 $permalink = get_permalink($result->ID);
-                $linkHTML = (is_search()) ? "<a href=\"$permalink\">\"$result->post_title\" </a>" : "<a href=\"$permalink\">$result->post_title </a>";;
+                $linkHTML = (is_search()) ? "<a href=\"$permalink\">\"$result->post_title\" </a>" :
+                    "<a href=\"$permalink\">$result->post_title </a>";
                 if ($result->post_type == 'u3a_group') {
                     $xrefs["groups"][] = $linkHTML;
                 } else {
@@ -172,7 +185,7 @@ trait ManageCrossRefs
                         $eventdate = strtotime($eventdate);
                         $formatted_date = date(get_option('date_format'), $eventdate);
                         // If the user is not an administrator then past events will not be returned.
-                        if (!$date_filter || $user_is_admin || $eventdate >= $current_date){
+                        if (!$date_filter || $user_is_admin || $eventdate >= $current_date) {
                             $event = new stdClass();
                             $event->date = $eventdate;
                             $event->link = "$linkHTML  on $formatted_date ";
@@ -187,8 +200,14 @@ trait ManageCrossRefs
                 }
             }
             // sort by event->date
-            usort($eventdates, function($a, $b) {
-                return ($a->date > $b->date);
+            usort($eventdates, function ($a, $b) {
+                if ($a->date < $b->date) {
+                    return -1;
+                }
+                if ($a->date > $b->date) {
+                    return 1;
+                }
+                return 0;
             });
             foreach ($eventdates as $eventdate) {
                 $xrefs["events"][] = $eventdate->link;
