@@ -842,6 +842,15 @@ class U3aEvent
         else return '';
     }
 
+    /**
+     * Sorting function to be used by usort in the sort_on_times function.
+     *
+     *
+     * @param $a first post containing epochtimes for start/end.
+     * @param $b second post containing epochtimes for start/end.
+     *
+     * @return int -1 = a lessthan b, 0 = equal, 1 = a greaterthan b
+     */
     private static function timecompare($a, $b){
         if ($a['epochtime'] < $b['epochtime']) {
             return -1;
@@ -858,6 +867,19 @@ class U3aEvent
         return 0;
     }
 
+    /**
+     * Sort the items within a day in time order.
+     *
+     * This sorts first by start time in ascending order, then within the same
+     * start time sorts by end time. A missing end time is considered to be the
+     * same as the start time
+     *
+     * @param array $posts
+     *  The list of posts to sort. These will already be in ascending or
+     * descending date order, but not fully sorted by time within the days.
+     *
+     * @return array the sorted posts.
+     */
     private static function sort_on_times($posts) {
         $sortableposts = array();
         foreach ($posts as $event) {
@@ -1143,7 +1165,7 @@ class U3aEvent
     {
         $date = get_post_meta($this->ID, 'eventDate', true);
         if (empty($date)) {
-            return ['', '', ''];  // Should never occur as eventDate is required
+            return ['', '', '', 0, 0];  // Should never occur as eventDate is required
         }
         $time = get_post_meta($this->ID, 'eventTime', true);
         $time = (!empty($time)) ? $time : '';
