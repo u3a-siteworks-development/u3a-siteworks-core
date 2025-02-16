@@ -93,6 +93,10 @@ class U3aNotice
         // Change prompt shown for post title
         add_filter('enter_title_here', array(self::class, 'change_prompt'));
 
+        // Modify the query when a Query Block is used to display posts of this type
+        // so that when user selects sort in date order, the event date is used instead of the post date
+        add_filter('query_loop_block_query_vars', array(self::class, 'filter_events_query'), 10, 1);
+
         // Register the blocks
         add_action('init', array(self::class, 'register_blocks'));
 
@@ -335,19 +339,55 @@ class U3aNotice
         $columns['noticeEnd'] = 'noticeEnd';
         return $columns;
     }
+ 
+    /** 
+     * Modify the query when a Query Block is used to display posts of this type.
+     * @param array $query
+     * @used by filter 'query_loop_block_query_vars'
+     */
+    public static function filter_events_query($query)
+    {
+        // ignore if the query block is not using this post type
+        if ($query['post_type'] != U3A_NOTICE_CPT) return $query;
+
+        // always exclude notices with dates in the past
+        $query['meta_key'] = 'notice_end_date';
+        $query['meta_value'] = date("Y-m-d");
+        $query['meta_compare'] = '>=';
+
+        // If date order is chosen in the block settings, change to use the Event date instead of Post date
+        if ($query['orderby'] == 'date') $query['orderby'] = 'meta_value';
+
+        return $query;
+    }
 
     /**
-     * List Notices in publication order, most recent first.  Returns max 5 items.
+     * List Notices in date order, selected according to parameters.
      * Show the Excerpt if one is provided for the Notice (but don't fall back to displaying extract from content)
      * Could be extended to allow more user control
+	 *
+     * Attributes will also be taken from the page's URL query parameters.
+     * If present these query parameters will override parameters passed as arguments
+     *
+     * @param array $atts Valid attributes are:
+	 *    title
+	 *    showtitle = true/false
+     *    startorend = 'start'/'end' (default start)
+     *    order = 'asc'/'desc' (default desc)
+	 *    maxnumber = 1-7 or -1 (default 5)
+     *
      * @return HTML
      */
     public static function display_noticelist($atts, $content = '')
     {
 
+        // valid display_args names and default values
         $display_args = [
             'title' => 'Latest Notices',
             'showtitle' => true,
+			'startorend' => 'start',
+            'order' => 'desc',
+			'maxnumber' => '5',
         ];
         foreach ($display_args as $name => $default) {
             if (isset($_GET[$name])) {
@@ -360,14 +400,37 @@ class U3aNotice
         if ($display_args['title'] == "") {
             $display_args['title'] = "Latest Notices";
         }
+        // validate other args
+        $error = ''; // NB not displayed?
+        $startorend = $display_args['startorend'];
+        if ('start' != $startorend && 'end' != $startorend) {
+            $error .= 'bad parameter: startorend=' . esc_html($startorend) . '<br>';
+            $startorend = 'start'; // default
+        }
+
+        $order = strtoupper($display_args['order']);
+        if ('ASC' != $order && 'DESC' != $order &&  '' != $order) {
+            $error .= 'bad parameter: order=' . esc_html($order) . '<br>';
+            $order = '';  // default
+        }
+        if ('' == $order) {
+            $order = 'DESC';
+        }
+		
+		// maxnumber must be between 1 and 7 (arbitrary) or -1 (meaning all)
+        $maxnumber = intval($display_args['maxnumber']); // result is always an int
+        if (-1 != $display_args['maxnumber'] && !( $display_args['maxnumber'] >= 1 && $display_args['maxnumber'] <= 7 )){
+            $error .= 'bad parameter: maxnumber=' . esc_html($display_args['maxnumber']) . '<br>';
+			$maxnumber = -1;
+        }
 
         $posts = get_posts(array(
-            'numberposts' => -1,
+            'numberposts' => $maxnumber,
             'orderby' => 'meta_value',
             'post_type' => U3A_NOTICE_CPT,
-            'order' => 'DESC',
+            'order' => strtoupper($display_args['order']),
             'post_status' => 'publish',
-            'meta_key' => 'notice_start_date',
+            'meta_key' => "notice_{$startorend}_date",
             'meta_query' => array(
                 'relation' => 'AND',
                 array(
