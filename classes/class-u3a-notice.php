@@ -387,7 +387,7 @@ class U3aNotice
             'showtitle' => true,
 			'startorend' => 'start',
             'order' => 'desc',
-			'maxnumber' => '5',
+			'maxnumber' => -1,
         ];
         foreach ($display_args as $name => $default) {
             if (isset($_GET[$name])) {

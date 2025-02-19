@@ -22,7 +22,7 @@ wp.blocks.registerBlockType("u3a/noticelist", {
       },
       maxnumber: {
         type: "integer",
-		    default: 5
+		    default: -1
       },
     },
     edit: function ({attributes, setAttributes }) {
