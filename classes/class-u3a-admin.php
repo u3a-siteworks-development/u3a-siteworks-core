@@ -264,6 +264,9 @@ class U3aAdmin
 
         $field_v_district = get_option('field_v_district', '1');
         $field_v_district_chk = ($field_v_district == '1') ? ' checked' : '';
+        
+        $venue_hide_xrefs = get_option('venue_hide_xrefs', 'n');
+        $venue_hide_xrefs_chk = ($venue_hide_xrefs == 'y') ? ' checked' : '';
 
         // form for Venues tab
         $form = <<<END
@@ -277,6 +280,15 @@ class U3aAdmin
         <p>
         <input type="checkbox" id="vdistrict" name="vdistrict"  value="1" $field_v_district_chk>
         <label for="vdistrict"> District</label>
+        </p>
+
+        <h3>Hide references to events and groups</h3>
+        <p>Each venue page will list the groups and events that reference that venue.<br>
+        Note: Past events are only shown to editors and admins.</p>
+        <p>Tick the box to hide these lists, except for editors and admins.</p>
+        <p>
+        <input type="checkbox" id="vxrefs" name="vxrefs"  value="1" $venue_hide_xrefs_chk>
+        <label for="vxrefs"> Hide event and group references</label>
         </p>
         $submit_button
         </form>
@@ -508,6 +520,8 @@ class U3aAdmin
 
         $field_v_district = isset($_POST['vdistrict']) ? '1' : '9';
         update_option('field_v_district', $field_v_district);
+        $venue_hide_xrefs = isset($_POST['vxrefs']) ? 'y' : 'n';
+        update_option('venue_hide_xrefs', $venue_hide_xrefs);
 
         // redirect back to u3a settings page (venues tab) with status set to success (1)
         wp_safe_redirect(admin_url('admin.php?page=u3a-settings&tab=venues&status=1'));
