@@ -1224,20 +1224,9 @@ class U3aGroup
         $frequency = get_post_meta($this->ID, 'frequency', true);
         // set valid frequency value or empty string (use ?? operator)
         $frequency = (!empty($frequency)) ? (self::$frequency_list[$frequency] ?? '') : '';
-        
-        if ($frequency == '') {
-            if ($daytext != '') {
-                $daytext = ucfirst($daytext);
-            }
-        }
-        if ($frequency == '' && $daytext == '') {
-            if ($timetext != '') {
-                $timetext = ucfirst($timetext);
-            }
-        }
 
         // trim to ensure content free string is empty!
-        $when_main_text = trim("$frequency $daytext $timetext $fromtotext");
+        $when_main_text = ucfirst(trim("$frequency $daytext $timetext $fromtotext"));
         // e.g. Monthly on Tuesday Mornings 9:00-12:30
         $when_extra_text = esc_html(get_post_meta($this->ID, 'when', true));
         // return both values with <br> only if both items are not empty
