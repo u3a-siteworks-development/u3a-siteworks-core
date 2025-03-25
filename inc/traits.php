@@ -59,6 +59,10 @@ trait ManageCrossRefs
     {
         global $post;
         if (self::$post_type == $post->post_type) {
+            // if its a venue, don't display if user is not editor/admin and option to hide is set  
+            if ($post->post_type == 'u3a_venue' && !current_user_can('edit_others_posts') && get_option('venue_hide_xrefs', 'n') == 'y') {
+                return $content;
+            }
             $result = self::find_xrefs($post->ID, true);
             $name = self::$post_type_name;
             if (!empty($result)) {
