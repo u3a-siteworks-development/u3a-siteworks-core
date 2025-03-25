@@ -663,7 +663,7 @@ class U3aEvent
      * @param array $atts Valid attributes are:
      *    when = 'past'/'future' (default future)
      *    order = 'asc'/'desc' (defaults to asc for future and desc for past)
-     *    cat = which event category to display (default all)
+     *    event_cat = which event category to display (default all)
      *    groups = 'y'/'n which will override the value in option settings
      *    limitnum (int) = limits how many events to be displayed
      *    limitdays (int) = limits how many day in the future or past to show events
@@ -680,7 +680,7 @@ class U3aEvent
             'showtitle' => 'y',
             'when' => 'future',
             'order' => '',
-            'cat' => 'all',
+            'event_cat' => 'all',
             'groups' => '',
             'limitdays' => 0,
             'limitnum' => 0,
@@ -698,6 +698,7 @@ class U3aEvent
                 $display_args[$name] = strtolower($atts[$name]);
             }
         }
+
         // validate all args
         // do this by treating each arg explicitly
         $error = '';
@@ -716,7 +717,7 @@ class U3aEvent
             $order = ('future' == $when) ? 'ASC' : 'DESC';
         }
 
-        $cat = sanitize_text_field($display_args['cat']);
+        $cat = sanitize_text_field($display_args['event_cat']);
 
         $include_groups = $display_args['groups'];
         if ('y' != $include_groups && 'n' != $include_groups &&  '' != $include_groups) {
@@ -821,7 +822,7 @@ class U3aEvent
             $query_args['tax_query'] = [[
                 'taxonomy' => U3A_EVENT_TAXONOMY,
                 'field'    => 'slug',
-                'terms' => $cat, // could provide an aray of cats here!!
+                'terms' => $cat, // could provide an array of cats here!!
             ]];
         }
         $posts = get_posts($query_args);
@@ -866,7 +867,8 @@ class U3aEvent
         if (!$posts) return '';
 
         $when_text = ('past' == $when) ? 'Previous' : 'Forthcoming';
-        $html = "<div class=\"u3aeventlist\">\n";
+        $blockattrs = wp_kses_data(get_block_wrapper_attributes(['class' => 'u3aeventlist']));
+        $html = "<div $blockattrs >\n";
         if ($display_args['showtitle']) {
             $html .= "<h3>$when_text events</h3>\n";
         }
