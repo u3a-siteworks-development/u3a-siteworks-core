@@ -269,53 +269,7 @@ class U3aEvent
             'max'     => 100,
             'desc' => 'Optional',
         ];
-        if (!current_user_can('edit_others_posts')) {  // ie Author or below
-            $user = wp_get_current_user();
-			// We need to find the ids of all the groups that the user is allowed to edit the events of;
-            //   ie (1) all groups that the user is owner of, and (2) the groups of all events that the user is owner of
-
-			// (1) Find all the published groups the user is owner of
-			// (we assume that at this point there will be no relevant events for an unpublished group)
-			$query_args = [
-				'post_type' => U3A_GROUP_CPT,
-				'post_status' => 'publish',
-				'author' => $user->ID,
-			];
-			$groups_owned = get_posts($query_args);
-			// Get the ids of these groups
-			$groups_owned_ids = array_map( function($post) {
-				return $post->ID;
-			}, $groups_owned );
-
-            // (2) Find all the groups of all the events the user is owner of (regardless of the status of group or event)
-			$query_args = [
-				'post_type' => U3A_EVENT_CPT,
-				'post_status' => 'any',
-				'author' => $user->ID,
-			];
-			$events_owned = get_posts($query_args);
-			// Pick out the ids of the groups of those events
-			$events_owned_group_ids = [];
-			foreach ( $events_owned as $event ) {
-				$group_ID = $event->eventGroup_ID; // Note that since r21559 (v3.5) we no longer need to use get_post_meta
-			    if (!empty($group_ID)) $events_owned_group_ids[] = $group_ID;
-			}
-
-			// The final step is to get the union of the two arrays
-            //   this trick implements a Union of arrays of numbers
-			$all_allowed_group_ids = array_keys(
-				array_flip($groups_owned_ids) + array_flip($events_owned_group_ids)
-			);
-
-            // Because an empty array to post__in will return all posts we need to add an element to force it to return NO results
-            if (count($all_allowed_group_ids) === 0) {
-                $all_allowed_group_ids[] = 0;
-            }
-
-            $group_post_query_args = ['post__in' => $all_allowed_group_ids, 'orderby' => 'title', 'order' => 'ASC'];
-        } else {  // ie Editor or above
-            $group_post_query_args = ['orderby' => 'title', 'order' => 'ASC'];
-        }
+        $group_post_query_args = ['orderby' => 'title', 'order' => 'ASC']; 
         $fields[] = [
             'type'       => 'post',
             'name'       => 'Group',
@@ -325,7 +279,7 @@ class U3aEvent
             'query_args' => $group_post_query_args,
             'field_type' => 'select_advanced', // this is the default anyway
             'ajax'       => false,  // this seems like a good choice, but try switching it on, when there a lots of groups??
-            'required' => current_user_can('edit_others_posts') ? false : true,  // 'Author' must select a group
+            'required' => false,    // 'Author' is now allowed to save an event without a group association.
         ];
         $fields[] = [
             'type'       => 'post',
