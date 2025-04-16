@@ -2,31 +2,38 @@
 /*
 Plugin Name: u3a SiteWorks Core
 Description: Provides facility to manage content for u3a groups, events, notices and related contacts and venues.
-Version: 1.1.6
+Version: 1.2.0
 Author: u3a SiteWorks team
 Author URI: https://siteworks.u3a.org.uk/
 Plugin URI: https://siteworks.u3a.org.uk/
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Requires Plugins: meta-box
+Requires Plugins: meta-box, u3a-siteworks-configuration
 */
 
 if (!defined('ABSPATH')) exit;
 
-define('U3A_SITEWORKS_CORE_VERSION', '1.1.6'); // Set to current plugin version number
+define('U3A_SITEWORKS_CORE_VERSION', '1.2.0'); // Set to current plugin version number
 
 // Check for metabox plugin present and activated
 if ((require_once "inc/check-metabox.php") == false) return;
 
-// Use the plugin update service on SiteWorks update server
+// Use the plugin update service provided in the Configuration plugin
 
-require 'inc/plugin-update-checker/plugin-update-checker.php';
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
-
-$u3acptUpdateChecker = PucFactory::buildUpdateChecker(
-    'https://siteworks.u3a.org.uk/wp-update-server/?action=get_metadata&slug=u3a-siteworks-core', //Metadata URL
-    __FILE__, //Full path to the main plugin file or functions.php.
-    'u3a-siteworks-core'
+add_action(
+    'plugins_loaded',
+    function () {
+        if (function_exists('u3a_plugin_update_setup')) {
+            u3a_plugin_update_setup('u3a-siteworks-core', __FILE__);
+        } else {
+            add_action(
+                'admin_notices',
+                function () {
+                    print '<div class="error"><p>SiteWorks Core plugin unable to check for updates as the SiteWorks Configuration plugin is not active.</p></div>';
+                }
+            );
+        }
+    }
 );
 
 // Required files

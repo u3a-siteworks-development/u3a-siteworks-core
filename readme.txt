@@ -1,6 +1,6 @@
 === u3a-siteworks-core ===
 Requires at least: 5.9
-Tested up to: 6.7
+Tested up to: 6.8
 Stable tag: 5.9
 Requires PHP: 7.3
 License: GPLv2 or later
@@ -21,8 +21,15 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.2.0 =
+* Tested with WordPress 6.8
+* Feature 1130: Add option to hide list of events & groups on venue pages
+* Feature 1125: Events now sorted by time as well as date
 * Bug 1121: Duplicate entries in the reference lists for venues/contacts
 * Bug 1119: Provide validation of date format for u3a Notice start or end date
+* Feature 1105: Add new sorting and selection facilities to the 'u3a notice list' block
+* Bug 1103: Line breaks missing from search results
+* Code refactored to access plugin update service via configuration plugin
 = 1.1.6 =
 * Added documentation u3a Siteworks Core structure.odt
 * Refactored code for ease of future maintenance
