@@ -984,7 +984,7 @@ class U3aGroup
             $categories = get_the_terms($post->ID, U3A_GROUP_TAXONOMY);
             if ((false !== $categories) && !is_wp_error($categories)) {
                 foreach ($categories as $cat) {// allows for a group to be in multiple categories
-                    $catsUsed[] = $cat->name;
+                    $catsUsed[] = html_entity_decode($cat->name);
                 }
             }
         }
@@ -992,7 +992,8 @@ class U3aGroup
         $html = "<div class=\"u3agroupselector\">\n";
         $url = untrailingslashit(home_url($wp->request)) . "?list_type=par&par=";
         foreach ($uniqueCats as $catName) {
-            $html .= "<a class='wp-element-button' href='" . $url . $catName . "' style='display:inline-block;'>" . $catName . "</a>";
+            $html .= "<a class='wp-element-button' href='" . $url .
+            str_replace("&","%26",$catName) . "' style='display:inline-block;'>" . $catName . "</a>";
         }
         $html .= "</div>\n";
 
