@@ -21,6 +21,7 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Bug 1137: Group category with & will not display in Filtered Group List
 = 1.2.0 =
 * Tested with WordPress 6.8
 * Feature 1130: Add option to hide list of events & groups on venue pages
