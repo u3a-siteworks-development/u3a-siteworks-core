@@ -21,6 +21,7 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Feature 1136: Allow authors to add non group events
 * Bug 1142: Notice block Title disappears when there are no notices
 * Bug 1137: Group category with & will not display in Filtered Group List
 = 1.2.0 =

@@ -269,12 +269,7 @@ class U3aEvent
             'max'     => 100,
             'desc' => 'Optional',
         ];
-        if (!current_user_can('edit_others_posts')) {  // ie Editor or above
-            $user = wp_get_current_user();
-            $group_post_query_args = ['author' => $user->ID, 'orderby' => 'title', 'order' => 'ASC'];
-        } else {
-            $group_post_query_args = ['orderby' => 'title', 'order' => 'ASC'];
-        }
+        $group_post_query_args = ['orderby' => 'title', 'order' => 'ASC'];
         $fields[] = [
             'type'       => 'post',
             'name'       => 'Group',
@@ -284,7 +279,7 @@ class U3aEvent
             'query_args' => $group_post_query_args,
             'field_type' => 'select_advanced', // this is the default anyway
             'ajax'       => false,  // this seems like a good choice, but try switching it on, when there a lots of groups??
-            'required' => current_user_can('edit_others_posts') ? false : true,  // 'Author' must select a group
+            'required' => false,  // 'Author' is allowed to save event without a group association
         ];
         $fields[] = [
             'type'       => 'post',
