@@ -42,8 +42,14 @@
 }
 /* close up paras in list */
 .u3aeventlist p {
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-left: 0px;
+}
+.u3aevent-grid-right p {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-left: 0px;
 }
 /* not using a heading style for event/group titles within list*/
 .u3aeventlist .u3aeventtitle,
