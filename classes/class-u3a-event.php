@@ -1057,14 +1057,13 @@ class U3aEvent
                     </div>
                     <div class="u3aevent-grid-right">
                         <div class="u3aeventtitle"><a href="$permalink">$title</a></div>
-                            $date_text
-                            $time_line
-                            $end_date_line
-                            $extract
-                            $venue_line
-                            $cost_line
-                            $booking_required_line
-                        </div>
+                        $date_text
+                        $time_line
+                        $end_date_line
+                        $extract
+                        $venue_line
+                        $cost_line
+                        $booking_required_line
                     </div>
                 </div>
                 END;
