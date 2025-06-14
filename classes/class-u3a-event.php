@@ -88,6 +88,9 @@ class U3aEvent
         // Add action to restrict database field lengths
         add_action('save_post_u3a_event', [self::class, 'validate_event_fields'], 30, 2);
     
+        // Add action to check group ownership
+        add_action('pre_post_update', [self::class, 'check_group_ownership'], 10, 2);
+
         // Add default content to new posts of this type
         add_filter('default_content', array(self::class, 'add_default_content'), 10, 2);
 
@@ -113,7 +116,25 @@ class U3aEvent
     
     }
 
-        // validate the lengths of fields on save
+    public static function check_group_ownership($post_id, $data)
+    {
+        if (get_post_type($post_id) != U3A_EVENT_CPT) {
+            return;
+        }
+        if (current_user_can('edit_others_posts')) {  // ie Editor or above
+            return;
+        }
+        $currentgroup = get_post_meta($post_id, 'eventGroup_ID', true);
+        if ($currentgroup) {
+            $author = get_post_field('post_author', $currentgroup);
+            $user = wp_get_current_user();
+            if ($author && $author != $user->ID) {
+                wp_die("This event is associated with a group which you cannot edit - contact the group editor", "");
+            }
+        }
+    }
+
+    // validate the lengths of fields on save
     public static function validate_event_fields($post_id, $post)
     {
         // shorten values if they did not come in from the client.
@@ -269,7 +290,12 @@ class U3aEvent
             'max'     => 100,
             'desc' => 'Optional',
         ];
-        $group_post_query_args = ['orderby' => 'title', 'order' => 'ASC'];
+        if (!current_user_can('edit_others_posts')) {  // ie Editor or above
+            $user = wp_get_current_user();
+            $group_post_query_args = ['author' => $user->ID, 'orderby' => 'title', 'order' => 'ASC'];
+        } else {
+            $group_post_query_args = ['orderby' => 'title', 'order' => 'ASC'];
+        }
         $fields[] = [
             'type'       => 'post',
             'name'       => 'Group',
