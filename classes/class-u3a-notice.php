@@ -33,10 +33,6 @@ class U3aNotice
      */
     public static $post_type_name = 'notice';
 
-    /* Limits on the max size of data input */
-    const MAX_DATE = 10; // YYYY-MM-DD
-    const MAX_URL = 2000; // for all browsers
-
     /**
      * The ID of this post
      *
@@ -99,27 +95,8 @@ class U3aNotice
 
         // Register the blocks
         add_action('init', array(self::class, 'register_blocks'));
-
-        // Add action to restrict database field lengths
-        add_action('save_post_u3a_notice', [self::class, 'validate_notice_fields'], 30, 2);
     }
 
-    // validate the lengths of fields on save
-    public static function validate_notice_fields($post_id, $post)
-    {
-        $value = get_post_meta($post_id, 'notice_start_date', true);
-        if (strlen($value) > self::MAX_DATE) {
-            update_post_meta($post_id, 'notice_start_date', '');
-        }
-        $value = get_post_meta($post_id, 'notice_end_date', true);
-        if (strlen($value) > self::MAX_DATE) {
-            update_post_meta($post_id, 'notice_end_date', '');
-        }
-        $value = get_post_meta($post_id, 'notice_url', true);
-        if (strlen($value) > self::MAX_URL) {
-            update_post_meta($post_id, 'notice_url', '');
-        }
-    }
     public static function register_notices()
     {
         $args = array(
@@ -186,7 +163,6 @@ class U3aNotice
                 'std'       => date('Y-m-d'),
                 'pattern' => '[1-2][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]',
                 'required'  => true,
-                'maxlength' => self::MAX_DATE,
             ];
         $fields[] =
             [
@@ -198,7 +174,6 @@ class U3aNotice
                 'std'       => date('Y-m-d'),
                 'pattern' => '[1-2][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]',
                 'required' => true,
-                'maxlength' => self::MAX_DATE,
             ];
         $fields[] =
             [
@@ -212,7 +187,6 @@ class U3aNotice
                 'name' => 'Notice URL',
                 'id'   => 'notice_url',
                 'desc' => 'The URL should start with https://, or http:// for an unsecured website link.',
-                'maxlength' => self::MAX_URL,
             ];
 
         return $fields;
