@@ -44,15 +44,6 @@ class U3aVenue
     // $plugin_file is the value of __FILE__ from the main plugin file
     private static $plugin_file;
 
-    /* Limits on the max size of data input */
-    const MAX_DISTRICT = 255;
-    const MAX_ADDRESS_LINE = 255;
-    const MAX_TOWN = 255; // its 58 really - but might add extra details.
-    const MAX_POSTCODE = 60;
-    const MAX_ACCESSIBILITY = 1024;
-    const MAX_URL = 2000; // for all browsers
-    const MAX_PHONE = 60;
-
     /**
      * The ID of this post
      *
@@ -101,9 +92,6 @@ class U3aVenue
         // Register the blocks
         add_action('init', array(self::class, 'register_blocks'));
 
-        // Add action to restrict database field lengths
-        add_action('save_post_u3a_venue', [self::class, 'validate_venue_fields'], 30, 2);
-
         // Add default content to new posts of this type
         add_filter('default_content', array(self::class, 'add_default_content'), 10, 2);
 
@@ -122,44 +110,6 @@ class U3aVenue
         //Add display of all xrefs to this post in other posts.
         add_filter('the_content', array(self::class, 'display_xrefs'), 20, 1);
    }
-
-    // validate the lengths of fields on save
-    public static function validate_venue_fields($post_id, $post)
-    {
-        $value = get_post_meta($post_id, 'district', true);
-        if (strlen($value) > self::MAX_DISTRICT) {
-            update_post_meta($post_id, 'district', '');
-        }
-        $value = get_post_meta($post_id, 'address1', true);
-        if (strlen($value) > self::MAX_ADDRESS_LINE) {
-            update_post_meta($post_id, 'address1', '');
-        }
-        $value = get_post_meta($post_id, 'address2', true);
-        if (strlen($value) > self::MAX_ADDRESS_LINE) {
-            update_post_meta($post_id, 'address2', '');
-        }
-        $value = get_post_meta($post_id, 'town', true);
-        if (strlen($value) > self::MAX_TOWN) {
-            update_post_meta($post_id, 'town', '');
-        }
-        $value = get_post_meta($post_id, 'postcode', true);
-        if (strlen($value) > self::MAX_POSTCODE) {
-            update_post_meta($post_id, 'postcode', '');
-        }
-        $value = get_post_meta($post_id, 'access', true);
-        if (strlen($value) > self::MAX_ACCESSIBILITY) {
-            update_post_meta($post_id, 'access', '');
-        }
-        $value = get_post_meta($post_id, 'url', true);
-        if (strlen($value) > self::MAX_URL) {
-            update_post_meta($post_id, 'url', '');
-        }
-        $value = get_post_meta($post_id, 'phone', true);
-        if (strlen($value) > self::MAX_PHONE) {
-            update_post_meta($post_id, 'phone', '');
-        }
-    }
-
     /**
      * Registers the custom post type for this class.
      */
@@ -240,7 +190,6 @@ class U3aVenue
                 'name'    => 'District',
                 'id'      => 'district',
                 'desc'    => '',
-                'maxlength' => self::MAX_DISTRICT,
                 ];
         }
         $fields[] =
@@ -254,7 +203,6 @@ class U3aVenue
             'name'    => 'Address Line 1',
             'id'      => 'address1',
             'desc'    => '',
-            'maxlength' => self::MAX_ADDRESS_LINE,
             ];
         $fields[] =
             [
@@ -262,7 +210,6 @@ class U3aVenue
             'name'    => 'Address Line 2',
             'id'      => 'address2',
             'desc'    => '',
-            'maxlength' => self::MAX_ADDRESS_LINE,
             ];
         $fields[] =
             [
@@ -270,7 +217,6 @@ class U3aVenue
             'name'    => 'Town',
             'id'      => 'town',
             'desc'    => '',
-            'maxlength' => self::MAX_TOWN,
             ];
         $fields[] =
             [
@@ -279,7 +225,6 @@ class U3aVenue
             'id'      => 'postcode',
             'size'    => '30px',
             'desc'    => '',
-            'maxlength' => self::MAX_POSTCODE,
             ];
         $fields[] =
             [
@@ -292,7 +237,6 @@ class U3aVenue
             'name'    => 'Accessibility',
             'id'      => 'access',
             'desc'    => 'Enter any accessibility limitations',
-            'maxlength' => self::MAX_ACCESSIBILITY,
             ];
         $fields[] =
             [
@@ -300,7 +244,6 @@ class U3aVenue
             'name'    => 'Phone number',
             'id'      => 'phone',
             'desc'    => '',
-            'maxlength' => self::MAX_PHONE,
             ];
         $fields[] =
             [
@@ -308,7 +251,6 @@ class U3aVenue
             'name'    => 'Venue\'s website URL',
             'id'      => 'url',
             'desc' => 'The URL should start with https://, or http:// for an unsecured website link.',
-            'maxlength' => self::MAX_URL,
             ];
         return $fields;
     }

@@ -47,11 +47,6 @@ class U3aContact
      */
     public $ID;
 
-    /* Limits on the max size of data input */
-    const MAX_CONTACT_NAME = 60;
-    const MAX_PHONE = 20;
-    const MAX_EMAIL = 60;
-
     /**
      * If there is a post with this ID
      *
@@ -103,42 +98,7 @@ class U3aContact
         
         //Add display of all xrefs to this post in other posts.
         add_filter('the_content', array(self::class, 'display_xrefs'), 20, 1);
-
-        // Add action to restrict database field lengths
-          add_action('save_post_u3a_contact', [self::class, 'validate_contact_fields'], 20, 2);
-
     }
-
-    // validate the lengths of fields on save
-    public static function validate_contact_fields($post_id, $post)
-    {
-        // shorten values if they did not come in from the client.
-        $value = get_post_meta($post_id, 'memberid', true);
-        if (strlen($value) > self::MAX_CONTACT_NAME) {
-            update_post_meta($post_id, 'memberid', substr($value, 0 , self::MAX_CONTACT_NAME));
-        }
-        $value = get_post_meta($post_id, 'givenname', true);
-        if (strlen($value) > self::MAX_CONTACT_NAME) {
-            update_post_meta($post_id, 'givenname', substr($value, 0 , self::MAX_CONTACT_NAME));
-        }
-        $value = get_post_meta($post_id, 'familyname', true);
-        if (strlen($value) > self::MAX_CONTACT_NAME) {
-            update_post_meta($post_id, 'familyname', substr($value, 0 , self::MAX_CONTACT_NAME));
-        }
-        $value = get_post_meta($post_id, 'phone', true);
-        if (strlen($value) > self::MAX_PHONE) {
-            update_post_meta($post_id, 'phone', substr($value, 0 , self::MAX_PHONE));
-        }
-        $value = get_post_meta($post_id, 'phone2', true);
-        if (strlen($value) > self::MAX_PHONE) {
-            update_post_meta($post_id, 'phone2', substr($value, 0 , self::MAX_PHONE));
-        }
-        $value = get_post_meta($post_id, 'email', true);
-        if (strlen($value) > self::MAX_EMAIL) {
-            update_post_meta($post_id, 'email', substr($value, 0 , self::MAX_EMAIL));
-        }
-    }
-
 
     /**
      * Registers the custom post type for this class.
@@ -211,42 +171,36 @@ class U3aContact
             'name'    => 'u3a Membership Number',
             'id'      => 'memberid',
             'size'    => '30px',
-            'maxlength' => self::MAX_CONTACT_NAME,
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Given Name',
             'id'      => 'givenname',
             'size'    => '100px',
-            'maxlength' => self::MAX_CONTACT_NAME,
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Family Name',
             'id'      => 'familyname',
             'size'    => '100px',
-            'maxlength' => self::MAX_CONTACT_NAME,
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Phone number',
             'id'      => 'phone',
             'size'    => '50px',
-            'maxlength' => self::MAX_PHONE,
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Alternate phone number',
             'id'      => 'phone2',
             'size'    => '50px',
-            'maxlength' => self::MAX_PHONE,
             ];
         $fields[] = [
             'type'    => 'email',
             'name'    => 'Email address',
             'id'      => 'email',
             'size'    => '100px',
-            'maxlength' => self::MAX_EMAIL,
 ];
         return $fields;
     }

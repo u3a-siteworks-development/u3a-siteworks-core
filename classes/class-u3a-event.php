@@ -47,11 +47,6 @@ class U3aEvent
      */
     public $ID;
 
-    /* Limits on the max size of data input */
-    const MAX_COST = 1024;
-    const MAX_DATE = 10; // yyyy-mm-dd
-    const MAX_TIME = 5; // hh:mm
-
     /*
      * Construct a new object for a u3a_group post.
      *
@@ -85,9 +80,6 @@ class U3aEvent
         // Add action to create/update eventEndDate meta field
         add_action('save_post_u3a_event', [self::class, 'set_eventEndDate'], 20, 2);
 
-        // Add action to restrict database field lengths
-        add_action('save_post_u3a_event', [self::class, 'validate_event_fields'], 30, 2);
-    
         // Add default content to new posts of this type
         add_filter('default_content', array(self::class, 'add_default_content'), 10, 2);
 
@@ -113,30 +105,6 @@ class U3aEvent
     
     }
 
-        // validate the lengths of fields on save
-    public static function validate_event_fields($post_id, $post)
-    {
-        // shorten values if they did not come in from the client.
-        // other fields are restricted by being of type 'post' (20).
-        // Still have to protect the ones which are formatted by pattern.
-        $value = get_post_meta($post_id, 'cost', true);
-        if (strlen($value) > self::MAX_COST) {
-            update_post_meta($post_id, 'cost', substr($value, 0 , self::MAX_COST));
-        }
-        $value = get_post_meta($post_id, 'eventDate', true);
-        if (strlen($value) > self::MAX_DATE) {
-            update_post_meta($post_id, 'eventDate', 0);
-        }
-        $value = get_post_meta($post_id, 'eventTime', true);
-        if (strlen($value) > self::MAX_TIME) {
-            update_post_meta($post_id, 'eventTime', 0);
-        }
-        $value = get_post_meta($post_id, 'eventEndTime', true);
-        if (strlen($value) > self::MAX_TIME) {
-            update_post_meta($post_id, 'eventEndTime', 0);
-        }
-    }
-    
     /**
      * Registers the custom post type and taxonomy for this class.
      */
@@ -312,7 +280,6 @@ class U3aEvent
             'id'         => 'eventCost',
             'desc'       => 'You may include cost information here.',
             'std'        => '', // default value,
-            'maxlength'  => self::MAX_COST,
         ];
         $fields[] = [
             'type'       => 'checkbox',
