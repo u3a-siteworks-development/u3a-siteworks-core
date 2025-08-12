@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="WordPress" namespace="WordPressCS\WordPress" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/squizlabs/PHP_CodeSniffer/master/phpcs.xsd">
+	<rule ref="WordPress-Extra">
+		<exclude name="Generic.Formatting" />
+		<exclude name="Generic.WhiteSpace" />
+		<exclude name="Squiz.Strings" />
+		<exclude name="Generic.Files" />
+		<exclude name="WordPress.Files" />
+		<exclude name="WordPress.Arrays" />
+		<exclude name="Squiz.ControlStructures" />
+		<exclude name="Squiz.Strings.DoubleQuoteUsage" />
+		<exclude name="PSR2.ControlStructures" />
+		<exclude name="PEAR.Functions.FunctionCallSignature" />
+		<exclude name="Generic.Functions.FunctionCallArgumentSpacing" />
+		<exclude name="WordPress.PHP.YodaConditions.NotYoda" />
+		<exclude name="WordPress.PHP.StrictInArray" />
+		<exclude name="WordPress.PHP.StrictComparisons.LooseComparison" />
+		<exclude name="WordPress.NamingConventions" />
+		<exclude name="WordPress.WhiteSpace" />
+		<exclude name="Squiz.WhiteSpace" />
+		<exclude name="Squiz.PHP.CommentedOutCode.Found" />
+		<exclude name="Generic.Functions.OpeningFunctionBraceKernighanRitchie" />
+		<exclude name="Generic.ControlStructures.InlineControlStructure.NotAllowed" />
+		<exclude name="PEAR.Files.IncludingFile.BracketsNotRequired" />
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax" />
+		<exclude name="Squiz.Functions.FunctionDeclarationArgumentSpacing" />
+		<exclude name="Squiz.Functions.FunctionDeclarationArgumentSpacing" />
+		<exclude name="WordPress.WhiteSpace.PrecisionAlignment.Found" />
+		<exclude name="Squiz.PHP.EmbeddedPhp.MultipleStatements" />
+		<exclude name="NormalizedArrays.Arrays.ArrayBraceSpacing.SpaceAfterArrayOpenerSingleLine" />
+		<exclude name="NormalizedArrays.Arrays.ArrayBraceSpacing.SpaceBeforeArrayCloserSingleLine" />
+		<exclude name="NormalizedArrays.Arrays.CommaAfterLast.MissingMultiLine" />
+        <exclude name="Universal.Arrays.DisallowShortArraySyntax.Found" />
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed" />
+		<exclude name="Universal.Operators.StrictComparisons.LooseEqual" />
+		<exclude name="Universal.Operators.StrictComparisons.LooseNotEqual" />
+		<exclude name="PSR2.Methods.FunctionClosingBrace.SpacingBeforeClose" />
+
+	</rule>
+
+	<rule ref="PHPCompatibility"/>
+
+	<config name="testVersion" value="7.4-8.2"/>
+</ruleset>
