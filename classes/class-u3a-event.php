@@ -80,6 +80,7 @@ class U3aEvent
         // Add action to create/update eventEndDate meta field
         add_action('save_post_u3a_event', [self::class, 'set_eventEndDate'], 20, 2);
 
+
         // Add default content to new posts of this type
         add_filter('default_content', array(self::class, 'add_default_content'), 10, 2);
 
@@ -102,8 +103,8 @@ class U3aEvent
 
         // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
         add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
-    
     }
+
 
     /**
      * Registers the custom post type and taxonomy for this class.
@@ -300,7 +301,7 @@ class U3aEvent
         wp_register_script(
             'u3aeventblocks',
             plugins_url('js/u3a-event-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element','wp-components','wp-block-editor','wp-data'),
+            array('wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-data'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
@@ -398,15 +399,15 @@ class U3aEvent
     {
         // This is a very general purpose hook, so ...
         // query must be main query for an admin page with a query for u3a_event post-type
-        if (!( is_admin()
-               && ($query->is_main_query())
-               && ('u3a_event' == $query->get('post_type'))
-             )){
+        if (!(is_admin()
+            && ($query->is_main_query())
+            && ('u3a_event' == $query->get('post_type'))
+        )) {
             return;
         }
         // also check that we are on the All Events page
         // Note: get_current_screen() may not exist at the start of this function 
-        $screen = get_current_screen(); 
+        $screen = get_current_screen();
         if ('edit-u3a_event' !== $screen->id) {
             return;
         }
@@ -469,15 +470,15 @@ class U3aEvent
         if ($groups) {
             $selected = isset($_GET[$name]) ? $_GET[$name] : '';
             print "<select name='$name'><option value=''>All groups</option>";
-             foreach ($groups as $group) {
-                 $id = $group->ID;
-                 $sel = ($id == $selected) ? ' selected' : '';
-                 printf(
+            foreach ($groups as $group) {
+                $id = $group->ID;
+                $sel = ($id == $selected) ? ' selected' : '';
+                printf(
                     '<option value="%1$s" %2$s>%3$s </option>',
                     $id,
                     $sel,
                     esc_HTML($group->post_title)
-                 );
+                );
             }
             print "</select>\n";
         }
@@ -498,15 +499,15 @@ class U3aEvent
     {
         // This is a very general purpose hook, so ...
         // query must be main query for an admin page with a query for u3a_event post-type
-        if (!( is_admin()
-               && ($query->is_main_query())
-               && ('u3a_event' == $query->get('post_type'))
-             )){
+        if (!(is_admin()
+            && ($query->is_main_query())
+            && ('u3a_event' == $query->get('post_type'))
+        )) {
             return;
         }
         // also check that we are on the All Events page
         // Note: get_current_screen() may not exist at the start of this function 
-        $screen = get_current_screen(); 
+        $screen = get_current_screen();
         if ('edit-u3a_event' !== $screen->id) {
             return;
         }
@@ -517,11 +518,11 @@ class U3aEvent
         }
         // add a meta_query for group selection
         $meta_query[] = array(
-                'key' => 'eventGroup_ID',
-                // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                'value' => sanitize_text_field($_GET['groupID']),
-                'compare' => '=',
-                'type' => '',
+            'key' => 'eventGroup_ID',
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            'value' => sanitize_text_field($_GET['groupID']),
+            'compare' => '=',
+            'type' => '',
         );
         $query->set('meta_query', $meta_query);
 
@@ -651,7 +652,7 @@ class U3aEvent
             // phpcs:disable WordPress.Security.NonceVerification.Recommended
             if (isset($_GET[$name])) {
                 $display_args[$name] = strtolower(sanitize_text_field($_GET[$name]));
-            // phpcs:enable WordPress.Security.NonceVerification.Recommended
+                // phpcs:enable WordPress.Security.NonceVerification.Recommended
             } elseif (isset($atts[$name])) {
                 $display_args[$name] = strtolower($atts[$name]);
             }
@@ -736,13 +737,15 @@ class U3aEvent
                 $limitdays = -$limitdays;
                 $limit_date = date("Y-m-d", time() + 86400 * $limitdays);
                 $date_query = [
-                    'relation' => 'AND', ['key' => 'eventDate', 'value' => $now, 'compare' => '<'],
+                    'relation' => 'AND',
+                    ['key' => 'eventDate', 'value' => $now, 'compare' => '<'],
                     ['key' => 'eventEndDate', 'value' => $limit_date, 'compare' => '>=']
                 ];
             } else {
                 $limit_date = date("Y-m-d", time() + 86400 * $limitdays);
                 $date_query = [
-                    'relation' => 'AND', ['key' => 'eventEndDate', 'value' => $now, 'compare' => '>='],
+                    'relation' => 'AND',
+                    ['key' => 'eventEndDate', 'value' => $now, 'compare' => '>='],
                     ['key' => 'eventDate', 'value' => $limit_date, 'compare' => '<']
                 ];
             }
@@ -807,7 +810,7 @@ class U3aEvent
         } else {
             $valid_posts = $posts;
         }
-        $display_args = ['showtitle' => $showtitle, 'layout' => $layout,'crop' => $crop,'bgcolor' => $bgcolor];
+        $display_args = ['showtitle' => $showtitle, 'layout' => $layout, 'crop' => $crop, 'bgcolor' => $bgcolor];
         if ($valid_posts)  return self::display_event_listing($valid_posts, $when, $show_group_info, $display_args);
         else return '';
     }
@@ -821,7 +824,8 @@ class U3aEvent
      *
      * @return int -1 = a lessthan b, 0 = equal, 1 = a greaterthan b
      */
-    private static function timecompare($a, $b){
+    private static function timecompare($a, $b)
+    {
         if ($a['epochtime'] < $b['epochtime']) {
             return -1;
         }
@@ -850,15 +854,21 @@ class U3aEvent
      *
      * @return array the sorted posts.
      */
-    private static function sort_on_times($posts) {
+    private static function sort_on_times($posts)
+    {
         $sortableposts = array();
         foreach ($posts as $event) {
             $my_event = new self($event->ID); // an object of this class
             $date_time = $my_event->event_date_and_time();
-            $sortablepost = array('event' => $event, 'my_event' => $my_event,
-                'date' => $date_time['date'], 'time' => $date_time['time'],
-                'endtime' => $date_time['endtime'], 'epochtime' => $date_time['epochtime'],
-                'epochendtime' => $date_time['epochendtime']);
+            $sortablepost = array(
+                'event' => $event,
+                'my_event' => $my_event,
+                'date' => $date_time['date'],
+                'time' => $date_time['time'],
+                'endtime' => $date_time['endtime'],
+                'epochtime' => $date_time['epochtime'],
+                'epochendtime' => $date_time['epochendtime']
+            );
             $sortableposts[] = $sortablepost;
         }
         // split into arrays by date.
@@ -916,25 +926,28 @@ class U3aEvent
                 $term = $terms[0];
                 $event_category = $term->name;
             }
-            $event_category_line = "<br>".$event_category;
+            $event_category_line = "<div>" . $event_category . "</div>";
             $group_line = '';
             if ($show_group) {
                 $group_text = $my_event->event_group_name_with_link();
-                $group_line = ($group_text) ? "<p>$group_text</p>" : '';
+                $group_line = ($group_text) ? "<div>$group_text</div>" : '';
             }
-            add_filter( 'excerpt_length', function ($length ) { return 30; } );
-            $extract = get_the_excerpt($event->ID);
-            // $extract = wp_strip_all_tags($event->post_content, true);
-            // if (strlen($extract) > 100) $extract = substr($extract, 0, 96) . ' ...';
+            add_filter('excerpt_length', function ($length) {
+                return 30;
+            });
+            $extract = htmlspecialchars_decode(get_the_excerpt($event->ID));
             if (!empty($extract)) {
-                $extract .= '<br>';
+                $extract = '<div>' . $extract . '</div>';
             }
             $time_line = '';
             if ('' != $time) {
-                $time_line = '<br>' . $time;
+                $time_line = $time;
                 if ('' != $endtime) {
                     $time_line .= ' - ' . $endtime;
                 }
+            }
+            if (!empty($time_line)) {
+                $time_line = '<div>' . $time_line . '</div>';
             }
             $the_venue = new U3aVenue(get_post_meta($event->ID, 'eventVenue_ID', true));
             $venue_name_with_link = $the_venue->venue_name_with_link();
@@ -942,23 +955,32 @@ class U3aEvent
             if (!empty($venue_name_with_link)) {
                 $venue_line = "Venue: $venue_name_with_link";
             }
+            if ($venue_line != '') {
+                $venue_line = '<div>' . $venue_line . '</div>';
+            }
             $cost_line = '';
             $cost = get_post_meta($event->ID, 'eventCost', true);
             if (!empty($cost)) {
-                $cost_line = "<br>Cost: $cost";
+                $cost_line = "Cost: $cost";
+            }
+            if ($cost_line != '') {
+                $cost_line = '<div>' . $cost_line . '</div>';
             }
             $booking_required_line = '';
             $booking_required = get_post_meta($event->ID, 'eventBookingRequired', true);
             if (!empty($booking_required)) {  // default value of 0 is empty!
-                $booking_required_line = "<br><strong>Booking Required</strong>";
+                $booking_required_line = "<div><strong>Booking Required</strong></div>";
             }
 
-            $date_text = "<strong>$date</strong>";
+            $date_text = "<div><strong>$date</strong></div>";
             $end_date_line = '';
             $days = get_post_meta($event->ID, 'eventDays', true);
             if ($days > 1) {
                 $enddate = $my_event->event_end_date();
-                $end_date_line = "<br>to $enddate";
+                $end_date_line = "to $enddate";
+            }
+            if (!empty($end_date_line)) {
+                $end_date_line = '<div>' . $end_date_line . '</div>';
             }
             $featured_image = get_the_post_thumbnail_url($event->ID, 'medium');
             $caption = get_the_post_thumbnail_caption($event->ID);
@@ -977,7 +999,6 @@ class U3aEvent
             } else {
                 $image_HTML = <<<END
                     <div class = "no-figure">
-                      <br>
                     </div>
                     END;
             }
@@ -988,20 +1009,18 @@ class U3aEvent
                 $html .= <<< END
                 <div class="u3aeventlist-item">
                     <div class="u3aevent-list-left">
-                    <p>$date_text
-                      $time_line
-                      $end_date_line
-                      $event_category_line
-                    </p>
-                    $group_line
+                        $date_text
+                        $time_line
+                        $end_date_line
+                        $event_category_line
+                        $group_line
                     </div>
                     <div class="u3aevent-list-right">
-                    <p class="u3aeventtitle"><a href="$permalink">$title</a></p>
-                    <p>$extract
-                      $venue_line
-                      $cost_line
-                      $booking_required_line
-                    </p>
+                    <div class="u3aeventtitle"><a href="$permalink">$title</a></div>
+                        $extract
+                        $venue_line
+                        $cost_line
+                        $booking_required_line
                     </div>
                 </div>
                 END;
@@ -1011,19 +1030,17 @@ class U3aEvent
                 $html .= <<< END
                 <div class="u3aeventlist-item" $style_bgcolor>
                     <div class="u3aevent-grid-left">
-                    $image_HTML
+                        <div>$image_HTML</div>
                     </div>
                     <div class="u3aevent-grid-right">
-                    <p class="u3aeventtitle"><a href="$permalink">$title</a></p>
-                    <p>$date_text
-                      $time_line
-                      $end_date_line
-                    </p>
-                    <p>$extract
-                      $venue_line
-                      $cost_line
-                      $booking_required_line
-                    </p>
+                        <div class="u3aeventtitle"><a href="$permalink">$title</a></div>
+                        $date_text
+                        $time_line
+                        $end_date_line
+                        $extract
+                        $venue_line
+                        $cost_line
+                        $booking_required_line
                     </div>
                 </div>
                 END;
@@ -1177,26 +1194,32 @@ class U3aEvent
         if ('' != $time) {
             if ('' != $endtime) {
                 // we have both start and end time
-                return ['date' => date($dateformat, $tempstart),
-                'time' => date($timeformat, $tempstart),
-                'endtime' => date($timeformat, $tempend),
-                'epochtime' => $epochtime,
-                'epochendtime' => $epochendtime];
+                return [
+                    'date' => date($dateformat, $tempstart),
+                    'time' => date($timeformat, $tempstart),
+                    'endtime' => date($timeformat, $tempend),
+                    'epochtime' => $epochtime,
+                    'epochendtime' => $epochendtime
+                ];
             } else {
                 // we only have start time
-                return ['date' => date($dateformat, $tempstart),
-                'time' => date($timeformat, $tempstart),
-                'endtime' => '',
-                'epochtime' => $epochtime,
-                'epochendtime' => $epochendtime];
+                return [
+                    'date' => date($dateformat, $tempstart),
+                    'time' => date($timeformat, $tempstart),
+                    'endtime' => '',
+                    'epochtime' => $epochtime,
+                    'epochendtime' => $epochendtime
+                ];
             }
         } else {
             // only event date
-            return ['date' => date($dateformat, $tempstart),
-            'time' =>  '',
-            'endtime' => '',
-            'epochtime' => $epochtime,
-            'epochendtime' => $epochendtime];
+            return [
+                'date' => date($dateformat, $tempstart),
+                'time' =>  '',
+                'endtime' => '',
+                'epochtime' => $epochtime,
+                'epochendtime' => $epochendtime
+            ];
         }
     }
 
