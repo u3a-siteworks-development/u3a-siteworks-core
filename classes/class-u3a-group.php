@@ -70,15 +70,6 @@ class U3aGroup
     // $plugin_file is the value of __FILE__ from the main plugin file
     private static $plugin_file;
 
-    /* Limits on the max size of data input */
-    const MAX_TIME = 9; // Afternoon - need to increase if longer keys are added to time_list
-    const MAX_FREQUENCY = 11; // fortnightly - need to increase if longer keys added to frequency_list
-    const MAX_WHEN = 1024; // free text field
-    const MAX_EMAIL = 320; // max_email is 64 chars plus @ plus 255S
-    const MAX_COST = 1024; // free text field
-    const MAX_DAY_NUM = 1; // should be single digit
-    const MAX_STATUS = 1; // increase if there are more than 9 statuses in status_list
-
     /**
      * The id of this post
      *
@@ -127,49 +118,9 @@ class U3aGroup
         // Add custom filters to the admin posts list
         add_action('restrict_manage_posts', array(self::class, 'add_admin_filters'));
 
-        // Add action to restrict database field lengths
-        add_action('save_post_u3a_group', [self::class, 'validate_group_fields'], 30, 2);
-
         // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
         add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
 
-    }
-
-    // validate the lengths of fields on save
-    public static function validate_group_fields($post_id, $post)
-    {
-        $value = get_post_meta($post_id, 'status_NUM', true);
-        if (strlen($value) > self::MAX_STATUS) {
-            update_post_meta($post_id, 'status_NUM', '');
-        }
-        $value = get_post_meta($post_id, 'day_NUM', true);
-        if (strlen($value) > self::MAX_DAY_NUM) {
-            update_post_meta($post_id, 'day_NUM', '');
-        }
-        $value = get_post_meta($post_id, 'time', true);
-        if (strlen($value) > self::MAX_TIME) {
-            update_post_meta($post_id, 'time', '');
-        }
-        $value = get_post_meta($post_id, 'frequency', true);
-        if (strlen($value) > self::MAX_FREQUENCY) {
-            update_post_meta($post_id, 'frequency', '');
-        }
-        $value = get_post_meta($post_id, 'when', true);
-        if (strlen($value) > self::MAX_WHEN) {
-            update_post_meta($post_id, 'when', substr($value,0,self::MAX_WHEN));
-        }
-        $value = get_post_meta($post_id, 'email', true);
-        if (strlen($value) > self::MAX_EMAIL) {
-            update_post_meta($post_id, 'email', '');
-        }
-        $value = get_post_meta($post_id, 'email2', true);
-        if (strlen($value) > self::MAX_EMAIL) {
-            update_post_meta($post_id, 'email2', '');
-        }
-        $value = get_post_meta($post_id, 'cost', true);
-        if (strlen($value) > self::MAX_COST) {
-            update_post_meta($post_id, 'cost', substr($value,0,self::MAX_COST));
-        }
     }
 
     /**
@@ -371,7 +322,6 @@ class U3aGroup
             'desc' => 'Leave blank or enter meeting time period',
             'options' => array_merge(['' => '...'], self::$time_list),
             'std'     => '', // default value
-            'maxlength' => self::MAX_TIME,
         ];
         $fields[] = [
             'type'    => 'time',
@@ -396,7 +346,6 @@ class U3aGroup
             'desc'    => 'Leave blank or enter frequency',
             'options' => array_merge(['' => '...'], self::$frequency_list),
             'std'     => '', // default value
-            'maxlength' => self::MAX_FREQUENCY,
         ];
         $fields[] = [
             'type'    => 'text',
@@ -404,7 +353,6 @@ class U3aGroup
             'id'      => 'when',
             'desc'    => 'If necessary, enter any additional information about when the group meets',
             'std'     => '', // default value
-            'maxlength' => self::MAX_WHEN,
         ];
         $fields[] = [
             'type'    => 'heading',
@@ -477,7 +425,6 @@ class U3aGroup
                 'name' => 'Primary group email',
                 'id'   => 'email',
                 'desc' => 'Email address for group',
-                'maxlength' => self::MAX_EMAIL,
             ];
         }
         if (get_option('field_groupemail2', '1') == '1') {
@@ -486,7 +433,6 @@ class U3aGroup
                 'name' => 'Secondary group email',
                 'id'   => 'email2',
                 'desc' => 'Alternate email address for group',
-                'maxlength' => self::MAX_EMAIL,
             ];
         }
         if (get_option('field_cost', '1') == '1') {
@@ -497,7 +443,6 @@ class U3aGroup
                 'id'      => 'cost',
                 'desc'    => 'You may enter a line of cost information here.',
                 'std'     => '', // default value
-                'maxlength' => self::MAX_COST,
             ];
         }
         return $fields;

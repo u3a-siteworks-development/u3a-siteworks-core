@@ -47,11 +47,6 @@ class U3aEvent
      */
     public $ID;
 
-    /* Limits on the max size of data input */
-    const MAX_COST = 1024;
-    const MAX_DATE = 10; // yyyy-mm-dd
-    const MAX_TIME = 5; // hh:mm
-
     /*
      * Construct a new object for a u3a_group post.
      *
@@ -85,8 +80,6 @@ class U3aEvent
         // Add action to create/update eventEndDate meta field
         add_action('save_post_u3a_event', [self::class, 'set_eventEndDate'], 20, 2);
 
-        // Add action to restrict database field lengths
-        add_action('save_post_u3a_event', [self::class, 'validate_event_fields'], 30, 2);
 
         // Add default content to new posts of this type
         add_filter('default_content', array(self::class, 'add_default_content'), 10, 2);
@@ -112,29 +105,6 @@ class U3aEvent
         add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
     }
 
-    // validate the lengths of fields on save
-    public static function validate_event_fields($post_id, $post)
-    {
-        // shorten values if they did not come in from the client.
-        // other fields are restricted by being of type 'post' (20).
-        // Still have to protect the ones which are formatted by pattern.
-        $value = get_post_meta($post_id, 'cost', true);
-        if (strlen($value) > self::MAX_COST) {
-            update_post_meta($post_id, 'cost', substr($value, 0, self::MAX_COST));
-        }
-        $value = get_post_meta($post_id, 'eventDate', true);
-        if (strlen($value) > self::MAX_DATE) {
-            update_post_meta($post_id, 'eventDate', 0);
-        }
-        $value = get_post_meta($post_id, 'eventTime', true);
-        if (strlen($value) > self::MAX_TIME) {
-            update_post_meta($post_id, 'eventTime', 0);
-        }
-        $value = get_post_meta($post_id, 'eventEndTime', true);
-        if (strlen($value) > self::MAX_TIME) {
-            update_post_meta($post_id, 'eventEndTime', 0);
-        }
-    }
 
     /**
      * Registers the custom post type and taxonomy for this class.
@@ -268,7 +238,12 @@ class U3aEvent
             'max'     => 100,
             'desc' => 'Optional',
         ];
-        $group_post_query_args = ['orderby' => 'title', 'order' => 'ASC'];
+        if (!current_user_can('edit_others_posts')) {  // ie Editor or above
+            $user = wp_get_current_user();
+            $group_post_query_args = ['author' => $user->ID, 'orderby' => 'title', 'order' => 'ASC'];
+        } else {
+            $group_post_query_args = ['orderby' => 'title', 'order' => 'ASC'];
+        }
         $fields[] = [
             'type'       => 'post',
             'name'       => 'Group',
@@ -278,7 +253,7 @@ class U3aEvent
             'query_args' => $group_post_query_args,
             'field_type' => 'select_advanced', // this is the default anyway
             'ajax'       => false,  // this seems like a good choice, but try switching it on, when there a lots of groups??
-            'required' => false,  // 'Author' is allowed to save event without a group association
+            'required' => current_user_can('edit_others_posts') ? false : true,  // 'Author' must select a group
         ];
         $fields[] = [
             'type'       => 'post',
@@ -306,7 +281,6 @@ class U3aEvent
             'id'         => 'eventCost',
             'desc'       => 'You may include cost information here.',
             'std'        => '', // default value,
-            'maxlength'  => self::MAX_COST,
         ];
         $fields[] = [
             'type'       => 'checkbox',
@@ -649,7 +623,7 @@ class U3aEvent
      *    when = 'past'/'future' (default future)
      *    order = 'asc'/'desc' (defaults to asc for future and desc for past)
      *    event_cat = which event category to display (default all)
-     *    groups = 'y'/'n which will override the value in option settings
+     *    groups = 'useglobal', 'exclude', 'include' which will override the value in option settings
      *    limitnum (int) = limits how many events to be displayed
      *    limitdays (int) = limits how many day in the future or past to show events
      *    layout = 'list' or 'grid' at present. Other layouts may be added
@@ -705,13 +679,16 @@ class U3aEvent
         $cat = sanitize_text_field($display_args['event_cat']);
 
         $include_groups = $display_args['groups'];
-        if ('y' != $include_groups && 'n' != $include_groups &&  '' != $include_groups) {
+        if (
+            'useglobal' != $include_groups && 'exclude' != $include_groups
+            &&  'include' != $include_groups && '' != $include_groups
+        ) {
             $error .= 'bad parameter: groups=' . esc_html($include_groups) . '<br>';
             $include_groups = '';
         }
-        if ('' == $include_groups) { // set order depending on option setting
+        if ('' == $include_groups || 'useglobal' == $include_groups) { // set order depending on option setting
             $exclude_groups = get_option('events_nogroups', '1') == 1 ? true : false;
-        } elseif ('n' == $include_groups) {
+        } elseif ('exclude' == $include_groups) {
             $exclude_groups = true;
         } else {
             $exclude_groups = false;

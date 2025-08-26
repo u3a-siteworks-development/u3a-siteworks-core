@@ -34,9 +34,6 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       groups: {
         type: "string"
       },
-      bgroups: {
-        type: "boolean"
-      },
       limitnum: {
         type: "integer"
       },
@@ -55,7 +52,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       },
     },
     edit: function( {attributes, setAttributes } ) {
-      const { when, order, event_cat, bgroups, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle } = attributes;
+      const { when, order, event_cat, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle } = attributes;
 
       const InspectorControls = wp.blockEditor.InspectorControls;
       const PanelBody = wp.components.PanelBody;
@@ -84,12 +81,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
         setAttributes( { event_cat: val})
       };
       const onChangeGroups = val => {
-        setAttributes( { bgroups: val})
-        if (val) {
-          setAttributes( { groups: "y"})
-        } else {
-          setAttributes( { groups: "n"})
-        }
+        setAttributes( { groups: val})
       };
       const onChangeCrop = val => {
           bcrop = val;
@@ -215,10 +207,24 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               )
             ),
             wp.element.createElement( PanelBody, {title:'Limits', initialOpen:false },
-              wp.element.createElement( ToggleControl,
+              wp.element.createElement(SelectControl,
                 { label:'Show group events',
-                  checked: bgroups,
+                  value: groups,
                   onChange: onChangeGroups,
+                  options:[
+                  {
+                    label: 'Use the value set in u3a settings',
+                    value: 'useglobal',
+                  },
+                  {
+                    label: 'Exclude group events',
+                    value: 'exclude',
+                  },
+                  {
+                    label: 'Include group events',
+                    value: 'include',
+                  }
+                  ]
                 }
               ),
               wp.element.createElement( NumberControl,
