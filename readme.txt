@@ -21,6 +21,8 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Bug 1148: Incorrect behaviour of "Show group events"
+* Bug 1145: Event list display breaks if an event uses a Excerpt containing <p> tags
 * removed unneeded validation code, on KISS principle
 * Undo feature 1136
 = 1.2.1 =
