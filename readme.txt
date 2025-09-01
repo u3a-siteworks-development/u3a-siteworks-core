@@ -21,11 +21,12 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.2.2 =
 * Bug 1148: Incorrect behaviour of "Show group events"
 * Bug 1145: Event list display breaks if an event uses a Excerpt containing <p> tags
-* removed unneeded validation code, on KISS principle
+* Removed unneeded validation code, on KISS principle
 * Undo feature 1136
-= 1.2.1 =
+= 1.2.1 (not released) =
 * Feature 1136: Allow authors to add non group events
 * Bug 1142: Notice block Title disappears when there are no notices
 * Bug 1137: Group category with & will not display in Filtered Group List
