@@ -934,6 +934,7 @@ class U3aGroup
             }
         }
         $uniqueCats = array_unique($catsUsed);
+        asort($uniqueCats);
         $html = "<div class=\"u3agroupselector\">\n";
         $url = untrailingslashit(home_url($wp->request)) . "?list_type=par&par=";
         foreach ($uniqueCats as $catName) {
