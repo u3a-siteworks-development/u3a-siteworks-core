@@ -937,7 +937,7 @@ class U3aEvent
             });
             $extract = htmlspecialchars_decode(get_the_excerpt($event->ID));
             if (!empty($extract)) {
-                $extract = '<div>' . $extract . '</div>';
+                $extract = '<div style="margin-bottom:8px;margin-top:8px;">' . $extract . '</div>';
             }
             $time_line = '';
             if ('' != $time) {
@@ -953,7 +953,7 @@ class U3aEvent
             $venue_name_with_link = $the_venue->venue_name_with_link();
             $venue_line = '';
             if (!empty($venue_name_with_link)) {
-                $venue_line = "Venue: $venue_name_with_link";
+                $venue_line = "<b>Venue:</b> $venue_name_with_link";
             }
             if ($venue_line != '') {
                 $venue_line = '<div>' . $venue_line . '</div>';
@@ -961,7 +961,7 @@ class U3aEvent
             $cost_line = '';
             $cost = get_post_meta($event->ID, 'eventCost', true);
             if (!empty($cost)) {
-                $cost_line = "Cost: $cost";
+                $cost_line = "<b>Cost:</b> $cost";
             }
             if ($cost_line != '') {
                 $cost_line = '<div>' . $cost_line . '</div>';
