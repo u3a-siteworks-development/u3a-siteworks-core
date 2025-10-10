@@ -21,7 +21,10 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
-= 1.2.2 =
+= 1.2.3 =
+* Bug 1152: Improve Event readability.
+* Bug 1151: Filtered Group Display categories not presented alphabetically
+= 1.2.2 (not released) =
 * Bug 1148: Incorrect behaviour of "Show group events"
 * Bug 1145: Event list display breaks if an event uses a Excerpt containing <p> tags
 * Removed unneeded validation code, on KISS principle
