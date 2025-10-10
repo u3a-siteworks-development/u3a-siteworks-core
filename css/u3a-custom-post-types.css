@@ -18,6 +18,7 @@
 .u3aevent-list-right,
 .u3aevent-grid-right {
     flex: 1 0 320px; /* sets a min width for the text */
+    padding-left: 20px;
 }
 .u3aeventlist figure {
     margin:10px;
