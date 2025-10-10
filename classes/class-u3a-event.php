@@ -195,17 +195,21 @@ class U3aEvent
      */
     public static function field_descriptions()
     {
+        $category_singular_term = get_option('u3a_catsingular_term', 'category');
+        $ucfirst_category_singular_term = ucfirst($category_singular_term);
         $fields = [];
         // Now add all the fields to the $fields array in the order they will appear.
         // see https://docs.metabox.io/fields/
         // and https://docs.metabox.io/field-settings/ for details.
         $fields[] = [
             'type'       => 'taxonomy',
-            'name'       => 'Event category',
+            'name'       => $ucfirst_category_singular_term,
             'id'         => 'category',
             'taxonomy'   => U3A_EVENT_TAXONOMY,
+            'multiple'   => true,
             'field_type' => 'select_advanced',
             'required' => true,
+            'desc'    => "You may enter more than one $category_singular_term here.",
         ];
         $fields[] = [
             'type'    => 'date',
@@ -922,9 +926,14 @@ class U3aEvent
             $event_category = '';
             $terms = get_the_terms($event, U3A_EVENT_TAXONOMY); // an array of terms or null
             if ((false !== $terms) && !is_wp_error($terms)) {
-                // assumes only one category permitted for now, may allow multiple categories in future.
-                $term = $terms[0];
-                $event_category = $term->name;
+                $first = true;
+                foreach ($terms as $term) {
+                    if (!$first) {
+                        $event_category .= ", ";
+                    }
+                    $first = false;
+                    $event_category .= $term->name;
+                }
             }
             $event_category_line = "<div>" . $event_category . "</div>";
             $group_line = '';
@@ -1078,9 +1087,15 @@ class U3aEvent
         // event category
         $terms = get_the_terms($this->ID, U3A_EVENT_TAXONOMY); // an array of terms or null
         if ((false !== $terms) && !is_wp_error($terms)) {
-            // assumes only one category permitted for now, may allow multiple categories in future.
-            $term = $terms[0];
-            $event_category = $term->name;
+            $event_category = '';
+            $first = true;
+            foreach ($terms as $term) {
+                if (!$first) {
+                    $event_category .= ", ";
+                }
+                $first = false;
+                $event_category .= $term->name;
+            }
             $html .= "<tr><td>Event type:</td> <td>$event_category</td></tr>";
         }
         // date, time, duration
