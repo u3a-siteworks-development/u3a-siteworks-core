@@ -71,7 +71,8 @@ function u3a_setup_rest_meta_data()
             'get_callback'    => 'rest_get_u3a_eventendtime',
             'schema'          => null,
         )
-    );    register_rest_field(
+    );
+    register_rest_field(
         array(U3A_EVENT_CPT),
         'eventduration',
         array(
@@ -124,7 +125,7 @@ function rest_get_u3a_groupcategory($object)
 }
 
 /**
- * Make u3a event category available as 'eventcategory' (string)
+ * Make u3a event category available as 'eventcategory' (string array)
  *
  * @param WP $object
  * @return (string) event category text (first category only if more than one)
@@ -133,8 +134,14 @@ function rest_get_u3a_eventcategory($object)
 {
     $post_id = $object['id'];
     $cats = get_the_terms($post_id, U3A_EVENT_TAXONOMY);
-    $cat = !empty($cats) ? $cats[0]->name : '';
-    return (string) $cat;
+    if ($cats === false || is_wp_error($cats)) {
+        return array();
+    }
+    $cat_names = array();
+    foreach ($cats as $cat) {
+        $cat_names[] = $cat->name;
+    }
+    return $cat_names;
 }
 
 /**
