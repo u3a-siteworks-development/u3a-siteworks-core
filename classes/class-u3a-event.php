@@ -623,7 +623,7 @@ class U3aEvent
      *    when = 'past'/'future' (default future)
      *    order = 'asc'/'desc' (defaults to asc for future and desc for past)
      *    event_cat = which event category to display (default all)
-     *    groups = 'useglobal', 'exclude', 'include' which will override the value in option settings
+     *    groups = corresponds to 'show group events and is 'useglobal' or 'y' or 'n'
      *    limitnum (int) = limits how many events to be displayed
      *    limitdays (int) = limits how many day in the future or past to show events
      *    layout = 'list' or 'grid' at present. Other layouts may be added
@@ -678,19 +678,23 @@ class U3aEvent
 
         $cat = sanitize_text_field($display_args['event_cat']);
 
-        $include_groups = $display_args['groups'];
+        $groups = $display_args['groups'];
+
+
         if (
-            'useglobal' != $include_groups && 'exclude' != $include_groups
-            &&  'include' != $include_groups && '' != $include_groups
+            'useglobal' != $groups && 'y' != $groups
+            &&  'n' != $groups && '' != $groups
         ) {
-            $error .= 'bad parameter: groups=' . esc_html($include_groups) . '<br>';
-            $include_groups = '';
+            $error .= 'bad parameter: groups=' . esc_html($groups) . '<br>';
+            $groups = '';
         }
-        if ('' == $include_groups || 'useglobal' == $include_groups) { // set order depending on option setting
+        if ('' == $groups || 'useglobal' == $groups) { // set order depending on option setting
             $exclude_groups = get_option('events_nogroups', '1') == 1 ? true : false;
-        } elseif ('exclude' == $include_groups) {
+        } elseif ('n' == $groups) {
+            // the setting was 'n' - so exclude group events
             $exclude_groups = true;
         } else {
+            // the setting was 'y' - so include group events
             $exclude_groups = false;
         }
 
