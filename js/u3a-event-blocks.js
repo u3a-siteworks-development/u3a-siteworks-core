@@ -218,11 +218,11 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   },
                   {
                     label: 'Exclude group events',
-                    value: 'exclude',
+                    value: 'n',
                   },
                   {
                     label: 'Include group events',
-                    value: 'include',
+                    value: 'y',
                   }
                   ]
                 }
