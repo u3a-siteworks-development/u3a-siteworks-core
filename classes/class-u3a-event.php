@@ -623,7 +623,9 @@ class U3aEvent
      *    when = 'past'/'future' (default future)
      *    order = 'asc'/'desc' (defaults to asc for future and desc for past)
      *    event_cat = which event category to display (default all)
-     *    groups = corresponds to 'show group events and is 'useglobal' or 'y' or 'n'
+     *    groups = corresponds to 'show group events' and is 'useglobal' or 'y' or 'n'
+     *             '' is equivalent to 'useglobal' and is
+     *             kept for compatibility with blocks created in versions 1.2.2 or below
      *    limitnum (int) = limits how many events to be displayed
      *    limitdays (int) = limits how many day in the future or past to show events
      *    layout = 'list' or 'grid' at present. Other layouts may be added
@@ -640,7 +642,7 @@ class U3aEvent
             'when' => 'future',
             'order' => '',
             'event_cat' => 'all',
-            'groups' => '',
+            'groups' => 'useglobal',
             'limitdays' => 0,
             'limitnum' => 0,
             'layout' => 'list',
@@ -686,7 +688,7 @@ class U3aEvent
             &&  'n' != $groups && '' != $groups
         ) {
             $error .= 'bad parameter: groups=' . esc_html($groups) . '<br>';
-            $groups = '';
+            $groups = 'useglobal';
         }
         if ('' == $groups || 'useglobal' == $groups) { // set order depending on option setting
             $exclude_groups = get_option('events_nogroups', '1') == 1 ? true : false;
