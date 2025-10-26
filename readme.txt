@@ -21,6 +21,8 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 1.2.4 =
+* Provide appropriate default settings for Events to maintain backwards compatibility
 = 1.2.3 =
 * Bug 1152: Improve Event readability.
 * Bug 1151: Filtered Group Display categories not presented alphabetically
