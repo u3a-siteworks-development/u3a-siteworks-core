@@ -17,31 +17,42 @@ wp.blocks.registerBlockType("u3a/eventdata", {
     description: "Displays list of events",
     icon: "tickets-alt",
     category: "widgets",
+    /* The default values of these attributes are used in the edit function below.
+       They are NOT stored in the HTML of the block unless setAttributes is used to set them.
+       The same default values are set in the PHP code of the callback for the block.
+    */
     attributes: {
       showtitle: {
         type: "string",
         default: "y"
       },
       when: {
-        type: "string"
+        type: "string",
+        default: "future"
       },
       order: {
-        type: "string"
+        type: "string",
+        default: ""
       },
       event_cat: {
-        type: "string"
+        type: "string",
+        default: "all"
       },
       groups: {
-        type: "string"
+        type: "string",
+        default: "useglobal"
       },
       limitnum: {
-        type: "integer"
+        type: "integer",
+        default: 0
       },
       limitdays: {
-        type: "integer"
+        type: "integer",
+        default: 0
       },
       layout: {
-          type: "string"
+        type: "string",
+        default: "list"
       },
       crop: {
         type: "string",
