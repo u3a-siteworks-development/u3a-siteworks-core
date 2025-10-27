@@ -23,7 +23,7 @@ Please refer to the documentation on the [SiteWorks website](https://siteworks.u
 == Changelog ==
 = 1.2.4 =
 * Provide appropriate default settings for Events to maintain backwards compatibility
-= 1.2.3 =
+= 1.2.3 (not released) =
 * Bug 1152: Improve Event readability.
 * Bug 1151: Filtered Group Display categories not presented alphabetically
 = 1.2.2 (not released) =
