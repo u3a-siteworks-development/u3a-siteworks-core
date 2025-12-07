@@ -87,7 +87,7 @@ class U3aContact
         add_filter('enter_title_here', array(self::class, 'change_prompt'));
 
         // Set up the custom fields in a metabox (using free plugin from on metabox.io)
-        add_filter( 'rwmb_meta_boxes', [self::class, 'add_metabox'] , 10, 1 );
+        add_filter('rwmb_meta_boxes', [self::class, 'add_metabox'], 10, 1);
 
         // Alter the columns that are displayed in the Posts list admin page
         add_filter('manage_' . U3A_CONTACT_CPT . '_posts_columns', array(self::class, 'change_columns'));
@@ -95,7 +95,7 @@ class U3aContact
 
         // Prevent trashing when there there xrefs to this post in other posts.
         add_action('wp_trash_post', array(self::class, 'restrict_post_deletion'));
-        
+
         //Add display of all xrefs to this post in other posts.
         add_filter('the_content', array(self::class, 'display_xrefs'), 20, 1);
     }
@@ -163,45 +163,39 @@ class U3aContact
         // and https://docs.metabox.io/field-settings/ for details.
         $fields[] = [
             'type'    => 'custom_html',
-            'std'    => 'A contact may be generic with a display name, e.g. like "French Leader"<br>' . 
-                            'Each item of information is optional and should be omitted if the contact does not want to be contacted by that method.',
-            ];
+            'std'    => 'A contact may be generic with a display name, e.g. like "French Leader"<br>' .
+                'Each item of information is optional and should be omitted if the contact does not want to be contacted by that method.',
+        ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'u3a Membership Number',
             'id'      => 'memberid',
-            'size'    => '30px',
-            ];
+        ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Given Name',
             'id'      => 'givenname',
-            'size'    => '100px',
-            ];
+        ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Family Name',
             'id'      => 'familyname',
-            'size'    => '100px',
-            ];
+        ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Phone number',
             'id'      => 'phone',
-            'size'    => '50px',
-            ];
+        ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Alternate phone number',
             'id'      => 'phone2',
-            'size'    => '50px',
-            ];
+        ];
         $fields[] = [
             'type'    => 'email',
             'name'    => 'Email address',
             'id'      => 'email',
-            'size'    => '100px',
-];
+        ];
         return $fields;
     }
 
@@ -254,12 +248,12 @@ class U3aContact
         if (empty($address)) return '';
         if ('Yes' == get_option('u3a_hide_email', 'Yes')) {
             // check if u3a-siteworks-contact-form is active
-            if (!shortcode_exists('u3a_contact')) { 
+            if (!shortcode_exists('u3a_contact')) {
                 return "<strong>error: </strong>u3a contact form not available";
             }
             return do_shortcode('[u3a_contact name="' .  $to . '" email="' . $address . '"]');
         } else {
-            return "<a title='Opens your email app' href='mailto:$address'>$to</a> $address";   
+            return "<a title='Opens your email app' href='mailto:$address'>$to</a> $address";
         }
     }
 
@@ -281,7 +275,7 @@ class U3aContact
         $phone = esc_html(get_post_meta($this->ID, 'phone', true));
         $phone2 = esc_html(get_post_meta($this->ID, 'phone2', true));
         $phonetext = empty($phone2) ? "$phone" : "$phone or $phone2";
-        $phonetext = empty($phonetext) ? '' : "<strong>Tel:</strong> $phonetext" ;
+        $phonetext = empty($phonetext) ? '' : "<strong>Tel:</strong> $phonetext";
         $email = self::cloak_email(get_post_meta($this->ID, 'email', true), $contact_name);
         // display email link if it exists, else display name
         $contact = ($email) ? $email : $contact_name;
