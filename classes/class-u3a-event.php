@@ -626,7 +626,10 @@ class U3aEvent
      * @param array $atts Valid attributes are:
      *    when = 'past'/'future' (default future)
      *    order = 'asc'/'desc' (defaults to asc for future and desc for past)
-     *    event_cat = which event category to display (default all)
+     *    event_cat = which event category to display (default all) - older
+     *                version of event_cats allowing only a single value. Present for
+     *                supporting lists created with older versions of siteworks.
+     *    event_cats = which event categories - now an array of values.
      *    groups = corresponds to 'show group events' and is 'useglobal' or 'y' or 'n'
      *             '' is equivalent to 'useglobal' and is
      *             kept for compatibility with blocks created in versions 1.2.2 or below
@@ -645,7 +648,8 @@ class U3aEvent
             'showtitle' => 'y',
             'when' => 'future',
             'order' => '',
-            'event_cat' => 'all',
+            'event_cat' => '',
+            'event_cats' => [],
             'groups' => 'useglobal',
             'limitdays' => 0,
             'limitnum' => 0,
@@ -657,10 +661,30 @@ class U3aEvent
         foreach ($display_args as $name => $default) {
             // phpcs:disable WordPress.Security.NonceVerification.Recommended
             if (isset($_GET[$name])) {
-                $display_args[$name] = strtolower(sanitize_text_field($_GET[$name]));
+                if (is_array($_GET[$name])) {
+                    if (is_array($display_args[$name])) {
+                        foreach ($_GET[$name] as $entry) {
+                            $display_args[$name][] = sanitize_text_field($entry);
+                        }
+                    } else {
+                        $display_args[$name] = sanitize_text_field($_GET[$name][0]);
+                    }
+                } else {
+                    $display_args[$name] = strtolower(sanitize_text_field($_GET[$name]));
+                }
                 // phpcs:enable WordPress.Security.NonceVerification.Recommended
             } elseif (isset($atts[$name])) {
-                $display_args[$name] = strtolower($atts[$name]);
+                if (is_array($atts[$name])) {
+                    if (is_array($display_args[$name])) {
+                        foreach ($atts[$name] as $entry) {
+                            $display_args[$name][] = strtolower($entry);
+                        }
+                    } else {
+                        $display_args[$name] = strtolower($atts[$name][0]);
+                    }
+                } else {
+                    $display_args[$name] = strtolower($atts[$name]);
+                }
             }
         }
 
@@ -682,7 +706,20 @@ class U3aEvent
             $order = ('future' == $when) ? 'ASC' : 'DESC';
         }
 
-        $cat = sanitize_text_field($display_args['event_cat']);
+        /* Lists created in prior releases were allowed only a single category, or 'all
+         * categories' - this was stored in event_cat. Now we may have multiple categories,
+         * so this is stored in new parameter event_cats (array). If an older list is displayed
+         * event_cats will be populated from event_cat. If the list has been edited in the gutenberg
+         *editor, then event_cats will be populated already, and event_cat will  be empty.
+         */
+
+        $single_cat = $display_args['event_cat'];
+        $cats = $display_args['event_cats'];
+        if ($single_cat != "") {
+            if ($cats == []) {
+                $cats = [$single_cat];
+            }
+        }
 
         $groups = $display_args['groups'];
 
@@ -792,12 +829,20 @@ class U3aEvent
         }
 
         // set taxonomy query
-        if (!empty($cat)  && 'all' != $cat) {
-            $query_args['tax_query'] = [[
-                'taxonomy' => U3A_EVENT_TAXONOMY,
-                'field'    => 'slug',
-                'terms' => $cat, // could provide an array of cats here!!
-            ]];
+        if (!empty($cats)) {
+            $skip = false;
+            foreach ($cats as $item) {
+                if ($item == 'all') {
+                    $skip = true;
+                }
+            }
+            if (!$skip) {
+                $query_args['tax_query'] = [[
+                    'taxonomy' => U3A_EVENT_TAXONOMY,
+                    'field'    => 'slug',
+                    'terms' => $cats, // is now an array
+                ]];
+            }
         }
         $posts = get_posts($query_args);
 
