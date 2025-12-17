@@ -21,8 +21,9 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
-= 1.2.5 =
+= 2.0.0 =
 * Feature 1156 Allow an Event to belong to multiple event categories
+* u3a group list block and u3a events list blocks now allow multiple categories to be selected
 = 1.2.4 =
 * Provide appropriate default settings for Events to maintain backwards compatibility
 = 1.2.3 (not released) =
