@@ -4,9 +4,13 @@ wp.blocks.registerBlockType("u3a/grouplist", {
     icon: "groups",
     category: "widgets",
     attributes: {
-      group_cat: {
+      group_cat: { /* backwards compatible string */
         type: "string",
-        default: "all"
+        default: ""
+      },
+      group_cats: { /* cats now an array */
+        type: "array",
+        default: []
       },
       sort: {
         type: "string"
@@ -37,17 +41,33 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       }
     },
     edit: function( {attributes, setAttributes } ) {
-      const { group_cat, sort, flow, bstatus, group_status, bwhen, when, bvenue, venue } = attributes;
+      const { group_cat, group_cats, sort, flow, bstatus, group_status, bwhen, when, bvenue, venue } = attributes;
 
       const InspectorControls = wp.blockEditor.InspectorControls;
       const PanelBody = wp.components.PanelBody;
       const SelectControl = wp.components.SelectControl;
       const ToggleControl = wp.components.ToggleControl;
       const useSelect = wp.data.useSelect;
+      const CheckboxControl = wp.components.CheckboxControl;
+      const Scrollable = wp.components.__experimentalScrollable;
 
-      const onChangeGroupCat = val => {
-        setAttributes( { group_cat: val });
+      const onChangeCat = Id => {
+        catchoices[Id].checked = !catchoices[Id].checked;
+        var newcats = [];
+        if (Id == 0 && catchoices[Id].checked) {
+          newcats = ['all'];
+        } else {
+          for (var i = 1; i < catchoices.length; i++) {
+            if (catchoices[i].checked) {
+              if (!newcats.includes(catchoices[i].slug)) {
+                newcats.push(catchoices[i].slug);
+              }
+            }
+          }
+        }
+        setAttributes( {group_cats: newcats});
       };
+
       const onChangeSort = val => {
         setAttributes( { sort: val });
       };
@@ -98,18 +118,52 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       if ( terms.length === 0 ) {
           return 'No terms found';
       }
-      var catlist = [];
-      catlist.push( {
-         label: 'All categories',
-         value: 'all'
-      } );
-      for ( var i = 0; i < terms.length; i++ ) {
-          catlist.push( {
-              label: terms[i].name,
-              value: terms[i].slug
-          } );
-      };
 
+      /* backwards compatibility */
+      if (group_cat.length  !== 0) {
+        if (group_cats.length === 0) {
+          setAttributes( {group_cats: [group_cat], group_cat: ''});
+        }
+      }
+
+      var catchoices = [];
+      
+      catchoices.push( { 
+        element: 0,
+        label:"All",
+        slug:"all" , 
+        checked:group_cats.includes('all'),
+       } );
+       for ( var i = 0; i < terms.length; i++ ) {
+        catchoices.push( {
+          element: i + 1,
+          label:terms[i].name, 
+          slug:terms[i].slug, 
+          checked:group_cats.includes(terms[i].slug),
+        } 
+        );
+      }
+      
+      const rendercatsarray = ( catchoices) => {
+        return catchoices.map( 
+          (catchoice)  => {
+            return ( 
+              wp.element.createElement( 
+                CheckboxControl,
+                {
+                  Id: catchoice.element,
+                  label: catchoice.label,
+                  checked: catchoice.checked,
+                  onChange: () => { 
+                    const Id = catchoice.element;
+                    onChangeCat(Id);
+                  }
+                }
+              )
+            )
+          }
+        )
+      }
       /* function ShowOrNot
          show is a boolean, and el is a wp.element which is returned if show is true.*/
       function ShowOrNot(params){
@@ -123,17 +177,18 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       var nest = [
         wp.element.createElement(
           InspectorControls,
-          {}, wp.element.createElement( PanelBody, {title:'Display options', initialOpen:true },
-              wp.element.createElement( SelectControl,
-                { label:'Category', 
-                  value: group_cat,
-                  help: 'Either all categories or a single category',
-                  onChange: onChangeGroupCat,
-                  options: catlist
-                }
-              ),
+          {}, 
+            wp.element.createElement( PanelBody, {title:'Category Selection' , initialOpen:false},
+              wp.element.createElement( Scrollable, { 
+                children: wp.element.createElement("div", {style: {padding: '10px', height: 300 }}, 
+                  rendercatsarray(catchoices)
+                )
+              }
+              )
+            ),
+            wp.element.createElement( PanelBody, {title:'Display options', initialOpen:true },
             wp.element.createElement(ShowOrNot,
-              { show:('all' == group_cat),
+              { show:(group_cats.length != 1 || 'all' == group_cats[0]),
                 el: wp.element.createElement( SelectControl,
                       { label:'Sort Order', 
                         value: sort,

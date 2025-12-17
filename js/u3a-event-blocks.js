@@ -1,4 +1,5 @@
 
+
 wp.blocks.registerBlockType("u3a/eventdata", {
     title: "u3a single event data",
     description: "displays details of this event",
@@ -34,9 +35,13 @@ wp.blocks.registerBlockType("u3a/eventdata", {
         type: "string",
         default: ""
       },
-      event_cat: {
+      event_cat: { /* backwards compatible string value */
         type: "string",
-        default: "all"
+        default: ""
+      },
+      event_cats: { /* array value */
+        type: "array",
+        default: []
       },
       groups: {
         type: "string",
@@ -63,7 +68,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       },
     },
     edit: function( {attributes, setAttributes } ) {
-      const { when, order, event_cat, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle } = attributes;
+      const { when, order, event_cat, event_cats, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle } = attributes;
 
       const InspectorControls = wp.blockEditor.InspectorControls;
       const PanelBody = wp.components.PanelBody;
@@ -72,7 +77,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const PanelColorSettings = wp.blockEditor.PanelColorSettings;
       const ToggleControl = wp.components.ToggleControl;
       const useSelect = wp.data.useSelect;
-
+      const CheckboxControl = wp.components.CheckboxControl;
+      const Scrollable = wp.components.__experimentalScrollable;
+ 
       const onChangeShowTitle = val => {
         bshowtitle = val;
         if (val) {
@@ -88,9 +95,24 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const onChangeOrder = val => {
         setAttributes( { order: val });
       };
-      const onChangeEventCat = val => {
-        setAttributes( { event_cat: val})
+
+      const onChangeCat = Id => {
+        catchoices[Id].checked = !catchoices[Id].checked;
+        var newcats = [];
+        if (Id == 0 && catchoices[Id].checked) {
+          newcats = ['all'];
+        } else {
+          for (var i = 1; i < catchoices.length; i++) {
+            if (catchoices[i].checked) {
+              if (!newcats.includes(catchoices[i].slug)) {
+                newcats.push(catchoices[i].slug);
+              }
+            }
+          }
+        }
+        setAttributes( {event_cats: newcats});
       };
+
       const onChangeGroups = val => {
         setAttributes( { groups: val})
       };
@@ -141,17 +163,53 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       if ( terms.length === 0 ) {
           return 'No terms found';
       }
-      var catlist = [];
-      catlist.push( {
-         label: 'All categories',
-         value: ''
-      } );
-      for ( var i = 0; i < terms.length; i++ ) {
-          catlist.push( {
-              label: terms[i].name,
-              value: terms[i].slug
-          } );
-      };
+
+      /* backward compatibility with a single event_cat */
+      if (event_cat.length !== 0) {
+        if (event_cats.length === 0) {
+          setAttributes( {event_cats: [event_cat], event_cat: ''});
+        }
+      }
+      
+      var catchoices = [];
+      catchoices.push( { 
+        element: 0,
+        label:"All",
+        slug:"all" , 
+        checked:event_cats.includes('all'),
+       } );
+       for ( var i = 0; i < terms.length; i++ ) {
+        catchoices.push( {
+          element: i + 1,
+          label:terms[i].name, 
+          slug:terms[i].slug, 
+          checked:event_cats.includes(terms[i].slug),
+        } 
+        );
+      }
+      
+      const rendercatsarray = ( catchoices) => {
+        return catchoices.map( 
+          (catchoice)  => {
+            return ( 
+              wp.element.createElement( 
+                CheckboxControl,
+                {
+                  Id: catchoice.element,
+                  label: catchoice.label,
+                  checked: catchoice.checked,
+                  onChange: () => { 
+                    const Id = catchoice.element;
+                    onChangeCat(Id);
+                  }
+                }
+              )
+            )
+          }
+        )
+      }
+
+
       function ShowGridOptions(params){
           const {gridOn, cropOn, ...panelParams} = params;
           if (gridOn) {
@@ -207,14 +265,14 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   }
                   ]
                 }
-              ),
-              wp.element.createElement( SelectControl,
-                { label:'Category', 
-                  value: event_cat,
-                  help: 'Either all categories or chosen category',
-                  onChange: onChangeEventCat,
-                  options: catlist
-                }
+              )
+            ),
+            wp.element.createElement( PanelBody, {title:'Category Selection' , initialOpen:false},
+              wp.element.createElement( Scrollable, { 
+                children: wp.element.createElement("div", {style: {padding: '10px', height: 300 }}, 
+                  rendercatsarray(catchoices)
+                )
+              }
               )
             ),
             wp.element.createElement( PanelBody, {title:'Limits', initialOpen:false },
