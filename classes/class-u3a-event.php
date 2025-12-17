@@ -637,6 +637,7 @@ class U3aEvent
      *    limitdays (int) = limits how many day in the future or past to show events
      *    layout = 'list' or 'grid' at present. Other layouts may be added
      *    bgcolor = colour of background in layout grid
+     *    linkonly = show only the link to the event
      *
      * @return HTML
      */
@@ -646,6 +647,7 @@ class U3aEvent
         // valid display_args names and default values
         $display_args = [
             'showtitle' => 'y',
+            'linkonly' => 'n',
             'when' => 'future',
             'order' => '',
             'event_cat' => '',
@@ -764,6 +766,7 @@ class U3aEvent
         $bgcolor = $display_args['bgcolor'];
 
         $showtitle = ($display_args['showtitle'] == "y") ? true : false;
+        $linkonly = ($display_args['linkonly'] == "y") ? true : false;
 
         // end of validation checks
 
@@ -865,7 +868,7 @@ class U3aEvent
         } else {
             $valid_posts = $posts;
         }
-        $display_args = ['showtitle' => $showtitle, 'layout' => $layout, 'crop' => $crop, 'bgcolor' => $bgcolor];
+        $display_args = ['showtitle' => $showtitle, 'linkonly' => $linkonly, 'layout' => $layout, 'crop' => $crop, 'bgcolor' => $bgcolor];
         if ($valid_posts)  return self::display_event_listing($valid_posts, $when, $show_group_info, $display_args);
         else return '';
     }
@@ -1066,44 +1069,65 @@ class U3aEvent
             // Assemble the components
             $layout = $display_args['layout'];
             if ('list' == $layout) {
-                $html .= <<< END
-                <div class="u3aeventlist-item">
-                    <div class="u3aevent-list-left">
-                        $date_text
-                        $time_line
-                        $end_date_line
-                        $event_category_line
-                        $group_line
+                if (!$display_args['linkonly']) {
+                    $html .= <<< END
+                    <div class="u3aeventlist-item">
+                        <div class="u3aevent-list-left">
+                            $date_text
+                            $time_line
+                            $end_date_line
+                            $event_category_line
+                            $group_line
+                        </div>
+                        <div class="u3aevent-list-right">
+                        <div class="u3aeventtitle"><a href="$permalink">$title</a></div>
+                            $extract
+                            $venue_line
+                            $cost_line
+                            $booking_required_line
+                        </div>
                     </div>
-                    <div class="u3aevent-list-right">
-                    <div class="u3aeventtitle"><a href="$permalink">$title</a></div>
-                        $extract
-                        $venue_line
-                        $cost_line
-                        $booking_required_line
+                    END;
+                } else {
+                    $html .= <<< END
+                    <div class="u3aeventlist-item">
+                        <div class="u3aeventtitle"><a href="$permalink">$title</a></div>
                     </div>
-                </div>
-                END;
+                    END;
+                }
             } else {
                 $bgcolor = $display_args['bgcolor'];
                 $style_bgcolor = ('' != $bgcolor) ? "style=\"background-color:$bgcolor\" " : "";
-                $html .= <<< END
-                <div class="u3aeventlist-item" $style_bgcolor>
-                    <div class="u3aevent-grid-left">
-                        <div>$image_HTML</div>
+                if (!$display_args['linkonly']) {
+                    $html .= <<< END
+                    <div class="u3aeventlist-item" $style_bgcolor>
+                        <div class="u3aevent-grid-left">
+                            <div>$image_HTML</div>
+                        </div>
+                        <div class="u3aevent-grid-right">
+                            <div class="u3aeventtitle"><a href="$permalink">$title</a></div>
+                            $date_text
+                            $time_line
+                            $end_date_line
+                            $extract
+                            $venue_line
+                            $cost_line
+                            $booking_required_line
+                        </div>
                     </div>
-                    <div class="u3aevent-grid-right">
-                        <div class="u3aeventtitle"><a href="$permalink">$title</a></div>
-                        $date_text
-                        $time_line
-                        $end_date_line
-                        $extract
-                        $venue_line
-                        $cost_line
-                        $booking_required_line
+                    END;
+                } else {
+                    $html .= <<< END
+                    <div class="u3aeventlist-item" $style_bgcolor>
+                        <div class="u3aevent-grid-left">
+                            <div>$image_HTML</div>
+                        </div>
+                        <div  class="u3aevent-grid-right">
+                            <div  class="u3aeventtitle"><a href="$permalink">$title</a></div>
+                        </div>
                     </div>
-                </div>
-                END;
+                    END;
+                }
             }
         } // end foreach
         $html .= "</div>\n";
