@@ -27,6 +27,10 @@ wp.blocks.registerBlockType("u3a/eventdata", {
         type: "string",
         default: "y"
       },
+      linkonly: {
+        type: "string",
+        default: "n"
+      },
       when: {
         type: "string",
         default: "future"
@@ -66,9 +70,12 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       bgcolor: {
         type: "string"
       },
+      calname: {
+        type: "string"
+      },
     },
     edit: function( {attributes, setAttributes } ) {
-      const { when, order, event_cat, event_cats, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle } = attributes;
+      const { when, order, event_cat, event_cats, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle, linkonly, calname } = attributes;
 
       const InspectorControls = wp.blockEditor.InspectorControls;
       const PanelBody = wp.components.PanelBody;
@@ -77,15 +84,27 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const PanelColorSettings = wp.blockEditor.PanelColorSettings;
       const ToggleControl = wp.components.ToggleControl;
       const useSelect = wp.data.useSelect;
+      const TextControl = wp.components.TextControl;
       const CheckboxControl = wp.components.CheckboxControl;
       const Scrollable = wp.components.__experimentalScrollable;
  
+      const onChangeCalName = val => {
+          setAttributes( { calname: val})
+      }; 
       const onChangeShowTitle = val => {
         bshowtitle = val;
         if (val) {
           setAttributes( { showtitle: "y"})
         } else {
           setAttributes( { showtitle: "n"})
+        }
+      };
+      const onChangeLinkOnly = val => {
+        blinkonly = val;
+        if (val) {
+          setAttributes( { linkonly: "y"})
+        } else {
+          setAttributes( { linkonly: "n"})
         }
       };
       const onChangeWhen = val => {
@@ -131,6 +150,11 @@ wp.blocks.registerBlockType("u3a/eventdata", {
         setAttributes( { limitdays: Number(val)})
       };
       const onChangeLayout = val => {
+        if (val == 'calendar') {
+          bHiddenCal = false;
+        } else {
+          bHiddenCal = true;
+        }
         setAttributes( { layout: val } )
         setAttributes( { bgcolor: (val == 'list' ? '#ffc700' : '#63c369')}); // grid default is uta-light-green
       }
@@ -209,6 +233,15 @@ wp.blocks.registerBlockType("u3a/eventdata", {
         )
       }
 
+      /* function ShowOrNot
+         show is a boolean, and el is a wp.element which is returned if show is true.*/
+      function ShowOrNot(params){
+            const { show, el } = params;
+            if (!show ) {
+              return null;
+          }
+          return el;
+      }
 
       function ShowGridOptions(params){
           const {gridOn, cropOn, ...panelParams} = params;
@@ -229,7 +262,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       var editBoxColor = (layout == 'grid') ? bgcolor : '#ffc700';
       var bcrop = (crop == 'y');
       var bshowtitle = (showtitle == 'y');
-
+      var blinkonly = (linkonly  == 'y');
+      var calnameset = calname;
+      var bHiddenCal = !(layout == 'calendar');
       var nest = [
           wp.element.createElement(
             InspectorControls,
@@ -317,14 +352,29 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   onChange: onChangeLayout,
                   options:[
                     {label: 'Simple list', value: 'list',},
-                    {label: 'Grid with featured image', value: 'grid',}
+                    {label: 'Grid with featured image', value: 'grid',},
+                    {label: 'Generate calendar data', value: 'calendar',}
                   ]
+                }
+              ),
+              wp.element.createElement( TextControl,
+                { label:'Calendar Name', 
+                  value: calnameset,
+                  hidden: bHiddenCal,
+                  hideLabelFromVision: bHiddenCal,
+                  onChange: onChangeCalName,
                 }
               ),
               wp.element.createElement( ToggleControl,
                 { label:'Show Title', 
                   checked: bshowtitle,
                   onChange: onChangeShowTitle,
+                }
+              ),
+              wp.element.createElement( ToggleControl,
+                { label:'Show Link Only', 
+                  checked: blinkonly,
+                  onChange: onChangeLinkOnly,
                 }
               ),
               wp.element.createElement( ShowGridOptions,
