@@ -27,10 +27,6 @@ wp.blocks.registerBlockType("u3a/eventdata", {
         type: "string",
         default: "y"
       },
-      linkonly: {
-        type: "string",
-        default: "n"
-      },
       when: {
         type: "string",
         default: "future"
@@ -72,7 +68,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       },
     },
     edit: function( {attributes, setAttributes } ) {
-      const { when, order, event_cat, event_cats, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle, linkonly } = attributes;
+      const { when, order, event_cat, event_cats, groups, crop, limitnum, limitdays, layout, bgcolor, showtitle } = attributes;
 
       const InspectorControls = wp.blockEditor.InspectorControls;
       const PanelBody = wp.components.PanelBody;
@@ -90,14 +86,6 @@ wp.blocks.registerBlockType("u3a/eventdata", {
           setAttributes( { showtitle: "y"})
         } else {
           setAttributes( { showtitle: "n"})
-        }
-      };
-      const onChangeLinkOnly = val => {
-        blinkonly = val;
-        if (val) {
-          setAttributes( { linkonly: "y"})
-        } else {
-          setAttributes( { linkonly: "n"})
         }
       };
       const onChangeWhen = val => {
@@ -241,7 +229,6 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       var editBoxColor = (layout == 'grid') ? bgcolor : '#ffc700';
       var bcrop = (crop == 'y');
       var bshowtitle = (showtitle == 'y');
-      var blinkonly = (linkonly  == 'y');
       var nest = [
           wp.element.createElement(
             InspectorControls,
@@ -329,7 +316,8 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   onChange: onChangeLayout,
                   options:[
                     {label: 'Simple list', value: 'list',},
-                    {label: 'Grid with featured image', value: 'grid',}
+                    {label: 'Grid with featured image', value: 'grid',},
+                    {label: 'Single line date,time and title', value: 'line',}
                   ]
                 }
               ),
@@ -337,12 +325,6 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                 { label:'Show Title', 
                   checked: bshowtitle,
                   onChange: onChangeShowTitle,
-                }
-              ),
-              wp.element.createElement( ToggleControl,
-                { label:'Show Link Only', 
-                  checked: blinkonly,
-                  onChange: onChangeLinkOnly,
                 }
               ),
               wp.element.createElement( ShowGridOptions,

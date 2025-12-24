@@ -20,6 +20,18 @@
     flex: 1 0 320px; /* sets a min width for the text */
     padding-left: 20px;
 }
+.u3aevent-line-left {
+    flex: 0 1 160px; /* sets a min width for the date */
+    padding-left: 10px;
+}
+.u3aevent-line-middle {
+    flex: 0 1 70px; /* sets a min width for the time */
+    padding-left: 10px;
+}
+.u3aevent-line-right {
+    flex: 1 0 20px; /* sets a min width for the text */
+    padding-left: 20px;
+}
 .u3aeventlist figure {
     margin:10px;
     text-align: center;

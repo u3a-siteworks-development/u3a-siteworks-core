@@ -13,7 +13,9 @@
  * eventOrganiser_ID  ID of contact
  *  also each event is assigned to an event category.
  */
-class U3aEvent // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
+
+// phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
+class U3aEvent
 {
     use ChangePrompt;
     use AddMetabox;
@@ -666,9 +668,8 @@ class U3aEvent // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
      *             kept for compatibility with blocks created in versions 1.2.2 or below
      *    limitnum (int) = limits how many events to be displayed
      *    limitdays (int) = limits how many day in the future or past to show events
-     *    layout = 'list' or 'grid' at present. Other layouts may be added
+     *    layout = 'list' or 'grid' or 'line' at present. Other layouts may be added
      *    bgcolor = colour of background in layout grid
-     *    linkonly = show only the link to the event
      *
      */
     public static function display_eventlist($atts, $content = '')
@@ -677,7 +678,6 @@ class U3aEvent // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
         // valid display_args names and default values
         $display_args = [
             'showtitle' => 'y',
-            'linkonly' => 'n',
             'when' => 'future',
             'order' => '',
             'event_cat' => '',
@@ -784,7 +784,7 @@ class U3aEvent // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
         $limitnum = intval($display_args['limitnum']); // result is always an int
 
         $layout = $display_args['layout'];
-        if (!in_array($layout, ['list', 'grid'])) {
+        if (!in_array($layout, ['list', 'grid', 'line'])) {
             $error .= 'bad parameter: layout=' . esc_html($layout) . '<br>';
             $layout = 'list'; //default
         }
@@ -796,7 +796,6 @@ class U3aEvent // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
         $bgcolor = $display_args['bgcolor'];
 
         $showtitle = ($display_args['showtitle'] == "y") ? true : false;
-        $linkonly = ($display_args['linkonly'] == "y") ? true : false;
 
         // end of validation checks
 
@@ -900,7 +899,6 @@ class U3aEvent // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
         }
         $display_args = [
             'showtitle' => $showtitle,
-            'linkonly' => $linkonly,
             'layout' => $layout,
             'crop' => $crop,
             'bgcolor' => $bgcolor
@@ -1018,6 +1016,9 @@ class U3aEvent // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
         $sortedposts = U3aEvent::sort_on_times($posts);
         foreach ($sortedposts as $sortedpost) {
             switch ($display_args['layout']) {
+                case 'line':
+                    $html .= U3aEvent::display_line_item($sortedpost);
+                    break;
                 case 'grid':
                     $html .= U3aEvent::display_grid_item($sortedpost, $show_group, $display_args);
                     break;
@@ -1033,19 +1034,9 @@ class U3aEvent // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
 
     private static function display_list_item($sortedpost, $show_group, $display_args)
     {
-        // rf2
         $event = $sortedpost['event'];
         $title = $event->post_title;
         $permalink = get_the_permalink($event);
-        if ($display_args['linkonly']) {
-            $html = <<< END
-                <div class="u3aeventlist-item">
-                <div class="u3aeventtitle"><a href="$permalink">$title</a></div>
-                </div>
-            END;
-            return $html;
-        }
-
         $my_event = $sortedpost['my_event'];
         $date = $sortedpost['date'];
         $time = $sortedpost['time'];
@@ -1087,6 +1078,29 @@ class U3aEvent // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
             </div>
             </div>
             END;
+        return $html;
+    }
+
+    private static function display_line_item($sortedpost)
+    {
+        $event = $sortedpost['event'];
+        $title = $event->post_title;
+        $date = $sortedpost['date'];
+        $time = $sortedpost['time'];
+        $permalink = get_the_permalink($event);
+        $html = <<< END
+            <div class="u3aeventlist-item">
+                <div class="u3aevent-line-left">
+                $date
+                </div>
+                <div class="u3aevent-line-middle">
+                $time
+                </div>
+                <div class="u3aevent-line-right">
+                <div class="u3aeventtitle"><a href="$permalink">$title</a></div>
+                </div>
+            </div>
+        END;
         return $html;
     }
 
@@ -1218,29 +1232,10 @@ class U3aEvent // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
         $image_HTML = U3aEvent::get_event_image($event, $permalink, $display_args);
         $bgcolor = $display_args['bgcolor'];
         $style_bgcolor = ('' != $bgcolor) ? "style=\"background-color:$bgcolor\" " : "";
-
-        if ($display_args['linkonly']) {
-            $html = <<< END
-            <div class="u3aeventlist-item" $style_bgcolor>
-            <div class="u3aevent-grid-left">
-            <div>$image_HTML</div>
-            </div>
-            <div  class="u3aevent-grid-right">
-                <div  class="u3aeventtitle"><a href="$permalink">$title</a></div>
-            </div>
-            </div>
-            END;
-            return $html;
-        }
-
         $my_event = $sortedpost['my_event'];
         $date = $sortedpost['date'];
         $time = $sortedpost['time'];
         $endtime = $sortedpost['endtime'];
-
-        $event_category_line = U3aEvent::get_event_category_line($event);
-
-        $group_line = U3aEvent::get_event_group_line($my_event, $show_group);
 
         $extract = U3aEvent::get_event_extract($event);
 
