@@ -229,7 +229,6 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       var editBoxColor = (layout == 'grid') ? bgcolor : '#ffc700';
       var bcrop = (crop == 'y');
       var bshowtitle = (showtitle == 'y');
-
       var nest = [
           wp.element.createElement(
             InspectorControls,
@@ -317,7 +316,8 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   onChange: onChangeLayout,
                   options:[
                     {label: 'Simple list', value: 'list',},
-                    {label: 'Grid with featured image', value: 'grid',}
+                    {label: 'Grid with featured image', value: 'grid',},
+                    {label: 'Single line date,time and title', value: 'line',}
                   ]
                 }
               ),
