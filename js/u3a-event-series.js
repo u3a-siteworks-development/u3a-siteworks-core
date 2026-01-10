@@ -59,8 +59,8 @@ function setDatePattern(){
     }
     el = document.getElementById("datePattern");
     if (validFrequency) {
-        el.innerText = "GUIDANCE: The event dates will be : " + msg;
-        el.className = "";
+        el.innerText = "INFO: The event dates will be : " + msg;
+        el.className = "rwmb-required";
     } else {
         el.innerText = "WARNING: "  + msg;
         el.className = "rwmb-required"; // Can't use rwmb-error as that only applies to <p> tags. but this class produces the same red style. 

@@ -6,7 +6,7 @@ class U3aCommon
     private static $plugin_file;
 
     // list of all our custom post types (CPTs) 
-    private static $CPT_array = [U3A_EVENT_CPT, U3A_GROUP_CPT, U3A_CONTACT_CPT, U3A_VENUE_CPT, U3A_NOTICE_CPT];
+    private static $CPT_array = [U3A_EVENT_CPT, U3A_GROUP_CPT, U3A_CONTACT_CPT, U3A_VENUE_CPT, U3A_NOTICE_CPT,U3A_EVENTSERIES_CPT];
 
     /**
      * This caries out initialisation that would otherwise be done directly by the main plugin file code.

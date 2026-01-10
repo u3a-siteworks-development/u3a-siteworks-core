@@ -11,6 +11,7 @@ define( 'U3A_EVENT_CPT', 'u3a_event');
 define( 'U3A_EVENT_ICON' , 'dashicons-schedule');
 define( 'U3A_EVENT_TAXONOMY', 'u3a_event_category');
 
+define( 'U3A_EVENTSERIES_CPT', 'u3a_eventseries');
 
 define( 'U3A_VENUE_CPT', 'u3a_venue');
 define( 'U3A_VENUE_ICON' , 'dashicons-building');
