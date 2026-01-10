@@ -1,8 +1,8 @@
 <?php
 class U3aContact
 {
-    use ModifyQuickEdit;
     use ChangePrompt;
+    use AddMetabox;
     use ManageCrossRefs;
 
     /**
@@ -27,6 +27,13 @@ class U3aContact
     public static $term_for_title = "contact's display name";
 
     /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Contact Information";
+
+    /**
      * The meta keys that contain xrefs to this type of post
      *
      * @var string of keys within single quotes  
@@ -39,11 +46,6 @@ class U3aContact
      * @var string
      */
     public $ID;
-
-    /* Limits on the max size of data input */
-    const MAX_CONTACT_NAME = 60;
-    const MAX_PHONE = 20;
-    const MAX_EMAIL = 60;
 
     /**
      * If there is a post with this ID
@@ -91,50 +93,12 @@ class U3aContact
         add_filter('manage_' . U3A_CONTACT_CPT . '_posts_columns', array(self::class, 'change_columns'));
         add_action('manage_' . U3A_CONTACT_CPT . '_posts_custom_column', array(self::class, 'show_column_data'), 10, 2);
 
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
-
         // Prevent trashing when there there xrefs to this post in other posts.
         add_action('wp_trash_post', array(self::class, 'restrict_post_deletion'));
         
         //Add display of all xrefs to this post in other posts.
         add_filter('the_content', array(self::class, 'display_xrefs'), 20, 1);
-
-        // Add action to restrict database field lengths
-          add_action('save_post_u3a_contact', [self::class, 'validate_contact_fields'], 20, 2);
-
     }
-
-    // validate the lengths of fields on save
-    public static function validate_contact_fields($post_id, $post)
-    {
-        // shorten values if they did not come in from the client.
-        $value = get_post_meta($post_id, 'memberid', true);
-        if (strlen($value) > self::MAX_CONTACT_NAME) {
-            update_post_meta($post_id, 'memberid', substr($value, 0 , self::MAX_CONTACT_NAME));
-        }
-        $value = get_post_meta($post_id, 'givenname', true);
-        if (strlen($value) > self::MAX_CONTACT_NAME) {
-            update_post_meta($post_id, 'givenname', substr($value, 0 , self::MAX_CONTACT_NAME));
-        }
-        $value = get_post_meta($post_id, 'familyname', true);
-        if (strlen($value) > self::MAX_CONTACT_NAME) {
-            update_post_meta($post_id, 'familyname', substr($value, 0 , self::MAX_CONTACT_NAME));
-        }
-        $value = get_post_meta($post_id, 'phone', true);
-        if (strlen($value) > self::MAX_PHONE) {
-            update_post_meta($post_id, 'phone', substr($value, 0 , self::MAX_PHONE));
-        }
-        $value = get_post_meta($post_id, 'phone2', true);
-        if (strlen($value) > self::MAX_PHONE) {
-            update_post_meta($post_id, 'phone2', substr($value, 0 , self::MAX_PHONE));
-        }
-        $value = get_post_meta($post_id, 'email', true);
-        if (strlen($value) > self::MAX_EMAIL) {
-            update_post_meta($post_id, 'email', substr($value, 0 , self::MAX_EMAIL));
-        }
-    }
-
 
     /**
      * Registers the custom post type for this class.
@@ -187,29 +151,6 @@ class U3aContact
     }
 
     /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     */
-    public static function add_metabox( $metaboxes )
-    {
-        $metabox = [
-            'title'    => 'Contact Information',
-            'id'       => U3A_CONTACT_CPT,
-            'post_types' => [U3A_CONTACT_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
-    }
-
-    /**
      * Defines the fields for this class.
      *
      * @return array
@@ -230,42 +171,36 @@ class U3aContact
             'name'    => 'u3a Membership Number',
             'id'      => 'memberid',
             'size'    => '30px',
-            'maxlength' => self::MAX_CONTACT_NAME,
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Given Name',
             'id'      => 'givenname',
             'size'    => '100px',
-            'maxlength' => self::MAX_CONTACT_NAME,
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Family Name',
             'id'      => 'familyname',
             'size'    => '100px',
-            'maxlength' => self::MAX_CONTACT_NAME,
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Phone number',
             'id'      => 'phone',
             'size'    => '50px',
-            'maxlength' => self::MAX_PHONE,
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Alternate phone number',
             'id'      => 'phone2',
             'size'    => '50px',
-            'maxlength' => self::MAX_PHONE,
             ];
         $fields[] = [
             'type'    => 'email',
             'name'    => 'Email address',
             'id'      => 'email',
             'size'    => '100px',
-            'maxlength' => self::MAX_EMAIL,
 ];
         return $fields;
     }
@@ -278,12 +213,11 @@ class U3aContact
      */
     public static function change_columns($columns)
     {
-        $ncolumns=array();
-        $ncolumns['cb'] = $columns['cb'];
-        $ncolumns['title'] = 'Contact Name';
-        $ncolumns['email'] = 'Email';
-        $ncolumns['author'] = 'Author';
-        return $ncolumns;
+        unset($columns['date']);
+
+        $columns['title'] = 'Contact Name'; // just changing the displayed name of this column.
+        $columns['email'] = 'Email';
+        return $columns;
     }
 
     /**

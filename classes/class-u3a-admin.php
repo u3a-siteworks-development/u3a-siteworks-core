@@ -1,5 +1,4 @@
 <?php
-
 class U3aAdmin
 {
     /**
@@ -12,7 +11,7 @@ class U3aAdmin
         // Add the Settings menu to the dashboard
         add_action('admin_menu', array(self::class, 'settings_menu'));
 
-        // Hook: function to process the Settings General tab
+        // Hook: functions to process the Settings tabs
         add_action('admin_post_u3a_general_settings', array(self::class, 'save_general_settings'));
         add_action('admin_post_u3a_group_settings', array(self::class, 'save_group_settings'));
         add_action('admin_post_u3a_venue_settings', array(self::class, 'save_venue_settings'));
@@ -49,6 +48,7 @@ class U3aAdmin
         // Check if there is a status returned from a save on one of the tabs
 
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $status_HTML = '';
         $status = isset($_GET['status']) ? sanitize_text_field($_GET['status']) : "";
         $status_text = '';
         if ($status != "") {
@@ -63,18 +63,108 @@ class U3aAdmin
                     $status_text = esc_HTML($status);
                     // add other case values as required
             }
+            $status_HTML = "<div class='notice notice-error is-dismissible inline'><p>$status_text</p></div>";
         }
 
-        // content common to all tabs
+        // Set the current tab
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
 
+        // Assemble the tab navigation menu
+        $tabs = array('General' => '', 'Groups' => 'groups', 'Venues' => 'venues', 'Events' => 'events');
+        $tab_navbar = '<nav class="nav-tab-wrapper">';
+        foreach ($tabs as $tabText => $tabName) {
+            $tab_navbar .= '<a href="?page=u3a-settings';
+            $tab_navbar .= empty($tabName) ? '' : "&tab=$tabName";
+            $tab_navbar .= '" class="nav-tab ';
+            if ($tab == $tabName) {
+                $tab_navbar .= 'nav-tab-active';
+            }
+            $tab_navbar .= '">';
+            $tab_navbar .= $tabText;
+            $tab_navbar .= '</a>';
+        }
+        $tab_navbar .= "</nav>\n";
+
+        // Content common to all tabs
         $nonce_code =  wp_nonce_field('u3a_settings', 'u3a_nonce', true, false);
         $submit_button = get_submit_button('Save Settings');
 
+        // Get form for current tab
+        switch ($tab) {
+            case 'groups':
+                $form = self::render_groups_tab($nonce_code, $submit_button);
+                break;
+            case 'venues':
+                $form = self::render_venues_tab($nonce_code, $submit_button);
+                break;
+            case 'events':
+             $form = self::render_events_tab($nonce_code, $submit_button);
+                break;
+            default:  //general 
+                $form = self::render_general_tab($nonce_code, $submit_button);
+        }
+        
+        // Output the page
+        //phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
+        print <<<END
+        <div class="wrap">
+            $status_HTML
+            <h2>u3a Settings Menu</h2>
+            $tab_navbar
+            $form
+        </div>
+        END;
+        //phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
+    }
+
+    /**
+     * Generate form for General tab.
+     * @return HTML $form.
+     */
+    public static function render_general_tab($nonce_code, $submit_button)
+    {
+        global $u3aMQDetect;
         // Content for General tab
 
         $u3aname = get_option('blogname');
         $enableToolbar = get_option('u3a_enable_toolbar', 1);
         $enableToolbar_chk = ($enableToolbar == '1') ? ' checked' : '';
+
+        // form for Events tab
+        $form = <<<END
+        <form method="POST" action="admin-post.php">
+        <input type="hidden" name="action" value="u3a_general_settings">
+        $nonce_code
+        $u3aMQDetect
+
+        <h3>Your u3a name</h3>
+        <p>This will be used in page headings and various other places.<br/>
+        Do not include 'u3a' in the name.</p>
+        <p>Note: This setting is the same as the Site Title on the WordPress Setting page.</p>
+
+        <input type="text" class="regular-text" id="u3aname" name="u3aname" value="$u3aname">
+
+        <h3>WordPress Admin Tool Bar</h3>
+        <p>The admin tool bar is shown at the top of the page when viewing the public website pages.<br>
+        It provides quick access to site editing features.<br>
+        If this setting is not checked the tool bar will only be shown to administrators.</p>
+        <p><input type="checkbox" id="enableToolbar" name="enableToolbar" value="1" $enableToolbar_chk>
+        <label for="enableToolbar">Enable Tool Bar for all users.</label></p>
+
+        $submit_button
+        </form>
+        END;
+        return $form;
+    }
+
+    /**
+     * Generate form for Groups tab.
+     * @return $form.
+     */
+    public static function render_groups_tab($nonce_code, $submit_button)
+    {
+        global $u3aMQDetect;
 
         // content for Groups tab
         $coordinator_term = esc_HTML(get_option('u3a_coord_term', 'coordinator'));
@@ -88,6 +178,9 @@ class U3aAdmin
         $u3a_grouplist_type = get_option('u3a_grouplist_type', 'sorted');
         $list_sorted = ($u3a_grouplist_type == 'sorted') ? ' checked' : '';
         $list_filtered = ($u3a_grouplist_type == 'filtered') ? ' checked' : '';
+        
+        $grouplist_scroll = get_option('u3a_groups_list_scroll', 'enabled');
+        $grouplist_scroll_chk = ('enabled' == $grouplist_scroll) ? ' checked' : '';
 
         $field_coord2 = get_option('field_coord2', '1');
         $field_coord2_chk = ($field_coord2 == '1') ? ' checked' : '';
@@ -104,95 +197,16 @@ class U3aAdmin
 
         $grouplist_threshold = get_option('grouplist_threshold', 20);
 
-
-        // Content for Venues tab
-
-        $field_v_district = get_option('field_v_district', '1');
-        $field_v_district_chk = ($field_v_district == '1') ? ' checked' : '';
-
-
-        // Content for Events tab
-
-        $events_nogroups = get_option('events_nogroups', '1');
-        $events_nogroups_chk = ($events_nogroups == '1') ? ' checked' : '';
-
-        $events_timeformat = get_option('events_timeformat', 'system');  // options are 'system', '12hr', '24hr'
-        $events_timeformat_system = '';
-        $events_timeformat_24hr = '';
-        $events_timeformat_12hr = '';
-        switch ($events_timeformat) {
-            case 'system': $events_timeformat_system = 'checked'; break;
-            case '12hr': $events_timeformat_12hr = 'checked'; break;
-            default: $events_timeformat_24hr = 'checked';
-        }
-        $system_time_example = date(get_option('time_format'), strtotime("14:30"));
-
-        $events_dateformat = get_option('events_dateformat', 'system');  // options are 'system', 'short', 'long'
-        $events_dateformat_system = '';
-        $events_dateformat_short = '';
-        $events_dateformat_long = '';
-        switch ($events_dateformat) {
-            case 'system': $events_dateformat_system = 'checked'; break;
-            case 'short': $events_dateformat_short = 'checked'; break;
-            default: $events_dateformat_long = 'checked';
-        }
-        $system_date_example = date(get_option('date_format'));
-        $short_date_example = date('D M jS');
-        $long_date_example = date('l jS F Y');
-
-
-        // Assemble the tab navigation menu
-
-        $tabs = array('General' => '', 'Groups' => 'groups', 'Venues' => 'venues', 'Events' => 'events');
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : ''; // current tab
-
-        $tab_navbar = '<nav class="nav-tab-wrapper">';
-        foreach ($tabs as $tabText => $tabName) {
-            $tab_navbar .= '<a href="?page=u3a-settings';
-            $tab_navbar .= empty($tabName) ? '' : "&tab=$tabName";
-            $tab_navbar .= '" class="nav-tab ';
-            if ($tab == $tabName) {
-                $tab_navbar .= 'nav-tab-active';
-            }
-            $tab_navbar .= '">';
-            $tab_navbar .= $tabText;
-            $tab_navbar .= '</a>';
-        }
-        $tab_navbar .= "</nav>\n";
-
-
-        // Ouput common top-of-page content
-
-
-        //phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
-        print <<<END
-    <div class="wrap">
-    <div class="notice notice-error is-dismissible inline"><p>$status_text</p></div>
-    <h2>u3a Settings Menu</h2>
-    $tab_navbar
-    END;
-        //phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
-
-        // Output current tab content
-
-        switch ($tab) {
-            case 'groups':
-
-                // The Groups settings tab page
-
-                //phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
-                print <<<END
+        // form for Groups tab
+        $form = <<<END
         <form method="POST" action="admin-post.php">
         <input type="hidden" name="action" value="u3a_group_settings">
         $nonce_code
         $u3aMQDetect
-
         <h3>Term for Group Coordinator</h3>
         <p>Your u3a may wish to use a different term for the person who manages a group, such as "leader"<br>
         You can change the term used here.</p>
         <input type="text" class="regular-text" id="cterm" name="cterm" maxlength="30" value="$coordinator_term">
-
 
         <h3>Term for Group Categories</h3>
         <p>Your u3a may wish to use a different term for the group categories, such as "faculties"<br>
@@ -220,6 +234,10 @@ class U3aAdmin
         <label for="sorted"><input type="radio" id="sorted" name="u3a_grouplist_type" value="sorted" $list_sorted>sorted</label><br>
         <label for="filtered"><input type="radio" id="filtered" name="u3a_grouplist_type" value="filtered" $list_filtered>filtered</label>
 
+        <p>For the sorted option, a set of 'sort by' buttons appears above the list. When clicking one of these buttons the page refreshes and optionally scrolls the page down to these buttons.<br>
+        <label for="grouplist_scroll"> Enable auto-scrolling to sort buttons?</label>
+        <input type="checkbox" id="grouplist_scroll" name="grouplist_scroll"  value="1" $grouplist_scroll_chk></p>
+
         <p>For the filtered option, with a limited number of groups, the list will be shown in alphabetical order.  With more groups, the system will display options to filter the list before showing the selected groups.<br>
         <label for="grouplistthreshold">Maximum size of group list before automatically filtering:</label> <input type="number" class="small-text" id="grouplistthreshold" name="grouplistthreshold" value="$grouplist_threshold" min="0" max="999"></p>
 
@@ -231,17 +249,27 @@ class U3aAdmin
 
         $submit_button
         </form>
-    </div>
-    END;
-                //phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
-                break;
+        END;
+        return $form;
+    }
 
-            case 'venues':
+    /**
+     * Generate form for Venues tab.
+     * @return $form.
+     */
+    public static function render_venues_tab($nonce_code, $submit_button)
+    {
+        global $u3aMQDetect;
+        // Content for Venues tab
 
-                // Venues tab page
+        $field_v_district = get_option('field_v_district', '1');
+        $field_v_district_chk = ($field_v_district == '1') ? ' checked' : '';
+        
+        $venue_hide_xrefs = get_option('venue_hide_xrefs', 'n');
+        $venue_hide_xrefs_chk = ($venue_hide_xrefs == 'y') ? ' checked' : '';
 
-                //phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
-                print <<<END
+        // form for Venues tab
+        $form = <<<END
         <form method="POST" action="admin-post.php">
         <input type="hidden" name="action" value="u3a_venue_settings">
         $nonce_code
@@ -249,25 +277,63 @@ class U3aAdmin
 
         <h3>Fields to show when adding a new venue</h3>
         <p>Tick the fields you want to use when defining your venues</p>
-
         <p>
         <input type="checkbox" id="vdistrict" name="vdistrict"  value="1" $field_v_district_chk>
         <label for="vdistrict"> District</label>
         </p>
 
+        <h3>Hide references to events and groups</h3>
+        <p>Each venue page will list the groups and events that reference that venue.<br>
+        Note: Past events are only shown to editors and admins.</p>
+        <p>Tick the box to hide these lists, except for editors and admins.</p>
+        <p>
+        <input type="checkbox" id="vxrefs" name="vxrefs"  value="1" $venue_hide_xrefs_chk>
+        <label for="vxrefs"> Hide event and group references</label>
+        </p>
         $submit_button
         </form>
-    </div>
-END;
-                //phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
-                break;
+        END;
+        return $form;
+    }
 
-            case 'events':
+    /**
+     * Generate form for Events tab.
+     * @return HTML $form.
+     */
+    public static function render_events_tab($nonce_code, $submit_button)
+    {
+        global $u3aMQDetect;
 
-                // Events tab page
+        // Content for Events tab
+        $events_nogroups = get_option('events_nogroups', '1');
+        $events_nogroups_chk = ($events_nogroups == '1') ? ' checked' : '';
 
-                    //phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
-                    print <<<END
+        $events_timeformat = get_option('events_timeformat', 'system');  // options are 'system', '12hr', '24hr'
+        $events_timeformat_system = '';
+        $events_timeformat_24hr = '';
+        $events_timeformat_12hr = '';
+        switch ($events_timeformat) {
+            case 'system': $events_timeformat_system = 'checked'; break;
+            case '12hr': $events_timeformat_12hr = 'checked'; break;
+            default: $events_timeformat_24hr = 'checked';
+        }
+        $system_time_example = date(get_option('time_format'), strtotime("14:30"));
+
+        $events_dateformat = get_option('events_dateformat', 'system');  // options are 'system', 'short', 'long'
+        $events_dateformat_system = '';
+        $events_dateformat_short = '';
+        $events_dateformat_long = '';
+        switch ($events_dateformat) {
+            case 'system': $events_dateformat_system = 'checked'; break;
+            case 'short': $events_dateformat_short = 'checked'; break;
+            default: $events_dateformat_long = 'checked';
+        }
+        $system_date_example = date(get_option('date_format'));
+        $short_date_example = date('D M jS');
+        $long_date_example = date('l jS F Y');
+
+        // form for Events tab
+        $form = <<<END
         <form method="POST" action="admin-post.php">
         <input type="hidden" name="action" value="u3a_event_settings">
         $nonce_code
@@ -285,9 +351,9 @@ END;
         <input type="radio" id="timeformat-system" name="timeformat" value="system" $events_timeformat_system>
         <label for="timeformat-system">WordPress Time Format: $system_time_example</label><br>
         <input type="radio" id="timeformat-12hr" name="timeformat" value="12hr" $events_timeformat_12hr>
-        <label for="timeformat-system">12 hour format: 2:30pm</label><br>
+        <label for="timeformat-12hr">12 hour format: 2:30pm</label><br>
         <input type="radio" id="timeformat-24hr" name="timeformat" value="24hr" $events_timeformat_24hr>
-        <label for="timeformat-system">24 hour format: 14:30</label>
+        <label for="timeformat-24hr">24 hour format: 14:30</label>
         </p>
 
         <h3>Date format</h3>
@@ -302,42 +368,8 @@ END;
 
         $submit_button
         </form>
-    </div>
-END;
-                //phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
-                break;
-
-            default:
-
-                // General tab page
-
-                //phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
-                print <<<END
-        <form method="POST" action="admin-post.php">
-        <input type="hidden" name="action" value="u3a_general_settings">
-        $nonce_code
-        $u3aMQDetect
-
-        <h3>Your u3a name</h3>
-        <p>This will be used in page headings and various other places.<br/>
-        Do not include 'u3a' in the name.</p>
-        <p>Note: This setting is the same as the Site Title on the WordPress Setting page.</p>
-
-        <input type="text" class="regular-text" id="u3aname" name="u3aname" value="$u3aname">
-
-        <h3>WordPress Admin Tool Bar</h3>
-        <p>The admin tool bar is shown at the top of the page when viewing the public website pages.<br>
-        It provides quick access to site editing features.<br>
-        If this setting is not checked the tool bar will only be shown to administrators.</p>
-        <p><input type="checkbox" id="enableToolbar" name="enableToolbar" value="1" $enableToolbar_chk>
-        <label for="enableToolbar">Enable Tool Bar for all users.</label></p>
-
-        $submit_button
-        </form>
-    </div>
-END;
-                //phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.HeredocOutputNotEscaped
-        }
+        END;
+        return $form;
     }
 
     /**
@@ -434,6 +466,9 @@ END;
             add_option('u3a_grouplist_type', $u3a_grouplist_type);
         }
 
+        $grouplist_scroll = isset($_POST['grouplist_scroll']) ? 'enabled' : 'disabled';
+        update_option('u3a_groups_list_scroll', $grouplist_scroll); // will add if not present!
+
         $grouplist_threshold = $_POST['grouplistthreshold'];
         if (get_option('grouplist_threshold') !== false) {
             update_option('grouplist_threshold', $grouplist_threshold);
@@ -475,7 +510,6 @@ END;
      * Save venue-related settings as WordPress options.
      * Then redirect to u3a setting page.
      */
-
     public static function save_venue_settings()
     {
         // check nonce
@@ -486,6 +520,8 @@ END;
 
         $field_v_district = isset($_POST['vdistrict']) ? '1' : '9';
         update_option('field_v_district', $field_v_district);
+        $venue_hide_xrefs = isset($_POST['vxrefs']) ? 'y' : 'n';
+        update_option('venue_hide_xrefs', $venue_hide_xrefs);
 
         // redirect back to u3a settings page (venues tab) with status set to success (1)
         wp_safe_redirect(admin_url('admin.php?page=u3a-settings&tab=venues&status=1'));

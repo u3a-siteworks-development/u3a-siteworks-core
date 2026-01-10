@@ -1,6 +1,6 @@
-=== u3a-custom-post-types ===
+=== u3a-siteworks-core ===
 Requires at least: 5.9
-Tested up to: 6.5
+Tested up to: 6.9
 Stable tag: 5.9
 Requires PHP: 7.3
 License: GPLv2 or later
@@ -14,13 +14,59 @@ This plugin is part of the SiteWorks project.  It provides facilities to manage 
 to store related contact and venue information.
 
 For more information please refer to the [SiteWorks website](https://siteworks.u3a.org.uk/)
+For guidance on the design of the code read file 'u3a Siteworks Core structure.odt'
 
 == Frequently Asked Questions ==
 
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 2.0.0 =
+* Feature 1156 Allow an Event to belong to multiple event categories
+* u3a group list block and u3a events list blocks now allow multiple categories to be selected
+= 1.2.4 =
+* Provide appropriate default settings for Events to maintain backwards compatibility
+= 1.2.3 (not released) =
+* Bug 1152: Improve Event readability.
+* Bug 1151: Filtered Group Display categories not presented alphabetically
+= 1.2.2 (not released) =
+* Bug 1148: Incorrect behaviour of "Show group events"
+* Bug 1145: Event list display breaks if an event uses a Excerpt containing <p> tags
+* Removed unneeded validation code, on KISS principle
+* Undo feature 1136
+= 1.2.1 (not released) =
+* Feature 1136: Allow authors to add non group events
+* Bug 1142: Notice block Title disappears when there are no notices
+* Bug 1137: Group category with & will not display in Filtered Group List
+= 1.2.0 =
+* Tested with WordPress 6.8
+* Feature 1130: Add option to hide list of events & groups on venue pages
+* Feature 1125: Events now sorted by time as well as date
+* Bug 1121: Duplicate entries in the reference lists for venues/contacts
+* Bug 1119: Provide validation of date format for u3a Notice start or end date
+* Feature 1105: Add new sorting and selection facilities to the 'u3a notice list' block
+* Bug 1103: Line breaks missing from search results
+* Code refactored to access plugin update service via configuration plugin
+= 1.1.6 =
+* Added documentation u3a Siteworks Core structure.odt
+* Refactored code for ease of future maintenance
+* Feature 1082 Have consistent approach to admin page AllEvents/AllGroups etc
+* Tested up to WP 6.7
+* Add Requires Plugins: meta-box header
+* Feature 1094: Change short text form of group status to "Waiting list"
+= 1.1.5 =
+* Bug 1081: Remove u3a venue list block as this will not be implemented
+= 1.1.4 =
+* Bug 1074 u3aeventlist and u3agrouplist filters. Now fixed the bug introduced in v1.1.3
+= 1.1.3 =
+* Bug 1043: Venue page shows associated events with no indication of date
+* Bug 1045: u3a blocks do not implement support for additional CSS classes
+* Bug 1053: Posts not displayed in dashboard when filtering by group and sorting by date
 * Bug 1055: add support for Excerpts when defining Group and Venue custom post types
+* Bug 1062: Incorrect result when using the u3a group list on the homepage with the Filtered display option and selecting a day
+* Bug 1065: WordPress quick edit shows "published" posts as "scheduled"
+* Feature 1054: Make featured image in event list grid layout a clickable link to the event
+* Feature 1063: Add option to enable/disable auto-scrolling to group list sort buttons
 = 1.1.2 =
 * Bug 1048: venue not initialised in shortcode u3agrouplist
 * Bug 1046: u3a group list properties panel does not initially show Sort Order option

@@ -2,8 +2,8 @@
 
 class U3aNotice
 {
-    use ModifyQuickEdit;
     use ChangePrompt;
+    use AddMetabox;
 
     /**
      * The post_type for this class
@@ -20,15 +20,18 @@ class U3aNotice
     public static $term_for_title = "title for the Notice";
 
     /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Notice Settings";
+
+    /**
      * The short name for this class
      *
      * @var string 
      */
     public static $post_type_name = 'notice';
-
-    /* Limits on the max size of data input */
-    const MAX_DATE = 10; // YYYY-MM-DD
-    const MAX_URL = 2000; // for all browsers
 
     /**
      * The ID of this post
@@ -83,35 +86,17 @@ class U3aNotice
         add_filter('manage_edit-' . U3A_NOTICE_CPT . '_sortable_columns', array(self::class, 'make_column_sortable'));
         add_action('pre_get_posts', array(self::class, 'sort_column_data'));
 
-        // Customise the Quick Edit panel
-        add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
-
         // Change prompt shown for post title
         add_filter('enter_title_here', array(self::class, 'change_prompt'));
 
+        // Modify the query when a Query Block is used to display posts of this type
+        // so that when user selects sort in date order, the event date is used instead of the post date
+        add_filter('query_loop_block_query_vars', array(self::class, 'filter_events_query'), 10, 1);
+
         // Register the blocks
         add_action('init', array(self::class, 'register_blocks'));
-
-        // Add action to restrict database field lengths
-        add_action('save_post_u3a_notice', [self::class, 'validate_notice_fields'], 30, 2);
     }
 
-    // validate the lengths of fields on save
-    public static function validate_notice_fields($post_id, $post)
-    {
-        $value = get_post_meta($post_id, 'notice_start_date', true);
-        if (strlen($value) > self::MAX_DATE) {
-            update_post_meta($post_id, 'notice_start_date', '');
-        }
-        $value = get_post_meta($post_id, 'notice_end_date', true);
-        if (strlen($value) > self::MAX_DATE) {
-            update_post_meta($post_id, 'notice_end_date', '');
-        }
-        $value = get_post_meta($post_id, 'notice_url', true);
-        if (strlen($value) > self::MAX_URL) {
-            update_post_meta($post_id, 'notice_url', '');
-        }
-    }
     public static function register_notices()
     {
         $args = array(
@@ -157,29 +142,6 @@ class U3aNotice
     }
 
     /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     */
-    public static function add_metabox($metaboxes)
-    {
-        $metabox = [
-            'title'    => 'Notice Settings',
-            'id'       => U3A_NOTICE_CPT,
-            'post_types' => [U3A_NOTICE_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
-    }
-
-    /**
      * Defines the fields for this class.
      *
      * @return array
@@ -199,8 +161,8 @@ class U3aNotice
                 'desc'      => 'Date when this notice should start being displayed on the website',
                 'size'      => 15,
                 'std'       => date('Y-m-d'),
+                'pattern' => '[1-2][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]',
                 'required'  => true,
-                'maxlength' => self::MAX_DATE,
             ];
         $fields[] =
             [
@@ -209,8 +171,9 @@ class U3aNotice
                 'id'        => 'notice_end_date',
                 'desc'      => 'Date when this notice should stop being displayed on the website',
                 'size'      => 15,
+                'std'       => date('Y-m-d'),
+                'pattern' => '[1-2][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]',
                 'required' => true,
-                'maxlength' => self::MAX_DATE,
             ];
         $fields[] =
             [
@@ -224,7 +187,6 @@ class U3aNotice
                 'name' => 'Notice URL',
                 'id'   => 'notice_url',
                 'desc' => 'The URL should start with https://, or http:// for an unsecured website link.',
-                'maxlength' => self::MAX_URL,
             ];
 
         return $fields;
@@ -238,7 +200,7 @@ class U3aNotice
         wp_register_script(
             'u3anoticeblocks',
             plugins_url('js/u3a-notice-blocks.js', self::$plugin_file),
-            array('wp-blocks', 'wp-element'),
+            array('wp-blocks', 'wp-element','wp-components','wp-block-editor'),
             U3A_SITEWORKS_CORE_VERSION,
             false,
         );
@@ -255,7 +217,7 @@ class U3aNotice
 
     /**
      * Alter the columns that are displayed in the Posts list admin page to remove the standard 
-     * WordPress date and author columns and add the Notice Start and End dates
+     * WordPress date column and add the Notice Start and End dates
      * @param array $columns
      * @return modified columns
      * @usedby filter 'manage_' . U3A_NOTICE_CPT . '_posts_columns'
@@ -263,7 +225,6 @@ class U3aNotice
     public static function change_columns($columns)
     {
         unset($columns['date']);
-        unset($columns['author']);
 
         $columns['noticeStart'] = 'Start date';
         $columns['noticeEnd'] = 'End date';
@@ -310,12 +271,23 @@ class U3aNotice
     /**
      * Provide sorting mechanism for the Notice start and end date columns.
      *
-     * @param array $query attributes of query
+     * @param obj $query attributes of query, passed by ref
      * @usedby action 'pre_get_posts'
      */
     public static function sort_column_data($query)
     {
-        if (!is_admin() /* || !$query->is_main_query() */) {
+        // This is a very general purpose hook, so ...
+        // query must be main query for an admin page with a query for u3a_notice post-type
+        if (!( is_admin()
+               && ($query->is_main_query())
+               && ('u3a_notice' == $query->get('post_type'))
+             )){
+            return;
+        }
+        // also check that we are on the All Notices page
+        // Note: get_current_screen() may not exist at the start of this function 
+        $screen = get_current_screen(); 
+        if ('edit-u3a_notice' !== $screen->id) {
             return;
         }
         if ('noticeStart' === $query->get('orderby')) {
@@ -341,19 +313,55 @@ class U3aNotice
         $columns['noticeEnd'] = 'noticeEnd';
         return $columns;
     }
+ 
+    /** 
+     * Modify the query when a Query Block is used to display posts of this type.
+     * @param array $query
+     * @used by filter 'query_loop_block_query_vars'
+     */
+    public static function filter_events_query($query)
+    {
+        // ignore if the query block is not using this post type
+        if ($query['post_type'] != U3A_NOTICE_CPT) return $query;
+
+        // always exclude notices with dates in the past
+        $query['meta_key'] = 'notice_end_date';
+        $query['meta_value'] = date("Y-m-d");
+        $query['meta_compare'] = '>=';
+
+        // If date order is chosen in the block settings, change to use the Event date instead of Post date
+        if ($query['orderby'] == 'date') $query['orderby'] = 'meta_value';
+
+        return $query;
+    }
 
     /**
-     * List Notices in publication order, most recent first.  Returns max 5 items.
+     * List Notices in date order, selected according to parameters.
      * Show the Excerpt if one is provided for the Notice (but don't fall back to displaying extract from content)
      * Could be extended to allow more user control
+	 *
+     * Attributes will also be taken from the page's URL query parameters.
+     * If present these query parameters will override parameters passed as arguments
+     *
+     * @param array $atts Valid attributes are:
+	 *    title
+	 *    showtitle = true/false
+     *    startorend = 'start'/'end' (default start)
+     *    order = 'asc'/'desc' (default desc)
+	 *    maxnumber = 1-7 or -1 (default 5)
+     *
      * @return HTML
      */
     public static function display_noticelist($atts, $content = '')
     {
 
+        // valid display_args names and default values
         $display_args = [
             'title' => 'Latest Notices',
             'showtitle' => true,
+			'startorend' => 'start',
+            'order' => 'desc',
+			'maxnumber' => -1,
         ];
         foreach ($display_args as $name => $default) {
             if (isset($_GET[$name])) {
@@ -366,14 +374,37 @@ class U3aNotice
         if ($display_args['title'] == "") {
             $display_args['title'] = "Latest Notices";
         }
+        // validate other args
+        $error = ''; // NB not displayed?
+        $startorend = $display_args['startorend'];
+        if ('start' != $startorend && 'end' != $startorend) {
+            $error .= 'bad parameter: startorend=' . esc_html($startorend) . '<br>';
+            $startorend = 'start'; // default
+        }
+
+        $order = strtoupper($display_args['order']);
+        if ('ASC' != $order && 'DESC' != $order &&  '' != $order) {
+            $error .= 'bad parameter: order=' . esc_html($order) . '<br>';
+            $order = '';  // default
+        }
+        if ('' == $order) {
+            $order = 'DESC';
+        }
+		
+		// maxnumber must be between 1 and 7 (arbitrary) or -1 (meaning all)
+        $maxnumber = intval($display_args['maxnumber']); // result is always an int
+        if (-1 != $display_args['maxnumber'] && !( $display_args['maxnumber'] >= 1 && $display_args['maxnumber'] <= 7 )){
+            $error .= 'bad parameter: maxnumber=' . esc_html($display_args['maxnumber']) . '<br>';
+			$maxnumber = -1;
+        }
 
         $posts = get_posts(array(
-            'numberposts' => -1,
+            'numberposts' => $maxnumber,
             'orderby' => 'meta_value',
             'post_type' => U3A_NOTICE_CPT,
-            'order' => 'DESC',
+            'order' => strtoupper($display_args['order']),
             'post_status' => 'publish',
-            'meta_key' => 'notice_start_date',
+            'meta_key' => "notice_{$startorend}_date",
             'meta_query' => array(
                 'relation' => 'AND',
                 array(
@@ -391,21 +422,24 @@ class U3aNotice
             )
         ));
 
-        if (!$posts) return '<p>There are no current notices</p>';
-
-        $html = "<div class=\"u3a-notice-list\">\n";
+        $blockattrs = wp_kses_data(get_block_wrapper_attributes(['class' => 'u3a-notice-list']));
+        $html = "<div $blockattrs >\n";
         if ($display_args['showtitle']) {
             $html .= "<h3>" . $display_args['title'] . "</h3>\n";
         }
-        foreach ($posts as $notice) {
-            $title = $notice->post_title;
-            $alt_url = trim(get_post_meta($notice->ID, 'notice_url', true));
-            $url = (strncasecmp($alt_url, 'http', 4) === 0) ? $alt_url : get_permalink($notice->ID);
-            $html .= "<h4><a href=\"$url\">$title</a></h4>\n";
-            if (has_excerpt($notice)) {
-                $excerpt = get_the_excerpt($notice);
-                $html .= "<p>$excerpt</p>";
+        if ($posts) {
+            foreach ($posts as $notice) {
+                $title = $notice->post_title;
+                $alt_url = trim(get_post_meta($notice->ID, 'notice_url', true));
+                $url = (strncasecmp($alt_url, 'http', 4) === 0) ? $alt_url : get_permalink($notice->ID);
+                $html .= "<h4><a href=\"$url\">$title</a></h4>\n";
+                if (has_excerpt($notice)) {
+                    $excerpt = get_the_excerpt($notice);
+                    $html .= "<p>$excerpt</p>";
+                }
             }
+        } else {
+            $html .= "<p>There are no current notices</p>";
         }
         $html .= "</div>\n";
 
