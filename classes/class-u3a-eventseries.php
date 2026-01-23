@@ -21,14 +21,14 @@ class U3aEventSeries
     /**
      * The post_type for this class
      *
-     * @var string 
+     * @var string
      */
     public static $post_type = U3A_EVENTSERIES_CPT;
 
     /**
      * The term used for the title of these custom posts
      *
-     * @var string 
+     * @var string
      */
     public static $term_for_title = "name for eventseries";
 
@@ -36,6 +36,24 @@ class U3aEventSeries
     private static $plugin_file;
 
     public static $frequency_list = ['weekly' => 'Weekly', 'fortnightly' => 'Fortnightly', 'monthly' => 'Monthly', 'twice-monthly' => 'Twice monthly'];
+
+    public static $max_events = 13;
+
+    public static $initial_intro = <<< END
+            <!-- wp:paragraph -->
+            <p>When you publish this event series, a series of events will be created, defined by the criteria you enter.<br>
+            Each event will have a title consisting of the series name.</p>
+            <!-- /wp:paragraph -->
+            END;
+
+    public static $published_intro = <<< END
+            <!-- wp:paragraph -->
+            <p><b>This event series has been created. Saving it again has no effect. You can only modify a published event series as follows:</b></p>
+            <!-- /wp:paragraph -->
+            <!-- wp:paragraph -->
+            <p>When you view the event series, you can change the title of any specific event and delete specific events. You can also go to edit any event in order to make other changes to the event including adding other information. This will open in a separate tab so you can go back to this event series page in order to add details to other events in the series.</p>
+            <!-- /wp:paragraph -->
+            END;
 
     /**
      * The ID of this post
@@ -56,7 +74,7 @@ class U3aEventSeries
     /**
      * Set up the actions and filters used by this class.
      *
-     * @param $plugin_file the value of __FILE__ from the main plugin file 
+     * @param $plugin_file the value of __FILE__ from the main plugin file
      */
     public static function initialise($plugin_file)
     {
@@ -64,6 +82,14 @@ class U3aEventSeries
 
         // Register Eventseries CPT
         add_action('init', array(self::class, 'register_eventseries'));
+        
+        // add "Add Event Series" to Events menu
+        add_action(
+            'admin_menu',
+            function () {
+                add_submenu_page('edit.php?post_type=u3a_event', 'Add Event Series', 'Add Event Series', 'edit_posts', 'post-new.php?post_type=u3a_eventseries');
+            }
+        );
 
         // Routine to run on plugin activation
         register_activation_hook($plugin_file, array(self::class, 'on_activation'));
@@ -77,17 +103,21 @@ class U3aEventSeries
         // Load admin javascript for event-series
         add_action('admin_enqueue_scripts', array(self::class, 'load_editor_script'), 10, 1);
 
-        // Add action to restrict database field lengths
-        add_action('save_post_u3a_eventseries', ['U3aEvent', 'validate_event_fields'], 30, 2);
- 
         // Add action to create events in the series
-        add_action('save_post_u3a_eventseries', [self::class, 'create_series_of_events'], 40, 2);
-        //add_action('the_content', [self::class, 'create_series_of_events'], 20, 1); DEBUG
-    
+        add_action('save_post_u3a_eventseries', array(self::class, 'create_series_of_events'), 20, 2);
+
         // Add default content to new posts of this type
         add_filter('default_content', array(self::class, 'add_default_content'), 10, 2);
+
         // Register the shortcode
         add_shortcode('u3a_eventseries_list', array(self::class,'u3a_eventseries_list_shortcode'));
+
+        // prevent edit of a published eventseries
+        add_action('admin_init', array(self::class, 'disable_edit'), 10, 1);
+
+        // restrict view of a published eventseries
+        add_action('template_redirect',
+            array(self::class, 'restrict_view_of_published_post'), 10, 1);
     }
 
     /**
@@ -97,6 +127,8 @@ class U3aEventSeries
     {
         $args = array(
             'public' => true,
+            'show_in_menu' => 'edit.php?post_type=u3a_event',
+            'exclude from search' => true,
             'show_in_rest' => true,
             'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'color'),
             'rewrite' => array('slug' => sanitize_title(U3A_EVENTSERIES_CPT)),
@@ -186,12 +218,13 @@ class U3aEventSeries
             'id'      => 'datePattern',
             'desc'    => '<strong>If you choose "Monthly" each event will be on the same day and week of each month. "Twice monthly" events will be in either the 1st and 3rd week or 2nd and 4th week of the month<br>If you choose "Monthly" or "Twice monthly", your start date must not be in the fifth week of a month (29th/30th/31st).</strong>',
             ];
+        $max = U3aEventSeries::$max_events;
         $fields[] = [
             'type'    => 'number',
-            'name'    => 'Number of events to create (max 13)',
+            'name'    => "Number of events to create (max $max)",
             'id'      => 'eventNumber',
             'min'     => 1,
-            'max'     => 13,
+            'max'     => $max,
             'desc' => 'Optional. Enter either this or cut-off date, or both',
         ];
         $fields[] = [
@@ -285,8 +318,8 @@ class U3aEventSeries
         if ($hook == 'post-new.php' || $hook == 'post.php') {
             if (U3A_EVENTSERIES_CPT == $post->post_type) {
                 wp_enqueue_script(
-                    'event-series', 
-                    plugins_url('js/u3a-event-series.js', self::$plugin_file), 
+                    'event-series',
+                    plugins_url('js/u3a-event-series.js', self::$plugin_file),
                     array('jquery', 'wp-data', 'wp-editor', 'wp-edit-post'),
                     U3A_SITEWORKS_CORE_VERSION,
                     false,
@@ -301,152 +334,160 @@ class U3aEventSeries
     *
     * options =   weekly
     *             fortnightly
-    *             monthly on same day of the same wek of the month
-    *             twice monthly (Either in the 1st and 3rd weeks, or in 3rd and 4th weeks) 
+    *             monthly on same day of the same week of the month
+    *             twice monthly (Either in the 1st and 3rd weeks, or in 3rd and 4th weeks)
     * with
-    * number of events = m
-    * but not beyond  = edate
-     */
+    *   number of events = m
+    *   but not beyond  = edate
+    *
+    * @param int $post_id
+    * @param WP_Post $post
+    *
+    * Called by hook 'save_post_u3a_eventseries'
+    */
     public static function create_series_of_events($post_id, $post)
     {
         $max_events = 13;
         if ($post->post_type != U3A_EVENTSERIES_CPT) {
-            return $content;
+            return;
         }
+        //DEBUG
+        $mike = get_option('mike');
+        update_option('mike', $mike . $post->post_status . date('=Hi,',time() ) );
 
         if ($post->post_status != 'publish') { // apparently this is called when making a draft post
             return;
         }
-        if (get_post_meta($post_id, 'eventsCreated', true)) { 
-            // events in the series have already been created so do nothing.
-            return;
-        }
         $date = get_post_meta($post_id, 'eventStartDate', true);
-        if (empty($date)) { // shouldn't happen: required on input.
-            return;
+        //DEBUG
+        $mike = get_option('mike');
+        update_option('mike', $mike . 'D' . $date . 'D' . date('=Hi,',time() ) );
+        if (empty($date)) {
+                // may happen if called before meta data has been set.
+                // shouldn't happen otherwise as start date is a required input.
+                return;
         }
-        $date = DateTime::createFromFormat('Y-m-d',$date);
+        // Have events in the series not yet been created?
+        if (!(get_post_meta($post_id, 'eventsCreated', true))) {
+            // create a series of events using dates as DateTime objects
+            $date = DateTime::createFromFormat('Y-m-d',$date);
+            $frequency = get_post_meta($post_id, 'eventFrequency', true);
+            if (empty($frequency)) { // shouldn't happen: required on input.
+                return;
+            }
+            $num_events = get_post_meta($post_id, 'eventNumber', true);
+            $num_events = (int)((!empty($num_events)) ? $num_events : U3aEvents::$max_events);
 
-        $frequency = get_post_meta($post_id, 'eventFrequency', true);
-        if (empty($frequency)) { // shouldn't happen: required on input.
-            return;
-        }
-        $num_events = get_post_meta($post_id, 'eventNumber', true);
-        $num_events = (int)((!empty($num_events)) ? $num_events : $max_events);
+            $cutoff_date = get_post_meta($post_id, 'eventCutoffDate', true);
+            if (empty($cutoff_date)) {
+                $cutoff_date = '2099-12-31'; // far in the future
+            }
+            $cutoff_date = DateTime::createFromFormat('Y-m-d',$cutoff_date);
 
-        $cutoff_date = get_post_meta($post_id, 'eventCutoffDate', true);
-        if (empty($cutoff_date)) {
-            $cutoff_date = '2099-12-31'; // far in the future
-        }
-        $cutoff_date = DateTime::createFromFormat('Y-m-d',$cutoff_date);
+            $dayOfWeek = $date->format('w');  // 0 = Sunday
+            $day = $date->format('d');
+            // $weekOfMonth 1 to 5 according to which week of the month $date is in
+            $weekOfMonth = (int)(($date->format('d') + 6) / 7);
+            $days_list = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            $weeks_list = ['0th', '1st', '2nd', '3rd', '4th', '5th'];
+            $two_weeks_list = ['0th', '1st and 3rd', '2nd and 4th', '1st and 3rd', '2nd and 4th', '5th'];
 
-        $dayOfWeek = $date->format('w');  // 0 = Sunday
-        $day = $date->format('d');
-        // $weekOfMonth 1 to 5 according to which week of the month $date is in
-        $weekOfMonth = (int)(($date->format('d') + 6) / 7);
-        $days_list = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        $weeks_list = ['0th', '1st', '2nd', '3rd', '4th', '5th'];
-        $two_weeks_list = ['0th', '1st and 3rd', '2nd and 4th', '1st and 3rd', '2nd and 4th', '5th'];
+            // so $date is "the $weeks_list[$weekOfMonth] $days_list[$dayOfWeek] of the month"
+            //echo  $post_id . ' The ' . $weeks_list[$weekOfMonth] . ' ' . $days_list[$dayOfWeek] . ' of the month', '<br>' ; //debug
 
-        // so $date is "the $weeks_list[$weekOfMonth] $days_list[$dayOfWeek] of the month"
-        //echo  $post_id . ' The ' . $weeks_list[$weekOfMonth] . ' ' . $days_list[$dayOfWeek] . ' of the month', '<br>' ; //debug
+            // Set variables common to all events in the series
+            $event_meta = [];
+            $keys = ['eventTime','eventEndTime','eventGroup_ID','eventVenue_ID',
+                     'eventOrganiser_ID','eventCost','eventBookingRequired',
+                    ];
+            foreach ($keys as $key) {
+                $temp = get_post_meta($post_id, $key, true);
+                if (!empty($temp)) {
+                    $event_meta[$key] = $temp;
+                };
+            }
+            // Also set 'series' meta key
+            $event_meta['series'] = $post_id;
 
-        // Set variables common to all events in the series
-        $event_meta = [];
-        $keys = ['eventTime','eventEndTime','eventGroup_ID','eventVenue_ID',
-                 'eventOrganiser_ID','eventCost','eventBookingRequired',
-                ];
-        foreach ($keys as $key) {
-            $temp = get_post_meta($post_id, $key, true);
-            if (!empty($temp)) {
-                $event_meta[$key] = $temp;
-            };
-        }
-        // Also set 'series' meta key
-        $event_meta['series'] = $post_id;
-        
-        $terms = get_the_terms($post, U3A_EVENT_TAXONOMY);
-        if (empty($terms)) {
-            // event_category is required input, so shouldn't happen, return silently
-            return;
-        }
-        // Get the default content from a function in class U3aEvent using a dummy object
-        // $default_content = '<!-- wp:u3a/eventdata /--><!-- wp:paragraph --><p></p><!-- /wp:paragraph -->  ';
-        $dummy_post = (object)['post_type' => U3A_EVENT_CPT];
-        $default_content = U3aEvent::add_default_content('', $dummy_post);
-        $event_category_slug = $terms[0]->slug;
-        $event_insert_args = [
-            'post_title'   => '', // set later
-            'post_type'    => U3A_EVENT_CPT,
-            'post_content' => $default_content, 
-            'post_status'  => 'publish',
-            'meta_input'   => $event_meta, // eventDate will be set later.
-            'tax_input'    => [U3A_EVENT_TAXONOMY => $event_category_slug],
-        ];
-        // $eventseries_content = '<ul>';
-        // now create each event
-        for ($i = 1; $i <= $num_events; $i++) {
-            if ($i > 1) { // need to increment date
-                $check_week = false;
-                if ('weekly' == $frequency) { 
-                    $modify = '+7 days';
-                } elseif ('fortnightly' == $frequency) {
-                    $modify = '+14 days';
-                } elseif ('monthly' == $frequency) {
-                    $modify = '+28 days';
-                    // but some times need an extra week.
-                    $check_week = true;
-                    $required_weekOfMonth = (int)(($date->format('d') + 6) / 7);
-                } elseif ('twice-monthly' == $frequency) {
-                    $modify = '+14 days';
-                    if ($date->format('d') > 14 ) {
-                        // after 14th of month may need an extra week
+            $terms = get_the_terms($post, U3A_EVENT_TAXONOMY);
+            if (empty($terms)) {
+                // event_category is required input, so shouldn't happen, return silently
+                return;
+            }
+            // Get the event default content from a function in class U3aEvent, ...
+            //   using a dummy object
+            $dummy_post = (object)['post_type' => U3A_EVENT_CPT];
+            $event_default_content = U3aEvent::add_default_content('', $dummy_post);
+            $event_category_slug = $terms[0]->slug;
+            $event_insert_args = [
+                'post_title'   => '', // set later
+                'post_type'    => U3A_EVENT_CPT,
+                'post_content' => $event_default_content,
+                'post_status'  => 'publish',
+                'meta_input'   => $event_meta, // eventDate will be set later.
+                'tax_input'    => [U3A_EVENT_TAXONOMY => $event_category_slug],
+            ];
+            // now create each event
+            for ($i = 1; $i <= $num_events; $i++) {
+                if ($i > 1) { // need to increment date
+                    $check_week = false;
+                    if ('weekly' == $frequency) {
+                        $modify = '+7 days';
+                    } elseif ('fortnightly' == $frequency) {
+                        $modify = '+14 days';
+                    } elseif ('monthly' == $frequency) {
+                        $modify = '+28 days';
+                        // but some times need an extra week.
                         $check_week = true;
-                        $old_weekOfMonth = (int)(($date->format('d') + 6) / 7);
-                         // so, since we are in 3rd/4th week..
-                        $required_weekOfMonth = $old_weekOfMonth - 2;
+                        $required_weekOfMonth = (int)(($date->format('d') + 6) / 7);
+                    } elseif ('twice-monthly' == $frequency) {
+                        $modify = '+14 days';
+                        if ($date->format('d') > 14 ) {
+                            // after 14th of month may need an extra week
+                            $check_week = true;
+                            $old_weekOfMonth = (int)(($date->format('d') + 6) / 7);
+                             // so, since we are in 3rd/4th week..
+                            $required_weekOfMonth = $old_weekOfMonth - 2;
+                        }
+                    } else {
+                        // shouldn't happen, return silently
+                        return;
                     }
-                } else {
-                    // shouldn't happen, return silently
-                    return;
-                }
-                $date->modify($modify); // increment by normal amount
-                if ($check_week) {
-                    $new_weekOfMonth = (int)(($date->format('d') + 6) / 7);
-                    if ($new_weekOfMonth != $required_weekOfMonth) {
-                        // add another week to get to correct week.
-                        $date->modify('+7 days');
+                    $date->modify($modify); // increment by normal amount
+                    if ($check_week) {
+                        $new_weekOfMonth = (int)(($date->format('d') + 6) / 7);
+                        if ($new_weekOfMonth != $required_weekOfMonth) {
+                            // add another week to get to correct week.
+                            $date->modify('+7 days');
+                        }
                     }
                 }
+                if ($date > $cutoff_date) {
+                    break;
+                }
+                // now create new event for $date
+                // finally set the eventDate and create the event
+                $date_string = $date->format('Y-m-d');
+                $event_title = $post->post_title;
+                $event_insert_args['meta_input']['eventDate'] = $date_string;
+                $event_insert_args['post_title'] = $event_title;
+                $event_id = wp_insert_post($event_insert_args);
             }
-            if ($date > $cutoff_date) {
-                break;
-            }
-            // now create new event for $date
-            // finally set the eventDate and create the event
-            $date_string = $date->format('Y-m-d');
-            $event_title = $post->post_title;
-            $event_insert_args['meta_input']['eventDate'] = $date_string;
-            $event_insert_args['post_title'] = $event_title;
-            $event_id = wp_insert_post($event_insert_args);
-            
-            $edit_link = admin_url("post.php?post=" . $event_id . "&action=edit");
-            $edit_hint = "Edit this event";
-            $edit_HTML = "<a href= '$edit_link'><span style='background-color:yellow;' class='dashicons dashicons-edit' title='$edit_hint'></span></a>";
-            
-            //$eventseries_content .= "    <li> $event_title $edit_HTML</li>";
-
-        }
-
-        // mark this eventseries to prevent repeated creation of events.
+        // Mark this eventseries to prevent repeated creation of events.
         update_post_meta($post_id, 'eventsCreated', 1);
-        // put list of events into eventseries content.
-        //$eventseries_content .= '</ul>';
+        }
+        // end create a series of events
+
+        // So now update event_series to its published content.
+        // It is ok to do this on repeated saves!
         $shortcode = "<!-- wp:shortcode -->[u3a_eventseries_list]<!-- /wp:shortcode -->";
-        $new_content = self::add_default_content('', $post) . $shortcode;
+        // temporarily remove action to avoid risk of infinite loop, ...
+        remove_action('save_post_u3a_eventseries', [self::class, 'create_series_of_events'], 20);
         wp_update_post(['ID' => $post_id,
-                        'post_content' => $new_content,
+                        'post_content' => self::$published_intro . $shortcode,
                         ]);
+        // replace action
+        add_action('save_post_u3a_eventseries', [self::class, 'create_series_of_events'], 20, 2);
         return;
     }
 
@@ -460,20 +501,13 @@ class U3aEventSeries
     public static function add_default_content($content, $post)
     {
         if ($post->post_type == U3A_EVENTSERIES_CPT) {
-            $content = <<< END
-            <!-- wp:paragraph -->
-            <p>When you publish this, a series of events will be created.<br>
-            Each event will have a title consisting of the series name.<br>
-            <b>You can only edit this event series as follows</b>:You can change the title of any specific event and delete specific events. You can also go to edit any event in order to make other changes to the event including adding other information. This will open in a separate tab so you can go back to the event series page in order to add details to other events in the series.</p>
-            <!-- /wp:paragraph -->
-            END;
-            return $content;
+             return self::$initial_intro;
         }
         return $content;
     }
 
     /**
-     * This shortcode can only be used on an event_series page 
+     * This shortcode can only be used on an event_series page
      *
      */
     public static function u3a_eventseries_list_shortcode($args)
@@ -482,26 +516,49 @@ class U3aEventSeries
         if (U3A_EVENTSERIES_CPT != $post->post_type) {
             return "This shortcode is not valid here.";
         }
+
+        // If not permitted go no further,
+        //    so any form response won't be processed,
+        //    and no details of the events in the series will be displayed
+        // Note: if not permitted often won't reach this post anyway!
+        if (!self::permit_access($post)) {
+            return "<p>You do not have permission to modify this event series.</p>";
+        }
         $html = '';
         $slug = $post->post_name;
-
-        // Is this a vaild response from the form?
+        $series_ID = $post->ID;
+        // Is this a response from the form?
         if (isset($_POST['action']) && 'changeEvents' == $_POST['action']){
-            $html .= '<p> <b>Ho ho ho, actions not coded yet!</b></p>';
-            $html .= '<p>' .json_encode($_POST) . '</p>';
+            //DEBUG $html .= '<p>' .json_encode($_POST) . '</p>';
             if (isset($_POST['u3a_eventSeries_nonce'])
-          && wp_verify_nonce($_POST['u3a_eventSeries_nonce'], 'eventSeries'. $slug)){
-              $html .= '<p> nonce verified</p>';
+                  && wp_verify_nonce($_POST['u3a_eventSeries_nonce'], 'eventSeries'. $slug)
+               ){
+                foreach ($_POST as $key => $value){
+                    if ('remove' === substr($key, 0, 6) && '1' === $value){
+                        // case: remove an event
+                        $event_id = intval(substr($key, 6, 11));
+                        // confirm that this is an event in this eventseries
+                        if ($series_ID != get_post_meta($event_id, 'series', true)){
+                            continue; // ignore this submitted data: shouldn't happen!
+                        }
+                        wp_trash_post($event_id);
+                    } elseif ('newtitle' == substr($key, 0, 8) and '' != $value){
+                        // case: change event title
+                        $event_id = intval(substr($key, 8, 11));
+                        // confirm that this is an event in this eventseries
+                        if ($series_ID != get_post_meta($event_id, 'series', true)){
+                            continue; // ignore this submitted data: shouldn't happen!
+                        }
+                        wp_update_post(['ID' => $event_id, 'post_title' => $value]);
+                    }
+                }
             }
-        $html .= '<p> <b>End of change events report!</b></p>';
         }
 
-        // Now generate form containing the list of events in the series
-
+        // Now generate a form containing the list of events in the series
         $slug = $post->post_name;
         $series_ID = $post->ID;
         $nonce_code =  wp_nonce_field('eventSeries' . $slug, 'u3a_eventSeries_nonce', true, false);
-        //$submit_button = get_submit_button('Save Settings');
         $query_args = [
             'post_type' => U3A_EVENT_CPT,
             'post_status' => 'publish',
@@ -519,20 +576,19 @@ class U3aEventSeries
             <input type="hidden" name="action" value="changeEvents">
             $nonce_code
             <table class="u3a_event_table">
-            
         END;
         //
         $posts = get_posts($query_args);
-        
+
         foreach ($posts as $event) {
             $event_ID = $event->ID;
-            $event_obj = new U3aEvent($event_ID);  // look forward to events being a child class of WP_Post!!
-            list($date, $time, $endtime) = $event_obj->event_date_and_time();
+            $event_obj = new U3aEvent($event_ID);
+            $date = $event_obj->event_date_and_time()['date'];
             $remove = "remove" . $event_ID;
             $title = $event->post_title;
             $newtitle = "newtitle" . $event_ID;
             $edit_link = admin_url("post.php?post=" . $event_ID . "&action=edit");
-            $edit_event_html = "<a href= '$edit_link'>Edit event<span style='background-color:yellow;' class='dashicons dashicons-edit'></span></a>";
+            $edit_event_html = "<a target='_blank' href='$edit_link'>Edit event<span style='background-color:yellow;' class='dashicons dashicons-edit'></span></a>";
             $html .= <<< END
                   <tr>
                     <td>$date<br/>
@@ -543,10 +599,9 @@ class U3aEventSeries
                         <input type="text" name="$newtitle" placeholder="Enter revised title, if reqd.">
                     </td>
                     <td>$edit_event_html
-                    <!-- NOT a big button!<a class="wp-element-button" href="...">Edit event</a>  -->
                     </td>
                   </tr>
-                  
+
             END;
         }
         $html .= <<< END
@@ -560,7 +615,73 @@ class U3aEventSeries
             </table>
         </form>
         END;
-        // not needed?? wp_reset_postdata();
         return $html;
+    }
+
+    /**
+     * Disable access to edit function of a published eventseries post access.
+     * instead the user is redirected to view the eventseries,
+     * though that too is restricted. See below.
+     *
+     * Called by hook 'admin_init'
+     */
+    public static function disable_edit()
+    {
+        // just for edit post
+        if ( ! (isset($_GET['action']) && 'edit' == $_GET['action'])){
+            return;
+        }
+        if (isset($_GET['post'])){
+            $post_id = $_GET['post'];
+            $post = get_post($post_id);
+            // can no longer edit an eventseries post if ...
+            //   it has already created the events of the series.
+            if (U3A_EVENTSERIES_CPT === $post->post_type && get_post_meta($post_id, 'eventsCreated', true)){
+                // redirect to VIEW this eventseries, ...
+                //   which includes restricted editing of its events
+                wp_redirect(get_permalink($post_id));
+                exit;
+            }
+        }
+    }
+
+    /**
+     * Restrict access to view a published eventseries post.
+     *
+     * Called by hook 'template_redirect'
+     */
+    public static function restrict_view_of_published_post()
+    {
+        global $post;
+        // $post may not be set, e.g. if page does not exist
+        if (empty($post)){
+            return;
+        }
+        if (U3A_EVENTSERIES_CPT != $post->post_type){
+            return;
+        }
+        if ('publish' != $post->post_status){
+            return;
+        }
+        // need class name here since called by a hook
+        if (!U3aEventSeries::permit_access($post)){
+            wp_die('You are not allowed to access this part of the site');
+        }
+        return;
+    }
+
+    /**
+     * Allow access only to editors+ and the owner of this post
+     *
+     * @param WP_Post $post
+     *
+     * @return boolean
+     */
+    public static function permit_access($post)
+    {
+        $user_id = get_current_user_id();
+        return ( current_user_can('edit_others_posts') ||
+                 ($user_id != 0 && ($user_id === (int)$post->post_author))
+                );
     }
 }
