@@ -347,21 +347,14 @@ class U3aEventSeries
     */
     public static function create_series_of_events($post_id, $post)
     {
-        $max_events = 13;
+        $max_events = U3aEventSeries::$max_events;
         if ($post->post_type != U3A_EVENTSERIES_CPT) {
             return;
         }
-        //DEBUG
-        $mike = get_option('mike');
-        update_option('mike', $mike . $post->post_status . date('=Hi,',time() ) );
-
         if ($post->post_status != 'publish') { // apparently this is called when making a draft post
             return;
         }
         $date = get_post_meta($post_id, 'eventStartDate', true);
-        //DEBUG
-        $mike = get_option('mike');
-        update_option('mike', $mike . 'D' . $date . 'D' . date('=Hi,',time() ) );
         if (empty($date)) {
                 // may happen if called before meta data has been set.
                 // shouldn't happen otherwise as start date is a required input.
@@ -376,7 +369,7 @@ class U3aEventSeries
                 return;
             }
             $num_events = get_post_meta($post_id, 'eventNumber', true);
-            $num_events = (int)((!empty($num_events)) ? $num_events : U3aEvents::$max_events);
+            $num_events = (int)((!empty($num_events)) ? $num_events : $max_events);
 
             $cutoff_date = get_post_meta($post_id, 'eventCutoffDate', true);
             if (empty($cutoff_date)) {
