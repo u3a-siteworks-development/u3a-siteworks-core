@@ -181,7 +181,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
        for ( var i = 0; i < terms.length; i++ ) {
         catchoices.push( {
           element: i + 1,
-          label:terms[i].name, 
+          label:terms[i].name.replace(/&amp;/g, '&'),
           slug:terms[i].slug, 
           checked:event_cats.includes(terms[i].slug),
         } 
@@ -229,7 +229,6 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       var editBoxColor = (layout == 'grid') ? bgcolor : '#ffc700';
       var bcrop = (crop == 'y');
       var bshowtitle = (showtitle == 'y');
-
       var nest = [
           wp.element.createElement(
             InspectorControls,
