@@ -2,7 +2,7 @@
 Requires at least: 5.9
 Tested up to: 6.9
 Stable tag: 5.9
-Requires PHP: 7.3
+Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,8 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 2.0.1 =
+* Bug 1168: Ampersand presented as &amp; in category selection for group and event list blocks
 = 2.0.0 =
 * Feature 1156 Allow an Event to belong to multiple event categories
 * u3a group list block and u3a events list blocks now allow multiple categories to be selected
