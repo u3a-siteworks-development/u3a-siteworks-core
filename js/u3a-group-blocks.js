@@ -137,7 +137,7 @@ wp.blocks.registerBlockType("u3a/grouplist", {
        for ( var i = 0; i < terms.length; i++ ) {
         catchoices.push( {
           element: i + 1,
-          label:terms[i].name, 
+          label:terms[i].name.replace(/&amp;/g, '&'),
           slug:terms[i].slug, 
           checked:group_cats.includes(terms[i].slug),
         } 
