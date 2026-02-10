@@ -42,7 +42,8 @@ class U3aEventSeries
     public static $initial_intro = <<< END
             <!-- wp:paragraph -->
             <p>When you publish this event series, a series of events will be created, defined by the criteria you enter.<br>
-            Each event will have a title consisting of the series name.</p>
+            Each event will have a title consisting of the series name.<br>
+            After publishing, "View Event Series" to see an editable list of the events created.</p>
             <!-- /wp:paragraph -->
             END;
 
@@ -51,7 +52,7 @@ class U3aEventSeries
             <p><b>This event series has been created. Saving it again has no effect. You can only modify a published event series as follows:</b></p>
             <!-- /wp:paragraph -->
             <!-- wp:paragraph -->
-            <p>When you view the event series, you can change the title of any specific event and delete specific events. You can also go to edit any event in order to make other changes to the event including adding other information. This will open in a separate tab so you can go back to this event series page in order to add details to other events in the series.</p>
+            <p>In this event series, you can change the title of any specific event and delete specific events. You can also go to edit any event in order to make other changes to the event including adding other information. This will open in a separate tab so you can go back to this event series page in order to add details to other events in the series.</p>
             <!-- /wp:paragraph -->
             END;
 
