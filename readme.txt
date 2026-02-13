@@ -21,6 +21,7 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Feature 1165: Single line option for event list block
 = 2.0.1 =
 * Bug 1168: Ampersand presented as &amp; in category selection for group and event list blocks
 = 2.0.0 =
