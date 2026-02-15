@@ -105,6 +105,9 @@ class U3aEvent
         add_action('pre_get_posts', array(self::class, 'add_groupID_to_query'));
         add_action('restrict_manage_posts', array(self::class, 'add_admin_filters'));
 
+        // Generate an ICS file for events when any event changes
+        add_action('save_post', array(self::class, 'generate_ics_calendar'), 99, 3);
+
         // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
         add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
     }
@@ -648,6 +651,148 @@ class U3aEvent
         }
         update_post_meta($post_id, 'eventEndDate', $eventEndDate); // will create/update the field
     }
+
+    public static function is_importing()
+    {
+        return get_transient("u3a_events_importing");
+    }
+
+    public static function generate_ics_calendar($post_id, $post, $update)
+    {
+        // Do not do this during event import
+        if (self::is_importing()) {
+            return;
+        }
+        // Only set for post_type = u3a_event
+        if (self::$post_type !== $post->post_type) {
+            return;
+        }
+
+        // Generate the ICS file
+        self::build_ics();
+    }
+
+    private static function build_ics()
+    {
+
+        $query_args = [
+            'post_type' => U3A_EVENT_CPT,
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'meta_key' => 'eventDate',
+            'orderby' => 'meta_value',
+            'order'    => 'ASC',
+        ];
+
+        // This will only get future events - for now lets have them all
+        // $now = date("Y-m-d");
+        // $date_query = ['key' => 'eventDate', 'value' => $now, 'compare' => '>='];
+        // $query_args['meta_query'] = [$date_query];
+
+        $posts = get_posts($query_args);
+
+        $valid_posts = array();
+
+        // skip those events associated with non-published groups.
+        foreach ($posts as $event) {
+            if ($event->eventGroup_ID != '') {
+                $groupstatus = get_post_status($event->eventGroup_ID);
+                if ($groupstatus != 'publish') {
+                    continue;
+                }
+            }
+            $valid_posts[] = $event;
+        }
+
+        // for now, write the events calendar to the uploads directory
+
+        $filename = wp_get_upload_dir()['basedir'] . "/event_calendars/";
+        if (!is_dir($filename)) {
+            mkdir($filename, 0755, true);
+        }
+
+        $filename .= "u3a_event_calendar.ics";
+        $file = fopen($filename, "w+");
+        if (!$file) {
+            return;
+        }
+
+        fputs($file, "BEGIN:VCALENDAR" . PHP_EOL);
+        fputs($file, "VERSION:2.0" . PHP_EOL);
+        fputs($file, "CALSCALE:GREGORIAN" . PHP_EOL);
+        self::add_ics_entries($file, $valid_posts);
+        fputs($file, "END:VCALENDAR" . PHP_EOL);
+        fclose($file);
+        return;
+    }
+
+    private static function add_ics_entries($file, $posts)
+    {
+        add_filter('excerpt_length', function ($length) {
+            return 30;
+        });
+
+        foreach ($posts as $post) {
+            fputs($file, "BEGIN:VEVENT" . PHP_EOL);
+            $title = $post->post_title;
+            fputs($file, 'SUMMARY:' . $title . PHP_EOL);
+
+            $metadata = get_post_meta($post->ID, '', false);
+            $epochendtime = 0;
+            $epochtime = 0;
+
+            if (isset($metadata['eventDate'])) {
+                $date = $metadata['eventDate'][0];
+                if (isset($metadata['eventTime'])) {
+                    $time = $metadata['eventTime'][0];
+                    $epochtime = strtotime($date . ' ' . $time);
+                } else {
+                    $epochtime = strtotime($date);
+                }
+                if (isset($metadata['eventEndTime'])) {
+                    $endtime = $metadata['eventEndTime'][0];
+                    $epochendtime = strtotime($date . ' ' . $endtime);
+                } else {
+                    $epochendtime = $epochtime;
+                }
+            }
+            $formatted_date = date("Ymd\THis\Z", $epochtime);
+            fputs($file, "DTSTART:" . $formatted_date . PHP_EOL);
+
+            if (isset($metadata['eventDays'])) {
+                $days = $metadata['eventDays'][0];
+                if ($days >= 1) {
+                    $epochendtime += $days * 86400;
+                }
+            }
+
+            $formatted_date = date("Ymd\THis\Z", $epochendtime);
+            fputs($file, "DTEND:" . $formatted_date . PHP_EOL);
+
+            $permalink = get_the_permalink($post->ID);
+            $extract = htmlspecialchars_decode(get_the_excerpt($post->ID));
+
+            fputs($file, "DESCRIPTION:" . $extract .
+                "<a href=\"" . $permalink . "\">" . $title . "</a>" . PHP_EOL);
+
+            // finally add the categories
+            $terms = get_the_terms($post->ID, U3A_EVENT_TAXONOMY); // an array of terms or null
+            if ((false !== $terms) && !is_wp_error($terms)) {
+                fputs($file, "CATEGORIES:");
+                $first = true;
+                foreach ($terms as $term) {
+                    if (!$first) {
+                        fputs($file, ",");
+                    }
+                    $first = false;
+                    fputs($file, $term->name);
+                }
+                fputs($file, PHP_EOL);
+            }
+            fputs($file, "END:VEVENT" . PHP_EOL);
+        }
+    }
+
 
     /**
      * List events in date order, selected according to parameters.
