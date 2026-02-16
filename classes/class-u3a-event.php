@@ -72,6 +72,9 @@ class U3aEvent
         // Register Event CPT and taxonomy
         add_action('init', array(self::class, 'register_events'));
 
+        // Experimental - use a feed for calendars
+        //add_action('init', array(self::class, 'add_cal_feed'));
+
         // Routine to run on plugin activation
         register_activation_hook($plugin_file, array(self::class, 'on_activation'));
 
@@ -106,7 +109,7 @@ class U3aEvent
         add_action('restrict_manage_posts', array(self::class, 'add_admin_filters'));
 
         // Generate an ICS file for events when any event changes
-        add_action('save_post', array(self::class, 'generate_ics_calendar'), 99, 3);
+        add_action('save_post_u3a_event', array(self::class, 'generate_ics_calendar'), 99, 3);
 
         // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
         add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
@@ -168,6 +171,13 @@ class U3aEvent
 
         ));
     }
+
+    public static function add_cal_feed()
+    {
+        // Generate a feed for calendar
+        // add_feed('events-calendar', array(self::class, 'generate_calendar_feed'));
+    }
+
 
     /**
      * Do tasks that should only be done on activation
@@ -657,8 +667,33 @@ class U3aEvent
         return get_transient("u3a_events_importing");
     }
 
+    /*
+     * Generate a calendar feed when asked for it.
+     *
+     */
+    /*public static function generate_calendar_feed()
+    {
+        global $post;
+        if ($post == null) {
+            return;
+        }
+        $file = urlencode('events-calendar-' . date('Y-m-d') . '.ics');
+        // File header
+        header("Content-Disposition: inline; filename=" . $file);
+        header("Content-type: text/calendar");
+        header("Pragma: 0");
+        header("Expires: 0");
+        echo self::build_ics();
+        exit();
+    }
+    */
+
     public static function generate_ics_calendar($post_id, $post, $update)
     {
+        // save is called with a null post
+        if ($post == null) {
+            return;
+        }
         // Do not do this during event import
         if (self::is_importing()) {
             return;
@@ -668,13 +703,29 @@ class U3aEvent
             return;
         }
 
+        $filename = wp_get_upload_dir()['basedir'] . "/event_calendars/";
+        if (!is_dir($filename)) {
+            mkdir($filename, 0755, true);
+        }
+
+        $filename .= "u3a_event_calendar.ics";
+        $file = fopen($filename, "w+");
+        if (!$file) {
+            return;
+        }
+
         // Generate the ICS file
-        self::build_ics();
+        $data = self::build_ics();
+
+        fputs($file, $data);
+
+        fclose($file);
     }
 
     private static function build_ics()
     {
 
+        $data = '';
         $query_args = [
             'post_type' => U3A_EVENT_CPT,
             'post_status' => 'publish',
@@ -684,7 +735,8 @@ class U3aEvent
             'order'    => 'ASC',
         ];
 
-        // This will only get future events - for now lets have them all
+        // This will only get future events - get them all - calendar is
+        // configurable.
         // $now = date("Y-m-d");
         // $date_query = ['key' => 'eventDate', 'value' => $now, 'compare' => '>='];
         // $query_args['meta_query'] = [$date_query];
@@ -704,38 +756,26 @@ class U3aEvent
             $valid_posts[] = $event;
         }
 
-        // for now, write the events calendar to the uploads directory
 
-        $filename = wp_get_upload_dir()['basedir'] . "/event_calendars/";
-        if (!is_dir($filename)) {
-            mkdir($filename, 0755, true);
-        }
-
-        $filename .= "u3a_event_calendar.ics";
-        $file = fopen($filename, "w+");
-        if (!$file) {
-            return;
-        }
-
-        fputs($file, "BEGIN:VCALENDAR" . PHP_EOL);
-        fputs($file, "VERSION:2.0" . PHP_EOL);
-        fputs($file, "CALSCALE:GREGORIAN" . PHP_EOL);
-        self::add_ics_entries($file, $valid_posts);
-        fputs($file, "END:VCALENDAR" . PHP_EOL);
-        fclose($file);
-        return;
+        $data .= "BEGIN:VCALENDAR" . PHP_EOL;
+        $data .= "VERSION:2.0" . PHP_EOL;
+        $data .=  "CALSCALE:GREGORIAN" . PHP_EOL;
+        $data .= self::add_ics_entries($valid_posts);
+        $data .= "END:VCALENDAR" . PHP_EOL;
+        return $data;
     }
 
-    private static function add_ics_entries($file, $posts)
+    private static function add_ics_entries($posts)
     {
+        $data = '';
         add_filter('excerpt_length', function ($length) {
             return 30;
         });
 
         foreach ($posts as $post) {
-            fputs($file, "BEGIN:VEVENT" . PHP_EOL);
+            $data .= "BEGIN:VEVENT" . PHP_EOL;
             $title = $post->post_title;
-            fputs($file, 'SUMMARY:' . $title . PHP_EOL);
+            $data .= 'SUMMARY:' . $title . PHP_EOL;
 
             $metadata = get_post_meta($post->ID, '', false);
             $epochendtime = 0;
@@ -757,7 +797,7 @@ class U3aEvent
                 }
             }
             $formatted_date = date("Ymd\THis\Z", $epochtime);
-            fputs($file, "DTSTART:" . $formatted_date . PHP_EOL);
+            $data .= "DTSTART:" . $formatted_date . PHP_EOL;
 
             if (isset($metadata['eventDays'])) {
                 $days = $metadata['eventDays'][0];
@@ -767,30 +807,31 @@ class U3aEvent
             }
 
             $formatted_date = date("Ymd\THis\Z", $epochendtime);
-            fputs($file, "DTEND:" . $formatted_date . PHP_EOL);
+            $data .= "DTEND:" . $formatted_date . PHP_EOL;
 
             $permalink = get_the_permalink($post->ID);
             $extract = htmlspecialchars_decode(get_the_excerpt($post->ID));
 
-            fputs($file, "DESCRIPTION:" . $extract .
-                "<a href=\"" . $permalink . "\">" . $title . "</a>" . PHP_EOL);
+            $data .= "DESCRIPTION:" . $extract .
+                "<a href=\"" . $permalink . "\">" . $title . "</a>" . PHP_EOL;
 
             // finally add the categories
             $terms = get_the_terms($post->ID, U3A_EVENT_TAXONOMY); // an array of terms or null
             if ((false !== $terms) && !is_wp_error($terms)) {
-                fputs($file, "CATEGORIES:");
+                $data .= "CATEGORIES:";
                 $first = true;
                 foreach ($terms as $term) {
                     if (!$first) {
-                        fputs($file, ",");
+                        $data .= ",";
                     }
                     $first = false;
-                    fputs($file, $term->name);
+                    $data .= $term->name;
                 }
-                fputs($file, PHP_EOL);
+                $data .= PHP_EOL;
             }
-            fputs($file, "END:VEVENT" . PHP_EOL);
+            $data .= "END:VEVENT" . PHP_EOL;
         }
+        return $data;
     }
 
 
