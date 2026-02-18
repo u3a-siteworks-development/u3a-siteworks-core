@@ -1,4 +1,5 @@
 wp.blocks.registerBlockType("u3a/noticelist", {
+    apiVersion: 3,
     title: "u3a notice list",
     description: "Displays current notices",
     icon: "testimonial",
@@ -33,6 +34,8 @@ wp.blocks.registerBlockType("u3a/noticelist", {
       const TextControl = wp.components.TextControl;
       const ToggleControl = wp.components.ToggleControl;
       const SelectControl = wp.components.SelectControl;
+      const useBlockProps = wp.blockEditor.useBlockProps;
+      const blockProps = useBlockProps();
 
       const onChangeTitle = val => {
         setAttributes( { title: val });
@@ -139,7 +142,9 @@ wp.blocks.registerBlockType("u3a/noticelist", {
             ),
           )
         ),
-        wp.element.createElement("div", {className: 'wp-block alignwide', style: {color: 'white', backgroundColor: '#005ab8', padding: '10px'}}, "This placeholder shows where the list of notices will be shown.")
+        wp.element.createElement("div", blockProps,
+          wp.element.createElement("div", {className: 'wp-block alignwide', style: {color: 'white', backgroundColor: '#005ab8', padding: '10px'}}, "This placeholder shows where the list of notices will be shown.")
+        )
       ];
       return nest;
     },

@@ -1,12 +1,17 @@
 
 
 wp.blocks.registerBlockType("u3a/eventdata", {
+    apiVersion: 3,
     title: "u3a single event data",
     description: "displays details of this event",
     icon: "tickets-alt",
     category: "widgets",
     edit: function () {
-      return wp.element.createElement("div", {style: {color: 'black', backgroundColor: '#ffc700', padding: '10px'}}, "This placeholder shows where the event information will be shown.")
+      const useBlockProps = wp.blockEditor.useBlockProps;
+      const blockProps = useBlockProps();
+      return wp.element.createElement("div", blockProps,
+        wp.element.createElement("div", {style: {color: 'black', backgroundColor: '#ffc700', padding: '10px'}}, "This placeholder shows where the event information will be shown.")
+      )
     },
     save: function () {
       return null
@@ -14,6 +19,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
   })
 
   wp.blocks.registerBlockType("u3a/eventlist", {
+    apiVersion: 3,
     title: "u3a events list",
     description: "Displays list of events",
     icon: "tickets-alt",
@@ -79,7 +85,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const useSelect = wp.data.useSelect;
       const CheckboxControl = wp.components.CheckboxControl;
       const Scrollable = wp.components.__experimentalScrollable;
- 
+      const useBlockProps = wp.blockEditor.useBlockProps;
+      const blockProps = useBlockProps();
+
       const onChangeShowTitle = val => {
         bshowtitle = val;
         if (val) {
@@ -335,7 +343,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               ),
             ),
           ),
-        wp.element.createElement("div", {style: {color: 'black', backgroundColor: editBoxColor, padding: '10px', border: '1px solid lightgrey'}}, "This placeholder shows where a table of events will be shown.")
+        wp.element.createElement("div", blockProps,  
+          wp.element.createElement("div", {style: {color: 'black', backgroundColor: editBoxColor, padding: '10px', border: '1px solid lightgrey'}}, "This placeholder shows where a table of events will be shown.")
+        )
       ];
       return  nest
     },
