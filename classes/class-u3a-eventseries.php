@@ -17,6 +17,7 @@ define( 'U3A_EVENTSERIES_ICON' , 'dashicons-schedule');
 class U3aEventSeries
 {
     use ChangePrompt;
+    use AddMetabox;
 
     /**
      * The post_type for this class
@@ -30,8 +31,15 @@ class U3aEventSeries
      *
      * @var string
      */
-    public static $term_for_title = "name for eventseries";
+    public static $term_for_title = "name for event series";
 
+    /**
+     * The metabox title of these custom posts
+     *
+     * @var string 
+     */
+    public static $metabox_title = "Event Series Information";
+    
     // $plugin_file is the value of __FILE__ from the main plugin file
     private static $plugin_file;
 
@@ -43,7 +51,8 @@ class U3aEventSeries
             <!-- wp:paragraph -->
             <p>When you publish this event series, a series of events will be created, defined by the criteria you enter.<br>
             Each event will have a title consisting of the series name.<br>
-            After publishing, "View Event Series" to see an editable list of the events created.</p>
+            After publishing, "View Event Series" to see an editable list of the events created.<br>
+            Using the editor to make further changes will have no effect.</p>
             <!-- /wp:paragraph -->
             END;
 
@@ -136,15 +145,15 @@ class U3aEventSeries
             'has_archive' => false,
             'menu_icon' => U3A_EVENTSERIES_ICON,
             'labels' => array(
-                'name' => 'u3a Event Series',
-                'singular_name' => 'Event Series',
-                'add_new_item' => 'Add Event Series',
-                'add_new' => 'Add New Event Series',
-                'edit_item' => 'Edit Event Series',
-                'all_items' => 'All Event Series',
-                'view_item' => 'View Event Series',
-                'update_item' => 'Update Event Series',
-                'search_items' => 'Search Event Series'
+                'name' => 'u3a Event series',
+                'singular_name' => 'Event series',
+                'add_new_item' => 'Add Event series',
+                'add_new' => 'Add New Event series',
+                'edit_item' => 'Edit Event series',
+                'all_items' => 'All Event series',
+                'view_item' => 'View Event series',
+                'update_item' => 'Update Event series',
+                'search_items' => 'Search Event series'
             )
         );
 
@@ -160,29 +169,6 @@ class U3aEventSeries
     {
         self::register_eventseries();
         delete_option('rewrite_rules');
-    }
-
-    /**
-     * Filter that adds a metabox for a post_type.
-     *
-     * @param array $metaboxes List of existing metaboxes.
-     * Note:  static::field_descriptions() gets the rwmb info for the fields in the metabox.
-     *
-     * @return array $metaboxes With the added metabox
-     */
-    public static function add_metabox($metaboxes)
-    {
-        $metabox = [
-            'title'    => 'Event Series Information',
-            'id'       => U3A_EVENTSERIES_CPT,
-            'post_types' => [U3A_EVENTSERIES_CPT],
-            'context'  => 'normal',
-            'autosave' => true,
-        ];
-        $metabox['fields'] = self::field_descriptions();
-        // add metabox to all input rwmb metaboxes
-        $metaboxes[] = $metabox;
-        return $metaboxes;
     }
 
     /*
