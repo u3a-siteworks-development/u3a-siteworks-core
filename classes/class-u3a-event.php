@@ -44,6 +44,7 @@ class U3aEvent
     // $plugin_file is the value of __FILE__ from the main plugin file
     private static $plugin_file;
 
+    private static $CAL_EOL = "\r\n";
     /**
      * The ID of this post
      *
@@ -764,34 +765,34 @@ class U3aEvent
 
     private static function build_calendar_footer()
     {
-        return "END:VCALENDAR" . PHP_EOL;
+        return "END:VCALENDAR" . self::$CAL_EOL;
     }
 
     private static function build_calendar_header()
     {
-        $data = "BEGIN:VCALENDAR" . PHP_EOL;
-        $data .= "VERSION:2.0" . PHP_EOL;
-        $data .=  "CALSCALE:GREGORIAN" . PHP_EOL;
+        $data = "BEGIN:VCALENDAR" . self::$CAL_EOL;
+        $data .= "VERSION:2.0" . self::$CAL_EOL;
+        $data .=  "CALSCALE:GREGORIAN" . self::$CAL_EOL;
         // Use site name as PRODID
         $u3aname = strtoupper(get_bloginfo('name'));
-        $data .= "PRODID:" . $u3aname . PHP_EOL;
-        $data .= "METHOD:PUBLISH" . PHP_EOL;
-        $data .= "BEGIN:VTIMEZONE" . PHP_EOL;
-        $data .= "TZID:Europe/London" . PHP_EOL;
-        $data .= "X-LIC-LOCATION:Europe/London" . PHP_EOL;
-        $data .= "BEGIN:DAYLIGHT" . PHP_EOL;
-        $data .= "TZOFFSETFROM:+0000" . PHP_EOL;
-        $data .= "TZOFFSETTO:+0100" . PHP_EOL;
-        $data .= "TZNAME:BST" . PHP_EOL;
-        $data .= "DTSTART:19700329T010000" . PHP_EOL;
-        $data .= "END:DAYLIGHT" . PHP_EOL;
-        $data .= "BEGIN:STANDARD" . PHP_EOL;
-        $data .= "TZOFFSETFROM:+0100" . PHP_EOL;
-        $data .= "TZOFFSETTO:+0000" . PHP_EOL;
-        $data .= "TZNAME:GMT" . PHP_EOL;
-        $data .= "DTSTART:19701025T020000" . PHP_EOL;
-        $data .= "END:STANDARD" . PHP_EOL;
-        $data .= "END:VTIMEZONE" . PHP_EOL;
+        $data .= "PRODID:" . $u3aname . self::$CAL_EOL;
+        $data .= "METHOD:PUBLISH" . self::$CAL_EOL;
+        $data .= "BEGIN:VTIMEZONE" . self::$CAL_EOL;
+        $data .= "TZID:Europe/London" . self::$CAL_EOL;
+        $data .= "X-LIC-LOCATION:Europe/London" . self::$CAL_EOL;
+        $data .= "BEGIN:DAYLIGHT" . self::$CAL_EOL;
+        $data .= "TZOFFSETFROM:+0000" . self::$CAL_EOL;
+        $data .= "TZOFFSETTO:+0100" . self::$CAL_EOL;
+        $data .= "TZNAME:BST" . self::$CAL_EOL;
+        $data .= "DTSTART:19700329T010000" . self::$CAL_EOL;
+        $data .= "END:DAYLIGHT" . self::$CAL_EOL;
+        $data .= "BEGIN:STANDARD" . self::$CAL_EOL;
+        $data .= "TZOFFSETFROM:+0100" . self::$CAL_EOL;
+        $data .= "TZOFFSETTO:+0000" . self::$CAL_EOL;
+        $data .= "TZNAME:GMT" . self::$CAL_EOL;
+        $data .= "DTSTART:19701025T020000" . self::$CAL_EOL;
+        $data .= "END:STANDARD" . self::$CAL_EOL;
+        $data .= "END:VTIMEZONE" . self::$CAL_EOL;
         return $data;
     }
     private static function add_ics_entries($posts)
@@ -805,7 +806,7 @@ class U3aEvent
         foreach ($posts as $post) {
             $metadata = get_post_meta($post->ID, '', false);
 
-            $data .= "BEGIN:VEVENT" . PHP_EOL;
+            $data .= "BEGIN:VEVENT" . self::$CAL_EOL;
             $data .= "SUMMARY:";
             $title = $post->post_title;
 
@@ -815,12 +816,12 @@ class U3aEvent
                     $data .= "($group) ";
                 }
             }
-            $data .= $title . PHP_EOL;
+            $data .= $title . self::$CAL_EOL;
 
-            $data .= 'UID:' . $post->ID . PHP_EOL;
-            $data .= 'SEQUENCE:0' . PHP_EOL;
-            $data .= 'STATUS:CONFIRMED' . PHP_EOL;
-            $data .= 'TRANSP:TRANSPARENT' . PHP_EOL;
+            $data .= 'UID:' . $post->ID . self::$CAL_EOL;
+            $data .= 'SEQUENCE:0' . self::$CAL_EOL;
+            $data .= 'STATUS:CONFIRMED' . self::$CAL_EOL;
+            $data .= 'TRANSP:TRANSPARENT' . self::$CAL_EOL;
             $epochendtime = 0;
             $epochtime = 0;
 
@@ -845,10 +846,10 @@ class U3aEvent
             }
             if ($hastime) {
                 $formatted_date = date("Ymd\THis", $epochtime);
-                $data .= "DTSTART:" . $formatted_date . PHP_EOL;
+                $data .= "DTSTART:" . $formatted_date . self::$CAL_EOL;
             } else {
                 $formatted_date = date("Ymd", $epochtime);
-                $data .= "DTSTART;VALUE=DATE:" . $formatted_date . PHP_EOL;
+                $data .= "DTSTART;VALUE=DATE:" . $formatted_date . self::$CAL_EOL;
             }
 
             if (isset($metadata['eventDays'])) {
@@ -860,19 +861,19 @@ class U3aEvent
             if ($epochendtime > $epochtime) {
                 if ($hasendtime) {
                     $formatted_date = date("Ymd\THis", $epochendtime);
-                    $data .= "DTEND:" . $formatted_date . PHP_EOL;
+                    $data .= "DTEND:" . $formatted_date . self::$CAL_EOL;
                 } else {
                     $formatted_date = date("Ymd", $epochendtime);
-                    $data .= "DTEND;VALUE=DATE:" . $formatted_date . PHP_EOL;
+                    $data .= "DTEND;VALUE=DATE:" . $formatted_date . self::$CAL_EOL;
                 }
             }
-            $data .= "DTSTAMP:" . $createtime . PHP_EOL;
+            $data .= "DTSTAMP:" . $createtime . self::$CAL_EOL;
 
             $permalink = get_the_permalink($post->ID);
             $extract = htmlspecialchars_decode(get_the_excerpt($post->ID));
 
             $data .= "DESCRIPTION:" . $extract .
-                "<a href=\"" . $permalink . "\">" . $title . "</a>" . PHP_EOL;
+                "<a href=\"" . $permalink . "\">" . $title . "</a>" . self::$CAL_EOL;
 
             // add the categories
             $terms = get_the_terms($post->ID, U3A_EVENT_TAXONOMY); // an array of terms or null
@@ -886,17 +887,17 @@ class U3aEvent
                     $first = false;
                     $data .= $term->name;
                 }
-                $data .= PHP_EOL;
+                $data .= self::$CAL_EOL;
             }
             // need location...
             if (isset($metadata['eventVenue_ID'])) {
                 $venue = new U3aVenue($metadata['eventVenue_ID'][0]);
                 $venue_name = (string)($venue->venue_name_with_link());
                 if (!empty($venue_name)) {
-                    $data .= "LOCATION:" . $venue_name . PHP_EOL;
+                    $data .= "LOCATION:" . $venue_name . self::$CAL_EOL;
                 }
             }
-            $data .= "END:VEVENT" . PHP_EOL;
+            $data .= "END:VEVENT" . self::$CAL_EOL;
         }
         $data = self::limit_data($data);
         return $data;
@@ -905,11 +906,11 @@ class U3aEvent
     public static function limit_data($data)
     {
         $newdata = '';
-        $lines = explode(PHP_EOL, $data);
+        $lines = explode(self::$CAL_EOL, $data);
         foreach ($lines as $line) {
             if ($line != "") {
                 if (strlen($line) < 60) {
-                    $newdata .= $line . PHP_EOL;
+                    $newdata .= $line . self::$CAL_EOL;
                 } else {
                     $parts = str_split($line, 60);
                     $first = true;
@@ -917,7 +918,7 @@ class U3aEvent
                         if (!$first) {
                             $newdata .= " ";
                         }
-                        $newdata .= $part . PHP_EOL;
+                        $newdata .= $part . self::$CAL_EOL;
                         $first = false;
                     }
                 }
