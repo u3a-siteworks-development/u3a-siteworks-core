@@ -117,13 +117,11 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       const terms = useSelect( ( select ) =>
             select( 'core' ).getEntityRecords( 'taxonomy', 'u3a_group_category', query )
         );
-      if ( ! terms ) {
-          return 'Loading, please wait...';
-      }
-      if ( terms.length === 0 ) {
-          return 'No terms found';
-      }
 
+      /* Note: terms may be null if the select callback hasn't responded yet, so allow for this.
+         but React will re-render (call edit function again) when the callback completes so don't worry!
+      */  
+      
       /* backwards compatibility */
       if (group_cat.length  !== 0) {
         if (group_cats.length === 0) {
@@ -139,14 +137,17 @@ wp.blocks.registerBlockType("u3a/grouplist", {
         slug:"all" , 
         checked:group_cats.includes('all'),
        } );
-       for ( var i = 0; i < terms.length; i++ ) {
-        catchoices.push( {
-          element: i + 1,
-          label:terms[i].name.replace(/&amp;/g, '&'),
-          slug:terms[i].slug, 
-          checked:group_cats.includes(terms[i].slug),
-        } 
-        );
+      
+      if (terms != null) {
+        for ( var i = 0; i < terms.length; i++ ) {
+          catchoices.push( {
+            element: i + 1,
+            label:terms[i].name.replace(/&amp;/g, '&'),
+            slug:terms[i].slug, 
+            checked:group_cats.includes(terms[i].slug),
+          } 
+          );
+        }
       }
       
       const rendercatsarray = ( catchoices) => {

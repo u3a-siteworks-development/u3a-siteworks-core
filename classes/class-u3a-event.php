@@ -1295,7 +1295,9 @@ class U3aEvent
      */
     public function display($atts, $content)
     {
-        $html = "<table class=\"u3a_event_table\">\n";
+        $blockattrs = wp_kses_data(get_block_wrapper_attributes());
+        $html = "<div $blockattrs >\n";
+        $html .= "<table class=\"u3a_event_table\">\n";
         // event category
         $terms = get_the_terms($this->ID, U3A_EVENT_TAXONOMY); // an array of terms or null
         if ((false !== $terms) && !is_wp_error($terms)) {
@@ -1366,7 +1368,8 @@ class U3aEvent
             $html .= "<tr><td>Booking:</td> <td>Note that booking is required.</td></tr>";
         }
 
-        $html .= "</table>";
+        $html .= "</table>\n";
+        $html .= "</div>\n";
         return $html;
     }
 
