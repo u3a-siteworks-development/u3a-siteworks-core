@@ -1,4 +1,7 @@
+
+
 wp.blocks.registerBlockType("u3a/grouplist", {
+    apiVersion: 3,
     title: "u3a group list",
     description: "displays a list of all groups",
     icon: "groups",
@@ -50,6 +53,8 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       const useSelect = wp.data.useSelect;
       const CheckboxControl = wp.components.CheckboxControl;
       const Scrollable = wp.components.__experimentalScrollable;
+      const useBlockProps = wp.blockEditor.useBlockProps;
+      const blockProps = useBlockProps();
 
       const onChangeCat = Id => {
         catchoices[Id].checked = !catchoices[Id].checked;
@@ -112,13 +117,11 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       const terms = useSelect( ( select ) =>
             select( 'core' ).getEntityRecords( 'taxonomy', 'u3a_group_category', query )
         );
-      if ( ! terms ) {
-          return 'Loading, please wait...';
-      }
-      if ( terms.length === 0 ) {
-          return 'No terms found';
-      }
 
+      /* Note: terms may be null if the select callback hasn't responded yet, so allow for this.
+         but React will re-render (call edit function again) when the callback completes so don't worry!
+      */  
+      
       /* backwards compatibility */
       if (group_cat.length  !== 0) {
         if (group_cats.length === 0) {
@@ -134,14 +137,17 @@ wp.blocks.registerBlockType("u3a/grouplist", {
         slug:"all" , 
         checked:group_cats.includes('all'),
        } );
-       for ( var i = 0; i < terms.length; i++ ) {
-        catchoices.push( {
-          element: i + 1,
-          label:terms[i].name.replace(/&amp;/g, '&'),
-          slug:terms[i].slug, 
-          checked:group_cats.includes(terms[i].slug),
-        } 
-        );
+      
+      if (terms != null) {
+        for ( var i = 0; i < terms.length; i++ ) {
+          catchoices.push( {
+            element: i + 1,
+            label:terms[i].name.replace(/&amp;/g, '&'),
+            slug:terms[i].slug, 
+            checked:group_cats.includes(terms[i].slug),
+          } 
+          );
+        }
       }
       
       const rendercatsarray = ( catchoices) => {
@@ -175,72 +181,74 @@ wp.blocks.registerBlockType("u3a/grouplist", {
       }
 
       var nest = [
-        wp.element.createElement(
-          InspectorControls,
-          {}, 
-            wp.element.createElement( PanelBody, {title:'Category Selection' , initialOpen:false},
-              wp.element.createElement( Scrollable, { 
-                children: wp.element.createElement("div", {style: {padding: '10px', height: 300 }}, 
-                  rendercatsarray(catchoices)
-                )
-              }
-              )
-            ),
-            wp.element.createElement( PanelBody, {title:'Display options', initialOpen:true },
-            wp.element.createElement(ShowOrNot,
-              { show:(group_cats.length != 1 || 'all' == group_cats[0]),
-                el: wp.element.createElement( SelectControl,
-                      { label:'Sort Order', 
-                        value: sort,
-                        onChange: onChangeSort,
-                        options:[
-                          {label: 'Alphabetic Order', value: 'alpha'},
-                          {label: 'By Category', value: 'cat'},
-                          {label: 'By Date', value: 'day'},
-                          {label: 'By Venue', value: 'venue'}
-                        ]
-                      }
-                    )
-              }
-            ),
-            wp.element.createElement( SelectControl,
-              { label:'Alphabetic flow', 
-                value: flow,
-                onChange: onChangeFlow,
-                options:[
-                {
-                  label: 'Down columns',
-                  value: 'column',
-                },
-                {
-                  label: 'Across rows',
-                  value: 'row',
+          wp.element.createElement(
+            InspectorControls,
+            {}, 
+              wp.element.createElement( PanelBody, {title:'Category Selection' , initialOpen:false},
+                wp.element.createElement( Scrollable, { 
+                  children: wp.element.createElement("div", {style: {padding: '10px', height: 300 }}, 
+                    rendercatsarray(catchoices)
+                  )
                 }
-               ]
-              }
-            ),
-            wp.element.createElement( ToggleControl,
-              { label:'Show Group Status', 
-                checked: bstatus,
-                onChange: onChangeGroupStatus,
-              }
-            ),
-            wp.element.createElement( ToggleControl,
-              { label:'Show Meeting Time', 
-                checked: bwhen,
-                onChange: onChangeWhen,
-              }
-            ),
-            wp.element.createElement( ToggleControl,
-              { label:'Show Venue',
-                checked: bvenue,
-                onChange: onChangeVenue,
-              }
+                )
+              ),
+              wp.element.createElement( PanelBody, {title:'Display options', initialOpen:true },
+              wp.element.createElement(ShowOrNot,
+                { show:(group_cats.length != 1 || 'all' == group_cats[0]),
+                  el: wp.element.createElement( SelectControl,
+                        { label:'Sort Order', 
+                          value: sort,
+                          onChange: onChangeSort,
+                          options:[
+                           {label: 'Alphabetic Order', value: 'alpha'},
+                            {label: 'By Category', value: 'cat'},
+                            {label: 'By Date', value: 'day'},
+                            {label: 'By Venue', value: 'venue'}
+                          ]
+                        }
+                     )
+                }
+              ),
+              wp.element.createElement( SelectControl,
+                { label:'Alphabetic flow', 
+                  value: flow,
+                  onChange: onChangeFlow,
+                  options:[
+                  {
+                    label: 'Down columns',
+                    value: 'column',
+                  },
+                  {
+                    label: 'Across rows',
+                    value: 'row',
+                  }
+                ]
+                }
+              ),
+              wp.element.createElement( ToggleControl,
+                { label:'Show Group Status', 
+                  checked: bstatus,
+                  onChange: onChangeGroupStatus,
+                }
+              ),
+              wp.element.createElement( ToggleControl,
+                { label:'Show Meeting Time', 
+                  checked: bwhen,
+                  onChange: onChangeWhen,
+                }
+              ),
+              wp.element.createElement( ToggleControl,
+                { label:'Show Venue',
+                  checked: bvenue,
+                  onChange: onChangeVenue,
+                }
+              )
             )
-          )
-        ),
-        wp.element.createElement("div", {className: 'wp-block alignwide', style: {color: 'white', backgroundColor: '#005ab8', padding: '10px'}}, "This placeholder shows where the list of groups will be shown.")
-      ];
+            ),
+            wp.element.createElement("div", blockProps,
+              wp.element.createElement("div",  {  tabindex: '0' , className: 'wp-block alignwide ',  style: {color: 'white', backgroundColor: '#005ab8', padding: '10px'}}, "This placeholder shows where the list of groups will be shown.")
+            )
+    ];
     return nest
     },
     save: function () {
@@ -249,12 +257,18 @@ wp.blocks.registerBlockType("u3a/grouplist", {
   })
 
   wp.blocks.registerBlockType("u3a/groupdata", {
+    apiVersion: 3,
     title: "u3a single group data",
     description: "displays group information",
     icon: "groups",
     category: "widgets",
-    edit: function () {
-      return wp.element.createElement("div", {style: {color: 'white', backgroundColor: '#005ab8', padding: '10px'}}, "This placeholder shows where the table of information held for this group will be shown.")
+    edit: function ()
+    {
+      const useBlockProps = wp.blockEditor.useBlockProps;
+      const blockProps = useBlockProps();
+      return wp.element.createElement("div", blockProps,
+        wp.element.createElement("div", {style: {color: 'white', backgroundColor: '#005ab8', padding: '10px'}}, "This placeholder shows where the table of information held for this group will be shown.")
+      )
     },
     save: function () {
       return null

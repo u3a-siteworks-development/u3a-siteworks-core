@@ -1,12 +1,17 @@
 
 
 wp.blocks.registerBlockType("u3a/eventdata", {
+    apiVersion: 3,
     title: "u3a single event data",
     description: "displays details of this event",
     icon: "tickets-alt",
     category: "widgets",
     edit: function () {
-      return wp.element.createElement("div", {style: {color: 'black', backgroundColor: '#ffc700', padding: '10px'}}, "This placeholder shows where the event information will be shown.")
+      const useBlockProps = wp.blockEditor.useBlockProps;
+      const blockProps = useBlockProps();
+      return wp.element.createElement("div", blockProps,
+        wp.element.createElement("div", {style: {color: 'black', backgroundColor: '#ffc700', padding: '10px'}}, "This placeholder shows where the event information will be shown.")
+      )
     },
     save: function () {
       return null
@@ -14,6 +19,7 @@ wp.blocks.registerBlockType("u3a/eventdata", {
   })
 
   wp.blocks.registerBlockType("u3a/eventlist", {
+    apiVersion: 3,
     title: "u3a events list",
     description: "Displays list of events",
     icon: "tickets-alt",
@@ -79,7 +85,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const useSelect = wp.data.useSelect;
       const CheckboxControl = wp.components.CheckboxControl;
       const Scrollable = wp.components.__experimentalScrollable;
- 
+      const useBlockProps = wp.blockEditor.useBlockProps;
+      const blockProps = useBlockProps();
+
       const onChangeShowTitle = val => {
         bshowtitle = val;
         if (val) {
@@ -157,13 +165,11 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       const terms = useSelect( ( select ) =>
             select( 'core' ).getEntityRecords( 'taxonomy', 'u3a_event_category', query )
         );
-      if ( ! terms ) {
-          return 'Loading, please wait...';
-      }
-      if ( terms.length === 0 ) {
-          return 'No terms found';
-      }
 
+      /* Note: terms may be null if the select callback hasn't responded yet, so allow for this.
+         but React will re-render (call edit function again) when the callback completes so don't worry!
+      */
+      
       /* backward compatibility with a single event_cat */
       if (event_cat.length !== 0) {
         if (event_cats.length === 0) {
@@ -177,15 +183,18 @@ wp.blocks.registerBlockType("u3a/eventdata", {
         label:"All",
         slug:"all" , 
         checked:event_cats.includes('all'),
-       } );
-       for ( var i = 0; i < terms.length; i++ ) {
-        catchoices.push( {
-          element: i + 1,
-          label:terms[i].name.replace(/&amp;/g, '&'),
-          slug:terms[i].slug, 
-          checked:event_cats.includes(terms[i].slug),
-        } 
-        );
+      } );
+
+      if (terms != null) {
+        for ( var i = 0; i < terms.length; i++ ) {
+          catchoices.push( {
+            element: i + 1,
+            label:terms[i].name.replace(/&amp;/g, '&'),
+            slug:terms[i].slug, 
+            checked:event_cats.includes(terms[i].slug),
+          }  
+          );
+        }
       }
       
       const rendercatsarray = ( catchoices) => {
@@ -335,7 +344,9 @@ wp.blocks.registerBlockType("u3a/eventdata", {
               ),
             ),
           ),
-        wp.element.createElement("div", {style: {color: 'black', backgroundColor: editBoxColor, padding: '10px', border: '1px solid lightgrey'}}, "This placeholder shows where a table of events will be shown.")
+        wp.element.createElement("div", blockProps,  
+          wp.element.createElement("div", {style: {color: 'black', backgroundColor: editBoxColor, padding: '10px', border: '1px solid lightgrey'}}, "This placeholder shows where a table of events will be shown.")
+        )
       ];
       return  nest
     },
