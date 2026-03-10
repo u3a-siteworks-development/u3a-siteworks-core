@@ -73,9 +73,6 @@ class U3aEvent
         // Register Event CPT and taxonomy
         add_action('init', array(self::class, 'register_events'));
 
-        // Experimental - use a feed for calendars
-        //add_action('init', array(self::class, 'add_cal_feed'));
-
         // Routine to run on plugin activation
         register_activation_hook($plugin_file, array(self::class, 'on_activation'));
 
@@ -171,12 +168,6 @@ class U3aEvent
             )
 
         ));
-    }
-
-    public static function add_cal_feed()
-    {
-        // Generate a feed for calendar
-        // add_feed('events-calendar', array(self::class, 'generate_calendar_feed'));
     }
 
 
@@ -667,27 +658,6 @@ class U3aEvent
     {
         return get_transient("u3a_events_importing");
     }
-
-    /*
-     * Generate a calendar feed when asked for it.
-     *
-     */
-    /*public static function generate_calendar_feed()
-    {
-        global $post;
-        if ($post == null) {
-            return;
-        }
-        $file = urlencode('events-calendar-' . date('Y-m-d') . '.ics');
-        // File header
-        header("Content-Disposition: inline; filename=" . $file);
-        header("Content-type: text/calendar");
-        header("Pragma: 0");
-        header("Expires: 0");
-        echo self::build_ics();
-        exit();
-    }
-    */
 
     public static function generate_ics_calendar($post_id, $post, $update)
     {
