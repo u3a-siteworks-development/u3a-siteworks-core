@@ -58,6 +58,9 @@ trait ManageCrossRefs
     public static function display_xrefs($content)
     {
         global $post;
+        if ($post == null) {
+            return '';
+        }
         if (self::$post_type == $post->post_type) {
             // if its a venue, don't display if user is not editor/admin and option to hide is set  
             if ($post->post_type == 'u3a_venue' && !current_user_can('edit_others_posts') && get_option('venue_hide_xrefs', 'n') == 'y') {
@@ -117,7 +120,7 @@ trait ManageCrossRefs
                     $message .= "<br>'" . implode("'<br>'", $result['events']) . "'";
                 }
                 $message .= "<br><br><a href=" . get_bloginfo('url') .
-                "/wp-admin/edit.php?post_type=" . self::$post_type . ">Return to previous page</a>";
+                    "/wp-admin/edit.php?post_type=" . self::$post_type . ">Return to previous page</a>";
             }
             //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- only title and slug of various posts.
             wp_die($message);
@@ -141,7 +144,7 @@ trait ManageCrossRefs
     {
         $meta_key_list = self::$xref_meta_key_list;
         global $wpdb;
-         // This query finds custom groups or events with a contact postmeta key whose value matches
+        // This query finds custom groups or events with a contact postmeta key whose value matches
         // the contact post_id.
         // Much simpler than using WP_Query to do this!
         // The DISTINCT is used because it is possible that some metadata can get duplicated
@@ -176,7 +179,7 @@ trait ManageCrossRefs
                         $eventdate = strtotime($eventdate);
                         $formatted_date = date(get_option('date_format'), $eventdate);
                         // If the user is not an administrator then past events will not be returned.
-                        if (!$date_filter || $user_is_admin || $eventdate >= $current_date){
+                        if (!$date_filter || $user_is_admin || $eventdate >= $current_date) {
                             $event = new stdClass();
                             $event->date = $eventdate;
                             $event->link = "$linkHTML  on $formatted_date ";
@@ -191,7 +194,7 @@ trait ManageCrossRefs
                 }
             }
             // sort by event->date
-            usort($eventdates, function($a, $b) {
+            usort($eventdates, function ($a, $b) {
                 return ($a->date > $b->date);
             });
             foreach ($eventdates as $eventdate) {

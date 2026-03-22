@@ -44,6 +44,7 @@ class U3aEvent
     // $plugin_file is the value of __FILE__ from the main plugin file
     private static $plugin_file;
 
+    private static $CAL_EOL = "\r\n";
     /**
      * The ID of this post
      *
@@ -105,6 +106,9 @@ class U3aEvent
         add_action('pre_get_posts', array(self::class, 'add_groupID_to_query'));
         add_action('restrict_manage_posts', array(self::class, 'add_admin_filters'));
 
+        // Generate an ICS file for events when any event changes
+        add_action('save_post_u3a_event', array(self::class, 'generate_ics_calendar'), 99, 3);
+
         // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
         add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
     }
@@ -165,6 +169,7 @@ class U3aEvent
 
         ));
     }
+
 
     /**
      * Do tasks that should only be done on activation
@@ -648,6 +653,250 @@ class U3aEvent
         }
         update_post_meta($post_id, 'eventEndDate', $eventEndDate); // will create/update the field
     }
+
+    public static function is_importing()
+    {
+        return get_transient("u3a_events_importing");
+    }
+
+    public static function generate_ics_calendar($post_id, $post, $update)
+    {
+        // save is called with a null post
+        if ($post == null) {
+            return;
+        }
+        // Do not do this during event import
+        if (self::is_importing()) {
+            return;
+        }
+        // Only set for post_type = u3a_event
+        if (self::$post_type !== $post->post_type) {
+            return;
+        }
+
+        $filename = wp_get_upload_dir()['basedir'] . "/event_calendars/";
+        if (!is_dir($filename)) {
+            mkdir($filename, 0755, true);
+        }
+
+        $filename .= "u3a_event_calendar.ics";
+        $file = fopen($filename, "w+");
+        if (!$file) {
+            return;
+        }
+
+        // Generate the ICS file
+        $data = self::build_ics();
+
+        fputs($file, $data);
+
+        fclose($file);
+    }
+
+    private static function build_ics()
+    {
+
+        $data = '';
+        $query_args = [
+            'post_type' => U3A_EVENT_CPT,
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'meta_key' => 'eventDate',
+            'orderby' => 'meta_value',
+            'order'    => 'ASC',
+        ];
+
+        // This will only get future events - get them all - calendar is
+        // configurable.
+        // $now = date("Y-m-d");
+        // $date_query = ['key' => 'eventDate', 'value' => $now, 'compare' => '>='];
+        // $query_args['meta_query'] = [$date_query];
+
+        $posts = get_posts($query_args);
+
+        $valid_posts = array();
+
+        // skip those events associated with non-published groups.
+        foreach ($posts as $event) {
+            if ($event->eventGroup_ID != '') {
+                $groupstatus = get_post_status($event->eventGroup_ID);
+                if ($groupstatus != 'publish') {
+                    continue;
+                }
+            }
+            $valid_posts[] = $event;
+        }
+
+        $data .= self::build_calendar_header();
+        $data .= self::add_ics_entries($valid_posts);
+        $data .= self::build_calendar_footer();
+        return $data;
+    }
+
+    private static function build_calendar_footer()
+    {
+        return "END:VCALENDAR" . self::$CAL_EOL;
+    }
+
+    private static function build_calendar_header()
+    {
+        $data = "BEGIN:VCALENDAR" . self::$CAL_EOL;
+        $data .= "VERSION:2.0" . self::$CAL_EOL;
+        $data .=  "CALSCALE:GREGORIAN" . self::$CAL_EOL;
+        // Use site name as PRODID
+        $u3aname = strtoupper(get_bloginfo('name'));
+        $data .= "PRODID:" . $u3aname . self::$CAL_EOL;
+        $data .= "METHOD:PUBLISH" . self::$CAL_EOL;
+        $data .= "BEGIN:VTIMEZONE" . self::$CAL_EOL;
+        $data .= "TZID:Europe/London" . self::$CAL_EOL;
+        $data .= "X-LIC-LOCATION:Europe/London" . self::$CAL_EOL;
+        $data .= "BEGIN:DAYLIGHT" . self::$CAL_EOL;
+        $data .= "TZOFFSETFROM:+0000" . self::$CAL_EOL;
+        $data .= "TZOFFSETTO:+0100" . self::$CAL_EOL;
+        $data .= "TZNAME:BST" . self::$CAL_EOL;
+        $data .= "DTSTART:19700329T010000" . self::$CAL_EOL;
+        $data .= "END:DAYLIGHT" . self::$CAL_EOL;
+        $data .= "BEGIN:STANDARD" . self::$CAL_EOL;
+        $data .= "TZOFFSETFROM:+0100" . self::$CAL_EOL;
+        $data .= "TZOFFSETTO:+0000" . self::$CAL_EOL;
+        $data .= "TZNAME:GMT" . self::$CAL_EOL;
+        $data .= "DTSTART:19701025T020000" . self::$CAL_EOL;
+        $data .= "END:STANDARD" . self::$CAL_EOL;
+        $data .= "END:VTIMEZONE" . self::$CAL_EOL;
+        return $data;
+    }
+    private static function add_ics_entries($posts)
+    {
+        $createtime = date('Ymd') . 'T' . date('His');
+        $data = '';
+        add_filter('excerpt_length', function ($length) {
+            return 30;
+        });
+
+        foreach ($posts as $post) {
+            $metadata = get_post_meta($post->ID, '', false);
+
+            $data .= "BEGIN:VEVENT" . self::$CAL_EOL;
+            $data .= "SUMMARY:";
+            $title = $post->post_title;
+
+            if (isset($metadata['eventGroup_ID'])) {
+                $group = get_the_title($metadata['eventGroup_ID'][0]);
+                if ($group != "") {
+                    $data .= "($group) ";
+                }
+            }
+            $data .= $title . self::$CAL_EOL;
+
+            $data .= 'UID:' . $post->ID . self::$CAL_EOL;
+            $data .= 'SEQUENCE:0' . self::$CAL_EOL;
+            $data .= 'STATUS:CONFIRMED' . self::$CAL_EOL;
+            $data .= 'TRANSP:TRANSPARENT' . self::$CAL_EOL;
+            $epochendtime = 0;
+            $epochtime = 0;
+
+            $hastime = false;
+            $hasendtime = false;
+            if (isset($metadata['eventDate'])) {
+                $date = $metadata['eventDate'][0];
+                if (isset($metadata['eventTime'])) {
+                    $time = $metadata['eventTime'][0];
+                    $epochtime = strtotime($date . ' ' . $time);
+                    $hastime = true;
+                } else {
+                    $epochtime = strtotime($date);
+                }
+                if (isset($metadata['eventEndTime'])) {
+                    $endtime = $metadata['eventEndTime'][0];
+                    $epochendtime = strtotime($date . ' ' . $endtime);
+                    $hasendtime = true;
+                } else {
+                    $epochendtime = $epochtime;
+                }
+            }
+            if ($hastime) {
+                $formatted_date = date("Ymd\THis", $epochtime);
+                $data .= "DTSTART:" . $formatted_date . self::$CAL_EOL;
+            } else {
+                $formatted_date = date("Ymd", $epochtime);
+                $data .= "DTSTART;VALUE=DATE:" . $formatted_date . self::$CAL_EOL;
+            }
+
+            if (isset($metadata['eventDays'])) {
+                $days = $metadata['eventDays'][0];
+                if ($days >= 1) {
+                    $epochendtime += $days * 86400;
+                }
+            }
+            if ($epochendtime > $epochtime) {
+                if ($hasendtime) {
+                    $formatted_date = date("Ymd\THis", $epochendtime);
+                    $data .= "DTEND:" . $formatted_date . self::$CAL_EOL;
+                } else {
+                    $formatted_date = date("Ymd", $epochendtime);
+                    $data .= "DTEND;VALUE=DATE:" . $formatted_date . self::$CAL_EOL;
+                }
+            }
+            $data .= "DTSTAMP:" . $createtime . self::$CAL_EOL;
+
+            $permalink = get_the_permalink($post->ID);
+            $extract = htmlspecialchars_decode(get_the_excerpt($post->ID));
+
+            $data .= "DESCRIPTION:" . $extract .
+                "<a href=\"" . $permalink . "\">" . $title . "</a>" . self::$CAL_EOL;
+
+            // add the categories
+            $terms = get_the_terms($post->ID, U3A_EVENT_TAXONOMY); // an array of terms or null
+            if ((false !== $terms) && !is_wp_error($terms)) {
+                $data .= "CATEGORIES:";
+                $first = true;
+                foreach ($terms as $term) {
+                    if (!$first) {
+                        $data .= ",";
+                    }
+                    $first = false;
+                    $data .= $term->name;
+                }
+                $data .= self::$CAL_EOL;
+            }
+            // need location...
+            if (isset($metadata['eventVenue_ID'])) {
+                $venue = new U3aVenue($metadata['eventVenue_ID'][0]);
+                $venue_name = (string)($venue->venue_name_with_link());
+                if (!empty($venue_name)) {
+                    $data .= "LOCATION:" . $venue_name . self::$CAL_EOL;
+                }
+            }
+            $data .= "END:VEVENT" . self::$CAL_EOL;
+        }
+        $data = self::limit_data($data);
+        return $data;
+    }
+
+    public static function limit_data($data)
+    {
+        $newdata = '';
+        $lines = explode(self::$CAL_EOL, $data);
+        foreach ($lines as $line) {
+            if ($line != "") {
+                if (strlen($line) < 60) {
+                    $newdata .= $line . self::$CAL_EOL;
+                } else {
+                    $parts = str_split($line, 60);
+                    $first = true;
+                    foreach ($parts as $part) {
+                        if (!$first) {
+                            $newdata .= " ";
+                        }
+                        $newdata .= $part . self::$CAL_EOL;
+                        $first = false;
+                    }
+                }
+            }
+        }
+        return $newdata;
+    }
+
 
     /**
      * List events in date order, selected according to parameters.
