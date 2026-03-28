@@ -765,6 +765,24 @@ class U3aEvent
         $data .= "END:VTIMEZONE" . self::$CAL_EOL;
         return $data;
     }
+    private static function check_formatting($text)
+    {
+        $text = preg_replace("/[\n\r]/", "", $text);
+        $items = preg_split("/<!-- [\/]?wp:/", $text);
+        $retval = '';
+        if (count($items) == 1) {
+            return $text;
+        }
+        foreach ($items as $item) {
+            $parts = preg_split("/-->/", $item);
+            // scrap the element if it does not end
+            if (count($parts) > 1) {
+                // take the last element - there should never be more than two, but..
+                $retval .= $parts[count($parts) - 1];
+            }
+        }
+        return $retval;
+    }
     private static function add_ics_entries($posts)
     {
         $createtime = date('Ymd') . 'T' . date('His');
@@ -840,7 +858,7 @@ class U3aEvent
             $data .= "DTSTAMP:" . $createtime . self::$CAL_EOL;
 
             $permalink = get_the_permalink($post->ID);
-            $extract = htmlspecialchars_decode(get_the_excerpt($post->ID));
+            $extract = self::check_formatting(htmlspecialchars_decode(get_the_excerpt($post->ID)));
 
             $data .= "DESCRIPTION:" . $extract .
                 "<a href=\"" . $permalink . "\">" . $title . "</a>" . self::$CAL_EOL;
