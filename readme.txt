@@ -21,7 +21,9 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
-= 2.1.0 =
+= 2.1.1 =
+* Changes to ics file generation: DESCRIPTION field as plain text, add X-ALT-DESC with HTML Description
+= 2.1.0 (not rleased) =
 * Feature 1173: Create iCalendar (.ics) file from SiteWorks Event data
 * Futureproofing: Update blocks to use api Version 3 prior to release of Wordpress 7
 * Feature 1165: Single line option for event list block
