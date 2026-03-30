@@ -45,6 +45,28 @@ class U3aEvent
     private static $plugin_file;
 
     private static $CAL_EOL = "\r\n";
+
+    private static $allowed_tags = array(
+        'a' => array(
+            'href' => array(),
+            'title' => array(),
+            'rel' => array()
+        ),
+        'blockquote' => array('cite' => array()),
+        'br' => array(),
+        'p' => array(),
+        'code' => array(),
+        'pre' => array(),
+        'em' => array(),
+        'strong' => array(),
+        'ul' => array(),
+        'ol' => array(),
+        'li' => array(),
+        'h3' => array(),
+        'h4' => array()
+    );
+
+
     /**
      * The ID of this post
      *
@@ -765,6 +787,43 @@ class U3aEvent
         $data .= "END:VTIMEZONE" . self::$CAL_EOL;
         return $data;
     }
+
+    private static function remove_wp_tags($text)
+    {
+        $split = preg_split("/<!--.*?-->/", $text);
+        for ($i = 0; $i < count($split); $i++) {
+            if ($split[$i] == "") {
+                $split[$i] = " ";
+            }
+        }
+        $text = implode($split);
+        return $text;
+    }
+
+    private static function adjust_formatting($text)
+    {
+        $text = preg_replace("/[\n\r]/", "", $text);
+        $text = balanceTags($text);
+        if ($text != "") {
+            $text = self::remove_wp_tags($text);
+            $text = wp_kses($text, self::$allowed_tags);
+            $text = trim($text);
+        }
+        return $text;
+    }
+
+    private static function strip_formatting($text)
+    {
+        $text = preg_replace("/[\n\r]/", "", $text);
+        $text = balanceTags($text);
+        if ($text != "") {
+            $text = self::remove_wp_tags($text);
+            $text = wp_kses($text, array());
+            $text = trim($text);
+        }
+        return $text;
+    }
+
     private static function add_ics_entries($posts)
     {
         $createtime = date('Ymd') . 'T' . date('His');
@@ -840,10 +899,11 @@ class U3aEvent
             $data .= "DTSTAMP:" . $createtime . self::$CAL_EOL;
 
             $permalink = get_the_permalink($post->ID);
-            $extract = htmlspecialchars_decode(get_the_excerpt($post->ID));
-
-            $data .= "DESCRIPTION:" . $extract .
-                "<a href=\"" . $permalink . "\">" . $title . "</a>" . self::$CAL_EOL;
+            $extract_html = self::adjust_formatting(htmlspecialchars_decode(get_the_excerpt($post->ID)));
+            $extract_text = self::strip_formatting(htmlspecialchars_decode(get_the_excerpt($post->ID)));
+            $data .= "X-ALT-DESC:" . $extract_html . self::$CAL_EOL;
+            $data .= "DESCRIPTION:" . $extract_text . self::$CAL_EOL;
+            "<a href=\"" . $permalink . "\">" . $title . "</a>" . self::$CAL_EOL;
 
             // add the categories
             $terms = get_the_terms($post->ID, U3A_EVENT_TAXONOMY); // an array of terms or null
