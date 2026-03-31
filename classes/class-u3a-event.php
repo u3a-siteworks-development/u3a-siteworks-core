@@ -901,9 +901,10 @@ class U3aEvent
             $permalink = get_the_permalink($post->ID);
             $extract_html = self::adjust_formatting(htmlspecialchars_decode(get_the_excerpt($post->ID)));
             $extract_text = self::strip_formatting(htmlspecialchars_decode(get_the_excerpt($post->ID)));
-            $data .= "X-ALT-DESC:" . $extract_html . self::$CAL_EOL;
-            $data .= "DESCRIPTION:" . $extract_text . self::$CAL_EOL;
-            "<a href=\"" . $permalink . "\">" . $title . "</a>" . self::$CAL_EOL;
+            $data .= "X-ALT-DESC:" . $extract_html .
+                " <a href=\"" . $permalink . "\">" . $title . "</a>" . self::$CAL_EOL;
+            $data .= "DESCRIPTION:" . $extract_text .
+                " " . $title . self::$CAL_EOL;
 
             // add the categories
             $terms = get_the_terms($post->ID, U3A_EVENT_TAXONOMY); // an array of terms or null
