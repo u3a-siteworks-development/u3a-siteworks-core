@@ -133,6 +133,17 @@ class U3aEvent
 
         // Convert metadata fields to displayable text when rendered by the third party Meta Field Block
         add_filter('meta_field_block_get_block_content', array(self::class, 'modify_meta_data'), 10, 2);
+
+        // Add row action for Repeat Event 
+        add_filter('post_row_actions', array(self::class, 'repeat_event_row_action'), 10, 2);
+        // Add admin page for Repeat Event
+        add_action('admin_menu', array(self::class, 'repeat_event_admin_page'));
+        // Function to process the Repeat Event form submission
+        add_action('admin_post_u3a_repeat_event', array(self::class, 'repeat_event_save'));
+        // Load CSS and JavaScript for the repeat event page
+        add_action('admin_enqueue_scripts', array(self::class, 'repeat_event_scripts'));
+        // Add Repeat Event to admin toolbar
+        add_action('admin_bar_menu', array(self::class, 'repeat_event_admin_toolbar'), 99);        
     }
 
 
@@ -1805,6 +1816,331 @@ class U3aEvent
         } else {
             //return ['', ''];
             return '';
+        }
+    }
+
+    /**
+     * Repeat Event
+     * Add row action to the posts table for authorised users
+     */
+
+    public static function repeat_event_row_action($actions, $post)
+    {
+        if ($post->post_type == U3A_EVENT_CPT) {
+            // Check we are authorised.  
+            // Add action for author only if they are the author of this event
+            if ((get_current_user_id() == $post->post_author) || current_user_can('edit_others_pages')) {
+                $id = $post->ID;
+                $url = wp_nonce_url(admin_url("admin.php?page=repeat-event&post=$id"), 'repeatEvent');
+                $actions['repeat'] = "<a href=\"$url\">Repeat&nbsp;Event</a>";
+            }
+        }
+        return $actions;
+    }
+
+    /**
+     * Repeat Event
+     * Add the admin page to the u3a Events menu but not shown as it makes no sense
+     * to go direct to the page without selecting an event to repeat
+     */
+
+    public static function repeat_event_admin_page()
+    {
+        add_submenu_page(
+            'edit.php?post_type=' . U3A_EVENT_CPT,
+            'Repeat Event',
+            '', // empty string to avoid appearing in menu
+            'publish_posts',
+            'repeat-event',
+            array(self::class, 'render_repeat_event_admin_page')
+        );
+    }
+
+    /**
+     * Repeat Event
+     * Display the admin page
+     */
+
+    public static function render_repeat_event_admin_page()
+    {
+        // Nonce check
+        if (! isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce($_REQUEST['_wpnonce'], 'repeatEvent')) {
+            wp_die('Invalid access');
+            exit;
+        }
+
+        // Event ID of field to repeat is passed in query string as post
+        if (array_key_exists('post', $_GET)) {
+            $eventID = filter_var($_GET['post'], FILTER_VALIDATE_INT);
+        } else {
+            wp_die('Invalid access');
+            exit;
+        }
+        // Check we are either an admin/editor or an author that owns the event
+        if (! (current_user_can('edit_others_posts') || get_current_user_id() == get_post_field('post_author', $eventID))) {
+            wp_die('Unauthorised');
+            exit;
+        }
+        // Check the event exists!
+        // phpcs:disable WordPress.Security.EscapeOutput -- all variables trusted
+
+        if (!get_post_status($eventID)) {
+            $url = admin_url('edit.php?post_type=' . U3A_EVENT_CPT);
+            echo <<< END
+            <h2>Invalid event ID</h2>
+            <p>Event with id $eventID does not exist.</p>
+            <a href="$url" class="button-primary">Continue</a>
+            END;
+            return;
+        }
+
+        // Data needed to display the admin page
+        $posttitle = get_the_title($eventID);
+        $posteventdate = get_post_meta($eventID, 'eventDate', true);
+        $my_event = new self($eventID);
+        $postgroup = $my_event->event_group_name_with_link();
+        $group_header = ($postgroup) ? "<h3>A group event for $postgroup</h3>" : '';
+        $datestring = gmdate(get_option('date_format'), strtotime($posteventdate));
+        $nonce_code =  wp_nonce_field('u3a_settings', 'u3a_nonce', true, false);
+        $u3aMQDetect = "<input type=\"hidden\" name=\"u3aMQDetect\" value=\"test'\">\n";
+        echo <<< END
+        <div class="wrap u3a_repeat_event">
+        <h1 class="wp-heading-inline">Repeat Event: $posttitle ($datestring)</h1>
+        $group_header
+        <hr class="wp-header-end">
+        <form method="post" action="admin-post.php">
+        $nonce_code
+        $u3aMQDetect 
+        <input type="hidden" name="action" value="u3a_repeat_event">
+        <input type="hidden" id="posteventdate" value="$posteventdate">
+        <input type="hidden" id="posttitle" value="$posttitle">
+        <input type="hidden" name="eventID" id="eventID" value="$eventID">
+
+        <div id="setup-form">
+        <div>
+            <p>You can define a regular series of events based on the above event as a template.</p>
+            <p>The above event will either be the first event in the series (the default), or a template only and the first event in the series is on a different date.</p>
+        </div>
+        <div>
+            <input type="radio" id="use_event" name="start-choice" value="use_event" checked>
+            <label for="use_event">Use above event as first of series</label>
+        </div>
+        <div>
+            <input type="radio" id="use_date" name="start-choice" value="use_date" >
+            <label for="use_date">Start series on a different date</label>
+        </div>
+        <div class="boxinput" id="startDateInput" style="display:none">
+            <label for="firsteventdate">Enter series start date</label>
+            <div>
+            <input type="date" name="firstEventDate" id="firstEventDate">
+            </div>
+        </div> <!-- end of startDateInput -->
+        <div class="boxinput">
+            <label for="repeatFrequency">Repeat Frequency</label>
+            <div>
+            <select name="repeatFrequency" id="repeatFrequency">
+                <option value="none">Select a frequency</option>
+                <option value="weekly">Weekly</option>
+                <option value="fortnightly">Fortnightly</option>
+                <option value="monthly">Monthly</option>
+                <option value="twice-monthly">Twice-monthly</option>
+            </select>
+            <p id="datePattern">&nbsp;</p>
+            </div>
+        </div>
+        
+            <p>You must limit the number of events in the series by specifying at least one of the following:</p>
+        
+        <div class="boxinput">
+            <label for="numEvents">Number of events in series<br>(max 13)</label>
+            <div>
+            <input id="numEvents" name="numEvents" type="number" min="1" max="13" >
+            <p id="numEventsComment">This includes the existing event.</p>
+            </div>
+        </div>
+        <div class="boxinput">
+            <label for="eventCutoffDate">Cut-off date</label>
+            <div>
+            <input type="date" name="eventCutoffDate" id="eventCutoffDate">
+            <p>If set, events will not be created beyond this date.</p>
+            </div>
+        </div>
+        <input type="button" name="continueButton" id="continueButton" class="button button-primary" value="Continue">
+
+        </div> <!-- end setup-form -->
+
+        <div id="repeatEntriesSection">
+        <h3>Events to be created</h3>
+        <p>You may amend the event titles before creating the events, or remove events on dates which are not required.</p>
+        <table>
+        <tbody id="repeatentries">
+        <tr><th>Date</th><th>Event title</th><th></th></tr>
+        </tbody>
+        </table>
+
+        <h3>Copying data</h3>
+        <p>Data about the event will be copied from the template event.<br>However, if the desriptive content is specific to the original event, you can choose not to copy this to new events.</p>
+        <div>
+            <input type="radio" id="copyContent" name="copyContent" value="1" checked>
+            <label for="copyContent">Copy descriptive content from original event</label>
+        </div>
+        <div>
+            <input type="radio" id="notcopyContent" name="copyContent" value="0">
+            <label for="notcopyContent">New events have no descriptive content</label>
+        </div>
+
+        <h3>Visibility</h3>
+        <div>
+            <input type="radio" id="publishEvents" name="publishEvents" value="1" checked>
+            <label for="publishEvents">Publish now</label>
+        </div>
+        <div>
+            <input type="radio" id="draftEvents" name="publishEvents" value="0">
+            <label for="draftEvents">Save as draft</label>
+        </div>
+
+        <input type="submit" name="submit" id="submit" class="button button-primary" value="Create Events">
+        <input type="button" class="button button-secondary" value="Reset" onclick="window.location.reload()">
+
+        </div> <!-- end repeatEntriesSection  -->
+        </form>
+        </div> <!-- u3a_repeat_event -->
+        END;
+        // phpcs:enable WordPress.Security.EscapeOutput
+
+    }
+
+    /**
+     * Repeat Event
+     * Handle the form submission for repeat events
+     * 
+     * Event ID to duplicate is eventID
+     * Dates in array newdates[]
+     * Titles in array newtitles[]
+     * Duplicate post content if copycontent is set
+     */
+
+    public static function repeat_event_save()
+    {
+        // Check we are authorised
+        if (! current_user_can('publish_posts')) {
+            wp_die('Unauthorised');
+            exit;
+        }
+        // Check nonce
+        if (check_admin_referer('u3a_settings', 'u3a_nonce') == false) {
+            wp_die('Invalid form submission');
+            exit;
+        }
+        $return_page = admin_url('edit.php?post_type=' . U3A_EVENT_CPT);
+
+        // Check we have required $_POST arguments with some newdates
+        if (!array_key_exists('eventID', $_POST) ||
+            !array_key_exists('newdates', $_POST) ||
+            !array_key_exists('newtitles', $_POST) ||
+            !array_key_exists('copyContent', $_POST) ||
+            !array_key_exists('publishEvents', $_POST)
+           ) {
+            wp_safe_redirect($return_page);
+            exit;
+        }
+        $eventID = filter_var($_POST['eventID'], FILTER_VALIDATE_INT);
+        if (!get_post_status($eventID)) {
+            // Silently ignore if post not found
+            wp_safe_redirect($return_page);
+            exit;
+        }
+        $newdates = $_POST['newdates'];
+        $newtitles = $_POST['newtitles'];
+
+        // check for WP magic quotes
+        $u3aMQDetect = $_POST['u3aMQDetect'];
+        $needStripSlashes = (strlen($u3aMQDetect) > 5) ? true : false; // backslash added to apostrophe in test string?
+
+        // Retrieve post content, metadata and terms for the post being repeated
+        $post = get_post($eventID);
+        $meta = get_post_meta($eventID);
+        $terms = wp_get_object_terms($eventID, U3A_EVENT_TAXONOMY, array('fields' => 'ids'));
+
+        $c = count($newdates);
+        for ($i = 0; $i < $c; $i++) {
+            // Assemble new post and meta data
+            $meta_data = array('eventDate' => $newdates[$i]); //'eventEndDate' computed automatically on save
+            foreach (['eventTime', 'eventEndTime','eventDays', 'eventGroup_ID', 'eventVenue_ID', 'eventOrganiser_ID', 'eventCost', 'eventBookingRequired'] as $key) {
+                if (array_key_exists($key, $meta)) {
+                    $meta_data[$key] = $meta[$key][0];
+                }
+            }
+            $title = $needStripSlashes ? stripslashes($newtitles[$i]) : $newtitles[$i];
+            $title = sanitize_text_field($title);
+ 
+            // Get the event default content from a function in class U3aEvent, ...
+            //   using a dummy object
+            $dummy_post = (object)['post_type' => U3A_EVENT_CPT];
+            $event_default_content = U3aEvent::add_default_content('', $dummy_post);
+
+            $args = array(
+                'post_author' => $post->post_author,
+                'post_content' => ($_POST['copyContent']) ? $post->post_content : $event_default_content ,
+                'post_title' => $title,
+                'post_excerpt' => $post->post_excerpt,
+                'post_status' => ($_POST['publishEvents']) ? 'publish' : 'draft',
+                'post_type' => U3A_EVENT_CPT,
+                'post_password' => $post->post_password,
+                'meta_input' => $meta_data
+            );
+            $newID = wp_insert_post($args);
+            // Add categories
+            wp_set_object_terms($newID, $terms, U3A_EVENT_TAXONOMY);
+        }
+        // New events added  :-)
+        wp_safe_redirect($return_page);
+        exit;
+    }
+
+    /**
+     * Repeat Event
+     * Load scripts and CSS for the admin page
+     */
+
+    public static function repeat_event_scripts($hook)
+    {
+        if ($hook == 'u3a_event_page_repeat-event') {
+            wp_enqueue_style(
+                'repeateventstyle',
+                plugins_url('css/u3a-repeatevent.css', self::$plugin_file),
+                array(),
+                U3A_SITEWORKS_CORE_VERSION,
+                false
+            );
+            wp_enqueue_script(
+                'repeateventscript',
+                plugins_url('js/u3a-repeatevent.js', self::$plugin_file),
+                array(),
+                U3A_SITEWORKS_CORE_VERSION,
+                true
+            );
+        }
+    }
+
+    /**
+     * Add a Repeat Event action to the Admin Toolbar when displaying a single event
+     * if current user has rights to do so
+     */
+
+    public static function repeat_event_admin_toolbar($wp_admin_bar)
+    {
+        $postID = get_the_ID();
+        if (
+            (get_post_type($postID) == U3A_EVENT_CPT)  &&
+            ((current_user_can('edit_others_posts') || get_current_user_id() == get_post_field('post_author', $postID)))
+        ) {
+            $url = wp_nonce_url(admin_url("admin.php?page=repeat-event&post=$postID"), 'repeatEvent');
+            $wp_admin_bar->add_menu(array(
+                'id'    => 'repeat_event',
+                'title' => 'Repeat Event',
+                'href'  => $url
+            ));
         }
     }
 }
