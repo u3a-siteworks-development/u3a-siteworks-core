@@ -27,6 +27,8 @@ window.onload = function() {
   document.getElementById('use_event').onchange = useEvent;
   document.getElementById('use_date').onchange = useDate;
   document.getElementById('continueButton').onclick = generateEvents;
+  document.getElementById('repeatEventReset').onclick = returnToSetupForm;
+
 }
 
 function useEvent() {
@@ -95,6 +97,12 @@ function generateEvents() {
     // Is a valid date pattern set?
     if (!validPattern) {
       alert('You have not set a valid date and frequency pattern.\n\nPlease correct.');
+      return;
+    }
+
+    // Is numEvents valid?
+    if (numEvents !== '' && (numEvents < 1 || numEvents > 13)) {
+      alert('Please enter a number between 1 and 13');
       return;
     }
 
@@ -169,11 +177,18 @@ function generateEvents() {
     }
 }
 
+function returnToSetupForm() {
+  document.getElementById('repeatEntries').innerHTML = 
+    "<tr><th>Date</th><th>Event title</th><th></th></tr>"; 
+  document.getElementById('setup-form').style.display = 'block';
+  document.getElementById('repeatEntriesSection').style.display = 'none';
+  scrollTo(0,0);
+}
+
 // Add a row for each proposed date to the table
 
 function add_event_to_table(eventDate, eventTitle,isExistingEvent = false) {
-    const table = document.getElementById('repeatentries');
-    
+    const table = document.getElementById('repeatEntries');
     let dbdate = eventDate.toISOString().split('T')[0] // or just get first ten characters since our years have four digits
     let evdate = eventDate.toDateString();
 

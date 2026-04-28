@@ -1973,7 +1973,7 @@ class U3aEvent
         <h3>Events to be created</h3>
         <p>You may amend the event titles before creating the events, or remove events on dates which are not required.</p>
         <table>
-        <tbody id="repeatentries">
+        <tbody id="repeatEntries">
         <tr><th>Date</th><th>Event title</th><th></th></tr>
         </tbody>
         </table>
@@ -2000,7 +2000,7 @@ class U3aEvent
         </div>
 
         <input type="submit" name="submit" id="submit" class="button button-primary" value="Create Events">
-        <input type="button" class="button button-secondary" value="Reset" onclick="window.location.reload()">
+        <input type="button" id="repeatEventReset" class="button button-secondary" value="Reset">
 
         </div> <!-- end repeatEntriesSection  -->
         </form>
@@ -2132,6 +2132,7 @@ class U3aEvent
     {
         $postID = get_the_ID();
         if (
+            !is_admin() &&
             (get_post_type($postID) == U3A_EVENT_CPT)  &&
             ((current_user_can('edit_others_posts') || get_current_user_id() == get_post_field('post_author', $postID)))
         ) {
