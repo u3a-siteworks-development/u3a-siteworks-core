@@ -126,7 +126,6 @@ class U3aCommon
         <script type="text/javascript">
             jQuery(document).ready(function($) {
 
-                $('.inline-edit-row input[name="post_password"]').closest('div').hide();
                 $('.inline-edit-tags-wrap').hide();
                 $('.inline-edit-date').each(function(i) {
                     $(this).hide(); // hide NOT remove so that other fields that need it know the publish date.
