@@ -21,6 +21,10 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 2.2.0 =
+* Feature 1059 Add the facility to repeat events
+* Feature 1176 Group frequency list now includes 'Twice-monthly'
+* Bug 1177 A password protected Group displays incorrectly in the dashboard
 = 2.1.2 =
 * Add event link to X-ALT-DESC
 = 2.1.1 (not released) =
