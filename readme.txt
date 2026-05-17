@@ -24,7 +24,6 @@ Please refer to the documentation on the [SiteWorks website](https://siteworks.u
 = 2.2.0 =
 * Feature 1059 Add the facility to repeat events
 * Feature 1176 Group frequency list now includes 'Twice-monthly'
-* Bug 1174 Prevent archive files (.zip, .cab, etc) being uploaded to media gallery
 * Bug 1177 A password protected Group displays incorrectly in the dashboard
 = 2.1.2 =
 * Add event link to X-ALT-DESC
