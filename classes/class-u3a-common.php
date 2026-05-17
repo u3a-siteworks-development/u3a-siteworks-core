@@ -24,13 +24,13 @@ class U3aCommon
         self::fix_metaboxcb_is_false_gutenberg_bug();
 
         /* Three hooks common to all our CPTs */
-        
+
         // Remove the Dates filter for this plugin's post types
         add_filter('months_dropdown_results', array(self::class, 'remove_date_filter'), 10, 2);
 
         // Load admin javascript to ensure title is set for custom posts
         add_action('admin_enqueue_scripts', array(self::class, 'load_ensure_title_script'), 10, 1);
-        
+
         // Customise the Quick Edit panel
         add_action('admin_head-edit.php', array(self::class, 'modify_quick_edit'));
     }
@@ -59,16 +59,16 @@ class U3aCommon
      */
     public static function fix_metaboxcb_is_false_gutenberg_bug()
     {
-        add_filter( 'rest_prepare_taxonomy', function ($response, $taxonomy, $request ) {
-            $context = ! empty( $request['context'] ) ? $request['context'] : 'view';
+        add_filter('rest_prepare_taxonomy', function ($response, $taxonomy, $request) {
+            $context = ! empty($request['context']) ? $request['context'] : 'view';
             // Context is edit in the editor
-            if( $context === 'edit' && $taxonomy->meta_box_cb === false ){
+            if ($context === 'edit' && $taxonomy->meta_box_cb === false) {
                 $data_response = $response->get_data();
                 $data_response['visibility']['show_ui'] = false;
-                $response->set_data( $data_response );
+                $response->set_data($data_response);
             }
             return $response;
-        }, 10, 3 );
+        }, 10, 3);
     }
 
     /**
@@ -97,8 +97,8 @@ class U3aCommon
         if ($hook == 'post-new.php' || $hook == 'post.php') {
             if (in_array($post->post_type, self::$CPT_array)) {
                 wp_enqueue_script(
-                    'ensure_title_script', 
-                    plugins_url('js/u3a-cpt-ensure-title.js', self::$plugin_file), 
+                    'ensure_title_script',
+                    plugins_url('js/u3a-cpt-ensure-title.js', self::$plugin_file),
                     array('jquery', 'wp-data', 'wp-editor', 'wp-edit-post'),
                     U3A_SITEWORKS_CORE_VERSION,
                     false,
@@ -122,28 +122,16 @@ class U3aCommon
         if (!in_array($current_screen->post_type, self::$CPT_array)) {
             return;
         }
-        ?>
-<script type="text/javascript">
-    jQuery(document).ready(function($) {
+?>
+        <script type="text/javascript">
+            jQuery(document).ready(function($) {
 
-        $('span:contains("Password")').each(function(i) {
-            $(this).parent().parent().remove();
-        });
-        $('span:contains("Date")').each(function(i) {
-            $(this).parent().remove();
-        });
-        $('span:contains("Category")').each(function(i) {
-            $(this).parent().parent().remove();
-        });
-        $('span.title:contains("Group")').each(function(i) {
-            $(this).parent().parent().remove();
-        });
-        $('.inline-edit-date').each(function(i) {
-            $(this).hide(); // hide NOT remove so that other fields that need it know the publish date.
-        });
-    });
-</script>
-        <?php
+                $('.inline-edit-tags-wrap').hide();
+                $('.inline-edit-date').each(function(i) {
+                    $(this).hide(); // hide NOT remove so that other fields that need it know the publish date.
+                });
+            });
+        </script>
+<?php
     }
 }
-
