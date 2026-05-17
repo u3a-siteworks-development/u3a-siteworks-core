@@ -51,7 +51,7 @@ class U3aGroup
     );
     public static $day_list = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
     public static $time_list = ['Morning' => 'Morning', 'Afternoon' => 'Afternoon', 'Evening' => 'Evening', 'All Day' => 'All day'];
-    public static $frequency_list = ['Weekly' => 'Weekly', 'Fortnightly' => 'Fortnightly', 'Monthly' => 'Monthly'];
+    public static $frequency_list = ['Weekly' => 'Weekly', 'Fortnightly' => 'Fortnightly', 'Monthly' => 'Monthly', 'Twice-monthly' => 'Twice-monthly'];
     public static $status_list = [
         1 => 'Active, open to new members',
         2 => 'Active, not currently accepting new members',
