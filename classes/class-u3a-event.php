@@ -1898,9 +1898,35 @@ class U3aEvent
         $posttitle = get_the_title($eventID);
         $posteventdate = get_post_meta($eventID, 'eventDate', true);
         $my_event = new self($eventID);
+        $group_ID= get_post_meta($eventID, 'eventGroup_ID', true);
+        // set frequency based on frequncy of associated group, if that exists.
+        $frequency = ($group_ID) ? get_post_meta($group_ID, 'frequency', true) : '';
         $postgroup = $my_event->event_group_name_with_link();
         $group_header = ($postgroup) ? "<h3>A group event for $postgroup</h3>" : '';
         $datestring = gmdate(get_option('date_format'), strtotime($posteventdate));
+        //pre-set selected frequency if known.
+        $none_option = '';
+        $weekly_option = '';
+        $fortnightly_option = '';
+        $monthly_option = '';
+        $twice_monthly_option = '';
+        switch ($frequency) {
+          case 'Weekly':
+            $weekly_option = 'selected';
+            break;
+          case 'Fortnightly':
+            $fortnightly_option = 'selected';
+            break;
+          case 'Monthly':
+            $monthly_option = 'selected';
+            break;
+          case 'Twice-monthly':
+            $twice_monthly_option = 'selected';
+            break;
+          default:
+            $none_option = 'selected';
+        }
+
         $nonce_code =  wp_nonce_field('u3a_settings', 'u3a_nonce', true, false);
         $u3aMQDetect = "<input type=\"hidden\" name=\"u3aMQDetect\" value=\"test'\">\n";
         echo <<< END
@@ -1939,11 +1965,11 @@ class U3aEvent
             <label for="repeatFrequency">Repeat Frequency</label>
             <div>
             <select name="repeatFrequency" id="repeatFrequency">
-                <option value="none">Select a frequency</option>
-                <option value="weekly">Weekly</option>
-                <option value="fortnightly">Fortnightly</option>
-                <option value="monthly">Monthly</option>
-                <option value="twice-monthly">Twice-monthly</option>
+                <option value="none" $none_option>Select a frequency</option>
+                <option value="weekly" $weekly_option>Weekly</option>
+                <option value="fortnightly" $fortnightly_option>Fortnightly</option>
+                <option value="monthly" $monthly_option>Monthly</option>
+                <option value="twice-monthly" $twice_monthly_option>Twice-monthly</option>
             </select>
             <p id="datePattern">&nbsp;</p>
             </div>
