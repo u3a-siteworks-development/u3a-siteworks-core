@@ -29,6 +29,7 @@ window.onload = function() {
   document.getElementById('continueButton').onclick = generateEvents;
   document.getElementById('repeatEventReset').onclick = returnToSetupForm;
 
+  setDatePattern();
 }
 
 function useEvent() {
@@ -78,7 +79,7 @@ function setDatePattern() {
         }
     } else if ('twice-monthly' == evtFrequency) {
         if (5 != weekOfMonth) {
-            datePattern.innerText = "Monthly on the " + twoWeeksList[weekOfMonth] + " " + daysList[weekDay] + "s of the month";
+            datePattern.innerText = "Twice-monthly on the " + twoWeeksList[weekOfMonth] + " " + daysList[weekDay] + "s of the month";
         } else {
             let msg = "We cannot schedule Twice-monthly if the start date is in the 5th week of the month.";
             datePattern.innerText = msg;
