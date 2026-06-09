@@ -67,7 +67,7 @@ class U3aEvent
      * eventBookingRequired Boolean  stored as 0/1
      *  also each event is assigned to one or more event category.
      */
-     // array of meta field key and object property name
+    // array of meta field key and object property name
     public static $meta_data = array(
         'eventDate' => 'date',
         'eventTime' => 'starttime',
@@ -79,7 +79,7 @@ class U3aEvent
         'eventOrganiser_ID' => 'organiser_ID',
         'eventCost' => 'cost',
         'eventBookingRequired' => 'booking_required',
-        );
+    );
 
     /**
      * The ID of the post for this event
@@ -178,7 +178,7 @@ class U3aEvent
         // Load CSS and JavaScript for the repeat event page
         add_action('admin_enqueue_scripts', array(self::class, 'repeat_event_scripts'));
         // Add Repeat Event to admin toolbar
-        add_action('admin_bar_menu', array(self::class, 'repeat_event_admin_toolbar'), 99);        
+        add_action('admin_bar_menu', array(self::class, 'repeat_event_admin_toolbar'), 99);
     }
 
 
@@ -932,7 +932,7 @@ class U3aEvent
             if (isset($metadata['eventDays'])) {
                 $days = $metadata['eventDays'][0];
                 if ($days >= 1) {
-                    $epochendtime += $days * 86400;
+                    $epochendtime += ($days - 1) * 86400;
                 }
             }
             if ($epochendtime > $epochtime) {
@@ -1006,6 +1006,60 @@ class U3aEvent
         return $newdata;
     }
 
+
+    private static function add_event_sort_filter(string $order_direction): void
+    {
+        add_filter('posts_orderby', function (string $orderby, \WP_Query $query) use ($order_direction) {
+            global $wpdb;
+
+            if (! $query->get('u3a_event_sort')) {
+                return $orderby;
+            }
+
+            $dir = ('DESC' === $order_direction) ? 'DESC' : 'ASC';
+            $time_dir = 'ASC';
+            $time_default = '00:00';
+
+            return "
+            (
+                SELECT pm_date.meta_value
+                FROM {$wpdb->postmeta} pm_date
+                WHERE pm_date.post_id = {$wpdb->posts}.ID
+                  AND pm_date.meta_key = 'eventDate'
+                LIMIT 1
+            ) {$dir},
+            COALESCE(
+                (
+                    SELECT pm_time.meta_value
+                    FROM {$wpdb->postmeta} pm_time
+                    WHERE pm_time.post_id = {$wpdb->posts}.ID
+                      AND pm_time.meta_key = 'eventTime'
+                    LIMIT 1
+                ),
+                '{$time_default}'
+            ) {$time_dir},
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM {$wpdb->postmeta} pm_time_check
+                    WHERE pm_time_check.post_id = {$wpdb->posts}.ID
+                      AND pm_time_check.meta_key = 'eventTime'
+                )
+                THEN COALESCE(
+                    (
+                        SELECT pm_end.meta_value
+                        FROM {$wpdb->postmeta} pm_end
+                        WHERE pm_end.post_id = {$wpdb->posts}.ID
+                          AND pm_end.meta_key = 'eventEndTime'
+                        LIMIT 1
+                    ),
+                    '{$time_default}'
+                )
+                ELSE '{$time_default}'
+            END {$time_dir}
+        ";
+        }, 10, 2);
+    }
 
     /**
      * List events in date order, selected according to parameters.
@@ -1163,8 +1217,11 @@ class U3aEvent
             'post_status' => 'publish',
             'posts_per_page' => $numposts,
             'meta_key' => 'eventDate',
-            'orderby' => 'meta_value',
-            'order'    => $order,
+            'orderby'        => 'meta_value',  // kept as fallback; filter overrides this
+            'order'          => $order,
+            // Tell the filter this is our query
+            'u3a_event_sort' => true,
+            'suppress_filters' => false,
         ];
 
         // set eventDate and eventEndDate part of meta_query
@@ -1234,7 +1291,10 @@ class U3aEvent
                 ]];
             }
         }
+        self::add_event_sort_filter($order);
         $posts = get_posts($query_args);
+        remove_all_filters('posts_orderby'); // clean up immediately after
+
         // create an event object for each post
         $events = [];
         foreach ($posts as $post) {
@@ -1257,9 +1317,6 @@ class U3aEvent
             $valid_events = $events;
         }
 
-        // now sort the events of each day by start/end times
-        $sorted_events = self::sort_on_times($valid_events);
-
         $display_args = [
             'showtitle' => $showtitle,
             'layout' => $layout,
@@ -1268,70 +1325,11 @@ class U3aEvent
             // no need to show the event's group if we are on the group page!
             'show_group_info' => !($on_group_page),
         ];
-        
-        $html = self::display_selected_events($sorted_events, $when, $display_args);
+
+        $html = self::display_selected_events($valid_events, $when, $display_args);
         return $html;
     }
 
-    /**
-     * Sorting function to be used by usort in the sort_on_times function.
-     * Only valid for events for the same date.
-     * 
-     * @param $a first event containing times for start/end, format hh:mm or empty string
-     * @param $b second event containing times for start/end.
-     *
-     * @return int -1 = a lessthan b, 0 = equal, 1 = a greaterthan b
-     */
-    private static function timecompare($a, $b)
-    {
-        if ($a->starttime < $b->starttime) {
-            return -1;
-        }
-        if ($a->starttime > $b->starttime) {
-            return 1;
-        }
-        if ($a->endtime < $b->endtime) {
-            return -1;
-        }
-        if ($a->endtime > $b->endtime) {
-            return 1;
-        }
-        return 0;
-    }
-
-    /**
-     * Sort the items within a day in time order.
-     *
-     * This sorts first by start time in ascending order, then within the same
-     * start time sorts by end time.
-     * A missing end time is considered to be an early end time.
-     *
-     * @param array $events
-     *  The list of events to sort. These will already be in ascending or
-     * descending date order, but not fully sorted by time within the days.
-     *
-     * @return array the sorted events.
-     */
-    private static function sort_on_times($events)
-    {
-        // split into arrays by date.
-        $events_on_day = [];  // an array of events keyed on date
-        foreach ($events as $event) {
-            $events_on_day[$event->date][] = $event;
-        }
-        // sort each array
-        foreach (array_keys($events_on_day) as $date) {
-            usort($events_on_day[$date], 'U3aEvent::timecompare');
-        }
-        // reassemble
-        $sortedevents = [];
-        foreach ($events_on_day as $date => $events) {
-            foreach ($events as $event) {
-                $sortedevents[] = $event;
-            }
-        }
-        return $sortedevents;
-    }
     /* Return the HTML code for selected events.
      *
      * @param array $events   the selected event objects
@@ -1486,7 +1484,7 @@ class U3aEvent
         $event_categories = $this->get_event_categories();
 
         $group_line = '';
-        if ($display_args['show_group_info']) { 
+        if ($display_args['show_group_info']) {
             $group_line = $this->get_event_group_line();
         }
 
@@ -1706,7 +1704,7 @@ class U3aEvent
     {
         $date = $this->date;
         if (empty($date)) {
-            return ['', '', '',''];  // Should never occur as eventDate is required
+            return ['', '', '', ''];  // Should never occur as eventDate is required
         }
         $starttime = $this->starttime;
         $endtime = $this->endtime;
@@ -1826,7 +1824,7 @@ class U3aEvent
         // Data needed to display the admin page
         $posttitle = get_the_title($eventID);
         $posteventdate = get_post_meta($eventID, 'eventDate', true);
-        $group_ID= get_post_meta($eventID, 'eventGroup_ID', true);
+        $group_ID = get_post_meta($eventID, 'eventGroup_ID', true);
         // set frequency based on frequncy of associated group, if that exists.
         $frequency = ($group_ID) ? get_post_meta($group_ID, 'frequency', true) : '';
         $postgroup = U3aCommon::title_and_link($group_ID);
@@ -1839,20 +1837,20 @@ class U3aEvent
         $monthly_option = '';
         $twice_monthly_option = '';
         switch ($frequency) {
-          case 'Weekly':
-            $weekly_option = 'selected';
-            break;
-          case 'Fortnightly':
-            $fortnightly_option = 'selected';
-            break;
-          case 'Monthly':
-            $monthly_option = 'selected';
-            break;
-          case 'Twice-monthly':
-            $twice_monthly_option = 'selected';
-            break;
-          default:
-            $none_option = 'selected';
+            case 'Weekly':
+                $weekly_option = 'selected';
+                break;
+            case 'Fortnightly':
+                $fortnightly_option = 'selected';
+                break;
+            case 'Monthly':
+                $monthly_option = 'selected';
+                break;
+            case 'Twice-monthly':
+                $twice_monthly_option = 'selected';
+                break;
+            default:
+                $none_option = 'selected';
         }
 
         $nonce_code =  wp_nonce_field('u3a_settings', 'u3a_nonce', true, false);
@@ -1989,12 +1987,13 @@ class U3aEvent
         $return_page = admin_url('edit.php?post_type=' . U3A_EVENT_CPT);
 
         // Check we have required $_POST arguments with some newdates
-        if (!array_key_exists('eventID', $_POST) ||
+        if (
+            !array_key_exists('eventID', $_POST) ||
             !array_key_exists('newdates', $_POST) ||
             !array_key_exists('newtitles', $_POST) ||
             !array_key_exists('copyContent', $_POST) ||
             !array_key_exists('publishEvents', $_POST)
-           ) {
+        ) {
             wp_safe_redirect($return_page);
             exit;
         }
@@ -2020,14 +2019,14 @@ class U3aEvent
         for ($i = 0; $i < $c; $i++) {
             // Assemble new post and meta data
             $meta_data = array('eventDate' => $newdates[$i]); //'eventEndDate' computed automatically on save
-            foreach (['eventTime', 'eventEndTime','eventDays', 'eventGroup_ID', 'eventVenue_ID', 'eventOrganiser_ID', 'eventCost', 'eventBookingRequired'] as $key) {
+            foreach (['eventTime', 'eventEndTime', 'eventDays', 'eventGroup_ID', 'eventVenue_ID', 'eventOrganiser_ID', 'eventCost', 'eventBookingRequired'] as $key) {
                 if (array_key_exists($key, $meta)) {
                     $meta_data[$key] = $meta[$key][0];
                 }
             }
             $title = $needStripSlashes ? stripslashes($newtitles[$i]) : $newtitles[$i];
             $title = sanitize_text_field($title);
- 
+
             // Get the event default content from a function in class U3aEvent, ...
             //   using a dummy object
             $dummy_post = (object)['post_type' => U3A_EVENT_CPT];
@@ -2035,7 +2034,7 @@ class U3aEvent
 
             $args = array(
                 'post_author' => $post->post_author,
-                'post_content' => ($_POST['copyContent']) ? $post->post_content : $event_default_content ,
+                'post_content' => ($_POST['copyContent']) ? $post->post_content : $event_default_content,
                 'post_title' => $title,
                 'post_excerpt' => $post->post_excerpt,
                 'post_status' => ($_POST['publishEvents']) ? 'publish' : 'draft',
