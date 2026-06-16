@@ -1009,57 +1009,50 @@ class U3aEvent
 
     private static function add_event_sort_filter(string $order_direction): void
     {
-        add_filter('posts_orderby', function (string $orderby, \WP_Query $query) use ($order_direction) {
-            global $wpdb;
+        global $wpdb;
 
-            if (! $query->get('u3a_event_sort')) {
+        $join_callback = function ($join, $query) use ($wpdb) {
+
+            if (!$query->get('u3a_event_sort')) {
+                return $join;
+            }
+
+            $join .= "
+                LEFT JOIN {$wpdb->postmeta} AS pm_time
+                ON (
+                    pm_time.post_id = {$wpdb->posts}.ID
+                    AND pm_time.meta_key = 'eventTime'
+                )
+
+                LEFT JOIN {$wpdb->postmeta} AS pm_end
+                ON (
+                    pm_end.post_id = {$wpdb->posts}.ID
+                    AND pm_end.meta_key = 'eventEndTime'
+                )
+            ";
+
+            return $join;
+        };
+
+        $orderby_callback = function ($orderby, $query) use ($wpdb, $order_direction) {
+
+            if (!$query->get('u3a_event_sort')) {
                 return $orderby;
             }
 
             $dir = ('DESC' === $order_direction) ? 'DESC' : 'ASC';
-            $time_dir = 'ASC';
-            $time_default = '00:00';
 
             return "
-            (
-                SELECT pm_date.meta_value
-                FROM {$wpdb->postmeta} pm_date
-                WHERE pm_date.post_id = {$wpdb->posts}.ID
-                  AND pm_date.meta_key = 'eventDate'
-                LIMIT 1
-            ) {$dir},
-            COALESCE(
-                (
-                    SELECT pm_time.meta_value
-                    FROM {$wpdb->postmeta} pm_time
-                    WHERE pm_time.post_id = {$wpdb->posts}.ID
-                      AND pm_time.meta_key = 'eventTime'
-                    LIMIT 1
-                ),
-                '{$time_default}'
-            ) {$time_dir},
-            CASE
-                WHEN EXISTS (
-                    SELECT 1
-                    FROM {$wpdb->postmeta} pm_time_check
-                    WHERE pm_time_check.post_id = {$wpdb->posts}.ID
-                      AND pm_time_check.meta_key = 'eventTime'
-                )
-                THEN COALESCE(
-                    (
-                        SELECT pm_end.meta_value
-                        FROM {$wpdb->postmeta} pm_end
-                        WHERE pm_end.post_id = {$wpdb->posts}.ID
-                          AND pm_end.meta_key = 'eventEndTime'
-                        LIMIT 1
-                    ),
-                    '{$time_default}'
-                )
-                ELSE '{$time_default}'
-            END {$time_dir}
-        ";
-        }, 10, 2);
+                CAST({$wpdb->postmeta}.meta_value AS DATE) {$dir},
+                COALESCE(pm_time.meta_value, '00:00') ASC,
+                COALESCE(pm_end.meta_value, '00:00') ASC
+            ";
+        };
+
+        add_filter('posts_join', $join_callback, 10, 2);
+        add_filter('posts_orderby', $orderby_callback, 10, 2);
     }
+
 
     /**
      * List events in date order, selected according to parameters.
@@ -1294,6 +1287,8 @@ class U3aEvent
         self::add_event_sort_filter($order);
         $posts = get_posts($query_args);
         remove_all_filters('posts_orderby'); // clean up immediately after
+        remove_all_filters('posts_join');
+
 
         // create an event object for each post
         $events = [];
