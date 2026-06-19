@@ -1007,7 +1007,7 @@ class U3aEvent
     }
 
 
-    private static function add_event_sort_filter(string $order_direction): void
+    private static function add_event_sort_filter_and_get_posts($query_args)
     {
         global $wpdb;
 
@@ -1048,6 +1048,12 @@ class U3aEvent
 
         add_filter('posts_join', $join_callback, 10, 2);
         add_filter('posts_orderby', $orderby_callback, 10, 2);
+        $posts = get_posts($query_args);
+        remove_filter('posts_orderby', $orderby_callback); // clean up immediately after
+        remove_filter('posts_join', $join_callback);
+        return $posts;
+
+
     }
 
 
@@ -1281,10 +1287,7 @@ class U3aEvent
                 ]];
             }
         }
-        self::add_event_sort_filter($order);
-        $posts = get_posts($query_args);
-        remove_all_filters('posts_orderby'); // clean up immediately after
-        remove_all_filters('posts_join');
+        $posts = self::add_event_sort_filter_and_get_posts($query_args);
 
 
         // create an event object for each post
