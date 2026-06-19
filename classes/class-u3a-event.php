@@ -1034,18 +1034,15 @@ class U3aEvent
             return $join;
         };
 
-        $orderby_callback = function ($orderby, $query) use ($wpdb, $order_direction) {
+        $orderby_callback = function ($orderby, $query) {
 
             if (!$query->get('u3a_event_sort')) {
                 return $orderby;
             }
 
-            $dir = ('DESC' === $order_direction) ? 'DESC' : 'ASC';
-
-            return "
-                CAST({$wpdb->postmeta}.meta_value AS DATE) {$dir},
-                COALESCE(pm_time.meta_value, '00:00') ASC,
-                COALESCE(pm_end.meta_value, '00:00') ASC
+            return "$orderby, 
+            pm_time.meta_value ASC,
+            pm_end.meta_value ASC
             ";
         };
 
