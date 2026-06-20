@@ -170,38 +170,32 @@ class U3aContact
             'type'    => 'text',
             'name'    => 'u3a Membership Number',
             'id'      => 'memberid',
-            'size'    => '30px',
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Given Name',
             'id'      => 'givenname',
-            'size'    => '100px',
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Family Name',
             'id'      => 'familyname',
-            'size'    => '100px',
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Phone number',
             'id'      => 'phone',
-            'size'    => '50px',
             ];
         $fields[] = [
             'type'    => 'text',
             'name'    => 'Alternate phone number',
             'id'      => 'phone2',
-            'size'    => '50px',
             ];
         $fields[] = [
             'type'    => 'email',
             'name'    => 'Email address',
             'id'      => 'email',
-            'size'    => '100px',
-];
+            ];
         return $fields;
     }
 

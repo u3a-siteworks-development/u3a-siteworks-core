@@ -51,6 +51,24 @@ class U3aCommon
         );
     }
 
+    /*
+     * Provides HTML with the clickable title of a post.
+     *
+     * @param  $ID   the id of the post
+     * @return HTML 
+     *
+     */
+    public static function title_and_link($ID)
+    {
+        if (!empty($ID) && is_numeric($ID)) {
+            $title = get_post($ID)->post_title;
+            $permalink = get_permalink($ID);
+            return "<a href='$permalink'>$title</a>";
+        } else {
+            return '';
+        }
+    }
+
     /**
      * Setting 'meta_box_cb' => false does not work with the Gutenberg editor: see below for a temporary fix
      * https://wordpress.stackexchange.com/questions/337087/custom-content-type-meta-box-cb-does-not-run
