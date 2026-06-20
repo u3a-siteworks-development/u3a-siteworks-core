@@ -21,6 +21,9 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 2.2.1 =
+* Bug 1181 Event list limited by number may select same day events out of order
+* Bug 1162 Form to 'Add Contact' has irregular field sizes on a narrow screen.
 = 2.2.0 =
 * Feature 1059 Add the facility to repeat events
 * Feature 1176 Group frequency list now includes 'Twice-monthly'
