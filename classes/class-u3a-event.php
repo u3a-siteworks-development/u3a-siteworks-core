@@ -1349,20 +1349,30 @@ class U3aEvent
             $html .= "<h3>$when_text events</h3>\n";
         }
 
-        foreach ($events as $event) {
-            switch ($display_args['layout']) {
-                case 'line':
+
+        switch ($display_args['layout']) {
+            case 'line':
+                $html .= '<div class="u3aeventlist-lines">';
+                foreach ($events as $event) {
                     $html .= $event->display_line_item($display_args);
-                    break;
-                case 'grid':
+                }
+                $html .= '</div>';
+                break;
+            case 'grid':
+                foreach ($events as $event) {
                     $html .= $event->display_grid_item($display_args);
-                    break;
-                case 'list':
-                default:
+                }
+                break;
+            case 'list':
+            default:
+                $html .= '<div class="u3aeventlist-list">';
+                foreach ($events as $event) {
                     $html .= $event->display_list_item($display_args);
-                    break;
-            }
-        } // end foreach
+                }
+                $html .= '</div>';
+                break;
+        } // end switch
+
         $html .= "</div>\n";
         return $html;
     }
@@ -1489,7 +1499,6 @@ class U3aEvent
         $booking_required_line = $this->get_event_booking_required_line();
 
         $html = <<< END
-            <div class="u3aeventlist-item">
                 <div class="u3aevent-list-left">
                     <div><strong>$date</strong></div>
                     $time_line
@@ -1504,7 +1513,6 @@ class U3aEvent
                     $cost_line
                     $booking_required_line
                 </div>
-            </div>
             END;
         return $html;
     }
@@ -1567,17 +1575,9 @@ class U3aEvent
         $date = $date_time['date'];
         $time = $date_time['time'];
         $html = <<< END
-            <div class="u3aeventlist-item">
-                <div class="u3aevent-line-left">
-                    $date
-                </div>
-                <div class="u3aevent-line-middle">
-                    $time
-                </div>
-                <div class="u3aevent-line-right">
-                    <div class="u3aeventtitle">$clickable_title</div>
-                </div>
-            </div>
+                <div class="u3aevent-line-left">$date</div>
+                <div class="u3aevent-line-middle">$time</div>
+                <div class="u3aevent-line-right"><div class="u3aeventtitle">$clickable_title</div></div>
         END;
         return $html;
     }
