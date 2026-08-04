@@ -1352,15 +1352,15 @@ class U3aEvent
 
         switch ($display_args['layout']) {
             case 'line':
-                $html .= '<div class="u3aeventlist-lines">';
+                $html .= '<div class="u3aeventlist-line">';
                 foreach ($events as $event) {
                     $html .= $event->display_line_item($display_args);
                 }
                 $html .= '</div>';
                 break;
-            case 'grid':
+            case 'grid': //aka imgplus layout
                 foreach ($events as $event) {
-                    $html .= $event->display_grid_item($display_args);
+                    $html .= $event->display_imgplus_item($display_args);
                 }
                 break;
             case 'list':
@@ -1499,14 +1499,14 @@ class U3aEvent
         $booking_required_line = $this->get_event_booking_required_line();
 
         $html = <<< END
-                <div class="u3aevent-list-left">
+                <div class="u3aeventlist-list-left">
                     <div><strong>$date</strong></div>
                     $time_line
                     $end_date_line
                     <div>$event_categories</div>
                     $group_line
                 </div>
-                <div class="u3aevent-list-right">
+                <div class="u3aeventlist-list-right">
                     <div class="u3aeventtitle">$clickable_title</div>
                     $extract
                     $venue_line
@@ -1522,7 +1522,7 @@ class U3aEvent
      *
      * @return string The HTML.
      */
-    private function display_grid_item($display_args)
+    private function display_imgplus_item($display_args)
     {
         $clickable_title = U3aCommon::title_and_link($this->ID);
 
@@ -1544,11 +1544,11 @@ class U3aEvent
         $booking_required_line = $this->get_event_booking_required_line();
 
         $html = <<< END
-            <div class="u3aeventlist-item" $style_bgcolor>
-                <div class="u3aevent-grid-left">
+            <div class="u3aeventlist-imgplus-item" $style_bgcolor>
+                <div class="u3aeventlist-imgplus-left">
                     <div>$image_HTML</div>
                 </div>
-                <div class="u3aevent-grid-right">
+                <div class="u3aeventlist-imgplus-right">
                     <div class="u3aeventtitle">$clickable_title</div>
                     <div><strong>$date</strong></div>
                     $time_line
@@ -1575,9 +1575,9 @@ class U3aEvent
         $date = $date_time['date'];
         $time = $date_time['time'];
         $html = <<< END
-                <div class="u3aevent-line-left">$date</div>
-                <div class="u3aevent-line-middle">$time</div>
-                <div class="u3aevent-line-right"><div class="u3aeventtitle">$clickable_title</div></div>
+                <div class="u3aeventlist-line-left">$date</div>
+                <div class="u3aeventlist-line-middle">$time</div>
+                <div class="u3aeventlist-line-right"><div class="u3aeventtitle">$clickable_title</div></div>
         END;
         return $html;
     }
@@ -1604,7 +1604,7 @@ class U3aEvent
         $image_HTML = <<<END
             <figure>
                 <a href="$permalink">
-                    <img class="u3a-eventlist-featured-image $fit" src="$featured_image" />
+                    <img class="u3aeventlist-featured-image $fit" src="$featured_image" />
                 </a>
                 <figcaption>$caption</figcaption>
             </figure>

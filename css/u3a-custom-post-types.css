@@ -20,15 +20,21 @@
     }
 }
 
+.u3aeventlist-list-left>div {
+    max-width: 280px;
+    /* longer than the longest "long" date */
+    /* just in case event has a long group name or list of categories is very long */
+}
+
 .u3aeventlist-list>div:nth-child(4n+3),
 .u3aeventlist-list>div:nth-child(4n+4) {
-    background: rgba(128, 128, 128, 0.05);
-    /* alternating pale shading */
+    background: rgba(128, 128, 128, 0.15);
+    /* alternating pale shading of underlying background*/
 }
 
 /* u3aeventlist "Line" layout settings */
 
-.u3aeventlist-lines {
+.u3aeventlist-line {
     display: grid;
     grid-template-columns: max-content max-content auto;
 
@@ -37,62 +43,75 @@
     }
 }
 
-.u3aevent-line-left {
+.u3aeventlist-line-left {
     font-weight: bold;
 }
 
-.u3aeventlist-lines>div:nth-child(6n+4),
-.u3aeventlist-lines>div:nth-child(6n+5),
-.u3aeventlist-lines>div:nth-child(6n+6) {
-    background: rgba(128, 128, 128, 0.1);
-    /* alternating pale shading */
+.u3aeventlist-line>div:nth-child(6n+4),
+.u3aeventlist-line>div:nth-child(6n+5),
+.u3aeventlist-line>div:nth-child(6n+6) {
+    background: rgba(128, 128, 128, 0.15);
+    /* alternating pale shading of underlying background*/
 }
 
-/* "Line" and "List" layout collapsed to simple sequence in narrow container or on tablet/mobile */
+/* "Line" and "List" layout collapsed to simple sequence in narrow container */
+/* @media as fallback for for older versions of web browsers */
 /* For "Line", hide the div containing time if no time provided */
 
-@container u3aeventlist (width < 700px) {
+@container u3aeventlist (width < 540px) {
 
-    .u3aeventlist-lines,
+    .u3aeventlist-line,
     .u3aeventlist-list {
         display: block;
     }
 
-    .u3aevent-line-middle:empty {
+    .u3aeventlist-list-left>div {
+        max-width: none;
+    }
+
+    .u3aeventlist-line-middle:empty {
         display: none;
     }
 }
 
-@media (width <=768px) {
+@media (width < 540px) {
 
-    .u3aeventlist-lines,
-    u3aeventlist-list {
+    .u3aeventlist-line,
+    .u3aeventlist-list {
         display: block;
     }
 
-    .u3aevent-line-middle:empty {
+    .u3aeventlist-list-left>div {
+        max-width: none;
+    }
+
+    .u3aeventlist-line-middle:empty {
         display: none;
     }
 }
 
 /* u3aeventlist "Grid" settings */
 
-.u3aeventlist-item { /* each event in list */
+.u3aeventlist-imgplus-item {
+    /* each event in list */
     display:flex;
     flex-wrap:wrap;
     margin: 24px 10px 0px;
 }
 
-.u3aevent-grid-left {
+.u3aeventlist-imgplus-left {
     /* image container */
     flex: 0 0 320px;
     align-self: center;
+    /* unnecessary but harmless? */
 }
 
-.u3aevent-grid-right {
+.u3aeventlist-imgplus-right {
     flex: 1 0 320px;
     /* sets a min width for the text */
-    padding-left: 20px;
+    padding: 10px 10px;
+    /* with itemplus-item margins and this padding,
+       will break to a single column if container width is < 10+320+10+10+320+10 px */
 }
 
 .u3aeventlist figure {
@@ -100,7 +119,7 @@
     text-align: center;
 }
 
-.u3a-eventlist-featured-image {
+.u3aeventlist-featured-image {
     width: 300px;
     /*width of image to match containing div and margin */
     height: 225px;
@@ -123,20 +142,14 @@
     text-align: center;
 }
 
-/* close up paras in list */
+/* close up paras, if any, in list */
 .u3aeventlist p {
     margin-top: 0px;
     margin-bottom: 0px;
     padding-left: 0px;
 }
 
-.u3aevent-grid-right p {
-    margin-top: 0px;
-    margin-bottom: 0px;
-    padding-left: 0px;
-}
-
-/* not using a heading style for event/group titles within list*/
+/* not using a heading style for event/group titles within list, so add this.*/
 .u3aeventlist .u3aeventtitle,
 .u3agrouplist .u3a_group_title {
     font-size: 115%;
