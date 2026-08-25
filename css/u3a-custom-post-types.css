@@ -3,71 +3,155 @@
 
 /* u3aeventlist css
    ---------------- */
-.u3aeventlist-item { /* each event in list */
+
+.u3aeventlist {
+    container-type: inline-size;
+    container-name: u3aeventlist;
+}
+
+/* u3aeventlist "List" layout settings */
+
+.u3aeventlist-list {
+    display: grid;
+    grid-template-columns: max-content auto;
+
+    &>div {
+        padding: 5px 10px;
+    }
+}
+
+.u3aeventlist-list-left>div {
+    max-width: 280px;
+    /* longer than the longest "long" date */
+    /* just in case event has a long group name or list of categories is very long */
+}
+
+.u3aeventlist-list>div:nth-child(4n+3),
+.u3aeventlist-list>div:nth-child(4n+4) {
+    background: rgba(128, 128, 128, 0.15);
+    /* alternating pale shading of underlying background*/
+}
+
+/* u3aeventlist "Line" layout settings */
+
+.u3aeventlist-line {
+    display: grid;
+    grid-template-columns: max-content max-content auto;
+
+    &>div {
+        padding: 5px 10px;
+    }
+}
+
+.u3aeventlist-line-left {
+    font-weight: bold;
+}
+
+.u3aeventlist-line>div:nth-child(6n+4),
+.u3aeventlist-line>div:nth-child(6n+5),
+.u3aeventlist-line>div:nth-child(6n+6) {
+    background: rgba(128, 128, 128, 0.15);
+    /* alternating pale shading of underlying background*/
+}
+
+/* "Line" and "List" layout collapsed to simple sequence in narrow container */
+/* @media as fallback for for older versions of web browsers */
+/* For "Line", hide the div containing time if no time provided */
+
+@container u3aeventlist (width < 600px) {
+
+    .u3aeventlist-line,
+    .u3aeventlist-list {
+        display: block;
+    }
+
+    .u3aeventlist-list-left>div {
+        max-width: none;
+    }
+
+    .u3aeventlist-line-middle:empty {
+        display: none;
+    }
+}
+
+@media (width < 600px) {
+
+    .u3aeventlist-line,
+    .u3aeventlist-list {
+        display: block;
+    }
+
+    .u3aeventlist-list-left>div {
+        max-width: none;
+    }
+
+    .u3aeventlist-line-middle:empty {
+        display: none;
+    }
+}
+
+/* u3aeventlist "Grid" settings */
+
+.u3aeventlist-imgplus-item {
+    /* each event in list */
     display:flex;
     flex-wrap:wrap;
     margin: 24px 10px 0px;
 }
-.u3aevent-list-left { /* date/time container */
-    flex: 0 0 180px;
-}
-.u3aevent-grid-left { /* image container */
+
+.u3aeventlist-imgplus-left {
+    /* image container */
     flex: 0 0 320px;
-    align-self:center;
+    align-self: center;
+    /* unnecessary but harmless? */
 }
-.u3aevent-list-right,
-.u3aevent-grid-right {
-    flex: 1 0 320px; /* sets a min width for the text */
-    padding-left: 20px;
+
+.u3aeventlist-imgplus-right {
+    flex: 1 0 320px;
+    /* sets a min width for the text */
+    padding: 10px 10px;
+    /* with itemplus-item margins and this padding,
+       will break to a single column if container width is < 10+320+10+10+320+10 px */
 }
-.u3aevent-line-left {
-    flex: 0 1 160px; /* sets a min width for the date */
-    padding-left: 10px;
-}
-.u3aevent-line-middle {
-    flex: 0 1 70px; /* sets a min width for the time */
-    padding-left: 10px;
-}
-.u3aevent-line-right {
-    flex: 1 0 20px; /* sets a min width for the text */
-    padding-left: 20px;
-}
+
 .u3aeventlist figure {
-    margin:10px;
+    margin: 10px;
     text-align: center;
 }
-.u3a-eventlist-featured-image {
-    width: 300px; /*width of image to match containing div and margin */
-    height: 225px; /* portait 4:3 ratio*/
+
+.u3aeventlist-featured-image {
+    width: 300px;
+    /*width of image to match containing div and margin */
+    height: 225px;
+    /* portait 4:3 ratio*/
     object-position: center;
 }
+
 .u3a-crop {
     object-fit: cover;
 }
+
 .u3a-scale-down {
     object-fit: scale-down;
 }
+
 .u3aeventlist .no-figure {
-    width:300px;
-    height:100px;
-    margin:10px;
+    width: 300px;
+    height: 100px;
+    margin: 10px;
     text-align: center;
 }
-/* close up paras in list */
+
+/* close up paras, if any, in list */
 .u3aeventlist p {
     margin-top: 0px;
     margin-bottom: 0px;
     padding-left: 0px;
 }
-.u3aevent-grid-right p {
-    margin-top: 0px;
-    margin-bottom: 0px;
-    padding-left: 0px;
-}
-/* not using a heading style for event/group titles within list*/
+
+/* not using a heading style for event/group titles within list, so add this.*/
 .u3aeventlist .u3aeventtitle,
-.u3agrouplist .u3a_group_title
- {
+.u3agrouplist .u3a_group_title {
     font-size: 115%;
     font-weight: bold;
 }
@@ -79,6 +163,7 @@ div.u3agroupselector {
     flex-wrap: wrap;
     margin-block-start: 0 !important;
 }
+
 @media only screen and (max-width:786px) {
     div.u3agroupselector {
         justify-content: center;
@@ -90,31 +175,35 @@ div.u3agroupselector {
 .u3a-notice-list p {
     margin: 5px 0 10px 10px;
 }
+
 .u3a-notice-list h4 {
     margin-top: 10px;
     margin-bottom: 5px;
 }
+
 /* u3agrouplist css
    ----------------------- */
 
-   .u3agrouplist-column-first-flow ul {
+.u3agrouplist-column-first-flow ul {
     column-width: 300px;
     margin-top: 0;
-    list-style-type:none;
+    list-style-type: none;
 }
+
 .u3agrouplist-column-first-flow ul li {
     margin-bottom: 5px;
     break-inside: avoid-column;
 }
 
 .u3agrouplist-row-first-flow ul {
-    display: grid; 
+    display: grid;
     grid-gap: 5px;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     column-width: 300px;
     margin-top: 0;
-    list-style-type:none;
+    list-style-type: none;
 }
+
 .u3agrouplist-row-first-flow ul li {
     margin-bottom: 5px;
     break-inside: avoid-column;
@@ -125,6 +214,7 @@ div.u3agroupselector {
 .u3agroupbuttons {
     text-align: center;
 }
+
 .u3agroupbuttons a {
     display: inline-block;
     width: 7.5em;
@@ -133,14 +223,15 @@ div.u3agroupselector {
 /* group buttons to be two on each row for widths between 540 and 768px*/
 @media only screen and (max-width:768px) {
     .u3agroupbuttons a {
-           width: 12.5rem;
+        width: 12.5rem;
     }
 
 }
+
 @media only screen and (max-width:540px) {
     .u3agroupbuttons a {
         width: 7.5rem;
-      }
+    }
 }
 
 /* Tables for event, group, venue display()
@@ -150,11 +241,13 @@ div.u3agroupselector {
 .u3a_venue_table {
     margin-left: 10px;
 }
+
 .u3a_event_table td,
 .u3a_group_table td,
 .u3a_venue_table td {
     vertical-align: top;
 }
+
 .u3a_event_table tr td:first-child,
 .u3a_group_table tr td:first-child,
 .u3a_venue_table tr td:first-child {
