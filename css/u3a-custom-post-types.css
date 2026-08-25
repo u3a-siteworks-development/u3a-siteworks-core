@@ -58,7 +58,7 @@
 /* @media as fallback for for older versions of web browsers */
 /* For "Line", hide the div containing time if no time provided */
 
-@container u3aeventlist (width < 540px) {
+@container u3aeventlist (width < 600px) {
 
     .u3aeventlist-line,
     .u3aeventlist-list {
@@ -74,7 +74,7 @@
     }
 }
 
-@media (width < 540px) {
+@media (width < 600px) {
 
     .u3aeventlist-line,
     .u3aeventlist-list {
