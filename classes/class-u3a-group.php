@@ -327,16 +327,14 @@ class U3aGroup
             'name'    => 'Start time',
             'id'      => 'startTime',
             'desc' => 'Optional, input format e.g. 09:30 and 14:45',
-            // TODO: Maybe no pattern needed as the picker restricts the value range?
-            'pattern' => '[0-2][0-9]:[0-5][0-9]', // catches most bad input!
+            'pattern' => '^(?:[01][0-9]|2[0-3]):[0-5][0-9]$',
         ];
         $fields[] = [
             'type'    => 'time',
             'name'    => 'End time',
             'id'      => 'endTime',
             'desc' => 'Optional, input format e.g. 09:30 and 14:45',
-            // TODO: Maybe no pattern needed as the picker restricts the value range?
-            'pattern' => '[0-2][0-9]:[0-5][0-9]', // catches most bad input!
+            'pattern' => '^(?:[01][0-9]|2[0-3]):[0-5][0-9]$',
         ];
         $fields[] = [
             'type'    => 'select',

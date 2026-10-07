@@ -293,23 +293,21 @@ class U3aEvent
             'name'    => 'Event date',
             'id'      => 'eventDate',
             'required' => true,
-            // TODO: Maybe no pattern needed as the picker restricts the value range?
-            'pattern' => '[1-2][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]', // catches most bad input!
+            'pattern' => '^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$', // catches most bad input!
         ];
         $fields[] = [
             'type'    => 'time',
             'name'    => 'Start time',
             'id'      => 'eventTime',
             'desc' => 'Optional',
-            // TODO: Maybe no pattern needed as the picker restricts the value range?
-            'pattern' => '[0-2][0-9]:[0-5][0-9]', // catches most bad input!
+            'pattern' => '^(?:[01][0-9]|2[0-3]):[0-5][0-9]$',
         ];
         $fields[] = [
             'type'    => 'time',
             'name'    => 'End time',
             'id'      => 'eventEndTime',
             'desc' => 'Optional',
-            'pattern' => '[0-2][0-9]:[0-5][0-9]', // catches most bad input!
+            'pattern' => '^(?:[01][0-9]|2[0-3]):[0-5][0-9]$',
         ];
         $fields[] = [
             'type'    => 'number',
