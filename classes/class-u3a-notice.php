@@ -161,7 +161,7 @@ class U3aNotice
                 'desc'      => 'Date when this notice should start being displayed on the website',
                 'size'      => 15,
                 'std'       => date('Y-m-d'),
-                'pattern' => '[1-2][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]',
+                'pattern' => '^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$', // catches most bad input!
                 'required'  => true,
             ];
         $fields[] =
@@ -172,7 +172,7 @@ class U3aNotice
                 'desc'      => 'Date when this notice should stop being displayed on the website',
                 'size'      => 15,
                 'std'       => date('Y-m-d'),
-                'pattern' => '[1-2][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]',
+                'pattern' => '^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$', // catches most bad input!
                 'required' => true,
             ];
         $fields[] =
