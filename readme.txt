@@ -22,6 +22,7 @@ Please refer to the documentation on the [SiteWorks website](https://siteworks.u
 
 == Changelog ==
 = 2.2.2 =
+* Bug 1190 Notices allow invalid dates to be entered manually
 * Bug 1184 Event listing layout does not handle long date format well
 = 2.2.1 =
 * Bug 1181 Event list limited by number may select same day events out of order
