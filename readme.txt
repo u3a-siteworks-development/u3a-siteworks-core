@@ -1,6 +1,6 @@
 === u3a-siteworks-core ===
 Requires at least: 5.9
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 5.9
 Requires PHP: 8.2
 License: GPLv2 or later
@@ -21,6 +21,7 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+= 2.2.2 =
 * Bug 1184 Event listing layout does not handle long date format well
 = 2.2.1 =
 * Bug 1181 Event list limited by number may select same day events out of order
