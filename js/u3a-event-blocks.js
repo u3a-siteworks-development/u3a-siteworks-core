@@ -219,21 +219,6 @@ wp.blocks.registerBlockType("u3a/eventdata", {
       }
 
 
-      function ShowGridOptions(params){
-          const {gridOn, cropOn, ...panelParams} = params;
-          if (gridOn) {
-              return wp.element.createElement("div", {},
-                         wp.element.createElement( ToggleControl,
-                          { label:'Crop image to fit',
-                            checked: cropOn,
-                            onChange: onChangeCrop,
-                          }
-                         ),
-                         wp.element.createElement(PanelColorSettings, panelParams),
-                     );
-          }
-          return '';
-      }
       /* default to #ffc700 if layout == 'list' or is not set*/
       var editBoxColor = (layout == 'grid') ? bgcolor : '#ffc700';
       var bcrop = (crop == 'y');
@@ -336,13 +321,24 @@ wp.blocks.registerBlockType("u3a/eventdata", {
                   onChange: onChangeShowTitle,
                 }
               ),
-              wp.element.createElement( ShowGridOptions,
-                   {gridOn:(layout=='grid'),
-                    cropOn: (crop == 'y'),
-                    title:'Colours', initialOpen:false, colorSettings:colorSettingsDropDown 
-                   }, 
-              ),
-            ),
+(layout == 'grid') ?
+    wp.element.createElement("div", {},
+        wp.element.createElement(ToggleControl,
+            {
+                label: 'Crop image to fit',
+                checked: (crop == 'y'),
+                onChange: onChangeCrop,
+            }
+        ),
+        wp.element.createElement(PanelColorSettings,
+            {
+                title: 'Colours',
+                initialOpen: false,
+                colorSettings: colorSettingsDropDown
+            }
+        )
+    )
+    : null,            ),
           ),
         wp.element.createElement("div", blockProps,  
           wp.element.createElement("div", {style: {color: 'black', backgroundColor: editBoxColor, padding: '10px', border: '1px solid lightgrey'}}, "This placeholder shows where a table of events will be shown.")

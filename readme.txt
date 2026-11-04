@@ -21,6 +21,7 @@ For guidance on the design of the code read file 'u3a Siteworks Core structure.o
 Please refer to the documentation on the [SiteWorks website](https://siteworks.u3a.org.uk/u3a-siteworks-training/)
 
 == Changelog ==
+* Bug 1184 part 2. Colour Picker disappears when clicked.
 = 2.2.2 =
 * Bug 1190 Notices allow invalid dates to be entered manually
 * Bug 1184 Event listing layout does not handle long date format well
