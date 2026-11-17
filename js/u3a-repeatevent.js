@@ -61,8 +61,8 @@ function setDatePattern() {
   } else {
     //    datePattern.innerText is based on evtStartDate and evtFrequency);
     let d = new Date(evtStartDate);
-    let weekDay = d.getDay(); // 0 to 6
-    let weekOfMonth = Math.floor((d.getDate() +6) / 7); // will be in range 1 to 5
+    let weekDay = d.getUTCDay(); // 0 to 6
+    let weekOfMonth = Math.floor((d.getUTCDate() +6) / 7); // will be in range 1 to 5
     validPattern = true;
     if ('weekly' == evtFrequency) {
         datePattern.innerText = "Weekly on " + daysList[weekDay] + "s";
@@ -128,7 +128,7 @@ function generateEvents() {
     // Create proposed events
     const startdate = new Date(evtStartDate);
     // assumes evtStartDate is not in 5th week of month.
-    const required_weekOfMonth = Math.floor((startdate.getDate() + 6) / 7); // relevant if monthly 
+    const required_weekOfMonth = Math.floor((startdate.getUTCDate() + 6) / 7); // relevant if monthly 
     const requiredPattern = [1, 3].includes(required_weekOfMonth) ? [1,3] : [2,4]; // relevant if twice-monthly
     let cutoffdate = '';
     if (eventCutoffDate != '') {
@@ -136,7 +136,6 @@ function generateEvents() {
     }
     const evtTitle = document.getElementById('posttitle').value;
 
-    let weekOfMonth = null;
     let maxevents = (numEvents == '' || numEvents > 13) ? 13 : numEvents;
     let newdate = startdate;
 
@@ -146,28 +145,30 @@ function generateEvents() {
 
     for (let i = 0; i < maxevents; i++) {
         // Calculate next date
+        let weekOfMonth;
         switch (evtFrequency) {
             case 'weekly':
-                newdate.setDate(newdate.getDate() + 7); // the necessary way to do this in Javascript ;-(
+                newdate.setUTCDate(newdate.getUTCDate() + 7); // the necessary way to do this in Javascript ;-(
                 break;
             case 'fortnightly':
-                newdate.setDate(newdate.getDate() + 14);
+                newdate.setUTCDate(newdate.getUTCDate() + 14);
                 break;
             case 'monthly':
-                newdate.setDate(newdate.getDate() + 28);
+                newdate.setUTCDate(newdate.getUTCDate() + 28);
                 // but sometimes need an extra week
-                weekOfMonth = Math.floor((newdate.getDate() + 6) / 7);
+                weekOfMonth = Math.floor((newdate.getUTCDate() + 6) / 7);
                 if (weekOfMonth != required_weekOfMonth) {
-                    newdate.setDate(newdate.getDate() + 7);
+                    newdate.setUTCDate(newdate.getUTCDate() + 7);
                 }
                 break;
             case 'twice-monthly':
-                newdate.setDate(newdate.getDate() + 14);
+                newdate.setUTCDate(newdate.getUTCDate() + 14);
                 // but sometimes need an extra week
-                weekOfMonth = Math.floor((newdate.getDate() + 6) / 7);
+                weekOfMonth = Math.floor((newdate.getUTCDate() + 6) / 7);
                 if (!requiredPattern.includes(weekOfMonth)) {
-                    newdate.setDate(newdate.getDate() + 7);
+                    newdate.setUTCDate(newdate.getUTCDate() + 7);
                 }
+                break;
         }
         // Stop if we're now past the cut-off date
         if ((eventCutoffDate != '') && (newdate > cutoffdate)) {
@@ -191,7 +192,9 @@ function returnToSetupForm() {
 function add_event_to_table(eventDate, eventTitle,isExistingEvent = false) {
     const table = document.getElementById('repeatEntries');
     let dbdate = eventDate.toISOString().split('T')[0] // or just get first ten characters since our years have four digits
-    let evdate = eventDate.toDateString();
+    let evdate = eventDate.toLocaleDateString('en-GB', {
+      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'
+    });
 
     if (isExistingEvent) {
       table.insertAdjacentHTML('beforeend',
