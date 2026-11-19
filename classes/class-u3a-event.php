@@ -1511,6 +1511,7 @@ class U3aEvent
                     $cost_line
                     $booking_required_line
                 </div>
+                <div class="u3aeventlist-item"></div>
             END;
         return $html;
     }
@@ -1576,6 +1577,7 @@ class U3aEvent
                 <div class="u3aeventlist-line-left">$date</div>
                 <div class="u3aeventlist-line-middle">$time</div>
                 <div class="u3aeventlist-line-right"><div class="u3aeventtitle">$clickable_title</div></div>
+                <div class="u3aeventlist-item"></div>
         END;
         return $html;
     }
