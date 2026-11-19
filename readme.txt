@@ -22,6 +22,7 @@ Please refer to the documentation on the [SiteWorks website](https://siteworks.u
 
 == Changelog ==
 * Bug 1184 part 2. Colour Picker disappears when clicked.
+* Bug 1190 Part 2. Increased date validation.
 = 2.2.2 =
 * Bug 1190 Notices allow invalid dates to be entered manually
 * Bug 1184 Event listing layout does not handle long date format well
